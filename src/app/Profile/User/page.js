@@ -1,6 +1,5 @@
 'use client'
 import React from 'react'
-import Link from "next/Link"
 
 import "@/app/assets/vendor/css/pages/page-profile.css"
 
@@ -61,13 +60,13 @@ export default function page() {
             <div className="nav-align-top">
               <ul className="nav nav-pills flex-column flex-sm-row mb-6 row-gap-2">
                 <li className="nav-item">
-                  <Link className="nav-link active" href="javascript:void(0);"
-                  ><i className="ri-user-3-line me-2"></i>Profile</Link>
+                  <a className="nav-link active" href="javascript:void(0);"
+                  ><i className="ri-user-3-line me-2"></i>Profile</a>
                 </li>
 
                 
                 <li className="nav-item">
-                  <Link className="nav-link" href="/Profile/Teams"><i className="ri-team-line me-2"></i>Teams</Link>
+                  <a className="nav-link" href="/Profile/Teams"><i className="ri-team-line me-2"></i>Teams</a>
                 </li>
                 <li className="nav-item">
                   <a className="nav-link" href="/Profile/Project"
