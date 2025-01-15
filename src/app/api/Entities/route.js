@@ -59,3 +59,79 @@ export async function GET(request) {
     return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
   }
 }
+
+
+// POST request to create a new entity
+export async function POST(request) {
+  try {
+    const authHeader = request.headers.get('Authorization');
+
+    // Check if Authorization header is present
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
+    }
+
+    // Extract token and verify
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Parse the request body
+    const body = await request.json();
+    const {
+      entity_name,
+      entity_desc,
+      entity_short_desc,
+      category,
+    } = body;
+
+    // Validate required fields
+    if (!entity_name || !entity_desc || !entity_short_desc || !category) {
+      return NextResponse.json(
+        { message: 'Missing required fields: entity_name, entity_desc, entity_short_desc, and category are mandatory.' },
+        { status: 400 }
+      );
+    }
+
+    // Validate category
+    if (!['income', 'expense'].includes(category.toLowerCase())) {
+      return NextResponse.json(
+        { message: 'Invalid category. Allowed values are "income" or "expense".' },
+        { status: 400 }
+      );
+    }
+
+    // Insert the new entity into the database
+    const [result] = await db.execute(
+      `INSERT INTO entities (user_id, entity_name, entity_desc, entity_short_desc, category)
+       VALUES (?, ?, ?, ?, ?)`,
+      [decoded.user_id, entity_name, entity_desc, entity_short_desc, category.toLowerCase()]
+    );
+
+    // Return success response
+    return NextResponse.json(
+      {
+        message: 'Entity created successfully',
+        data: {
+          id: result.insertId,
+          user_id: decoded.user_id,
+          entity_name,
+          entity_desc,
+          entity_short_desc,
+          category: category.toLowerCase(),
+        },
+      },
+      {
+        status: 201,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        }
+      }
+    );
+
+  } catch (error) {
+    return NextResponse.json(
+      { message: 'Something went wrong', error: error.message },
+      { status: 500 }
+    );
+  }
+}
