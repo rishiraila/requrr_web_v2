@@ -34,6 +34,8 @@ import "@fontsource/inter/500.css"; // Weight 500
 import "@fontsource/inter/600.css"; // Weight 600
 import "@fontsource/inter/700.css"; // Weight 700
 
+import Link from 'next/link';
+
 
 
 export default function Navbar() {
@@ -557,10 +559,13 @@ export default function Navbar() {
                                     </li>
                                     <li>
                                         <div className="d-grid px-4 pt-2 pb-1">
-                                            <a className="btn btn-sm btn-danger d-flex" href="auth-login-cover.html" target="_blank">
+                                            <button className="btn btn-sm btn-danger d-flex"  onClick={() => {
+    localStorage.removeItem("token"); // Clear token
+    window.location.href = "/Login"; // Redirect to login page
+  }}>
                                                 <small className="align-middle">Logout</small>
                                                 <i className="ri-logout-box-r-line ms-2 ri-16px"></i>
-                                            </a>
+                                            </button>
                                         </div>
                                     </li>
                                 </ul>
