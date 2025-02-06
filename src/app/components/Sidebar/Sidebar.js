@@ -103,8 +103,8 @@ export default function Sidebar() {
                       x2="10.532"
                       y2="24.104"
                       gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stop-opacity="1" />
-                      <stop offset="1" stop-opacity="0" />
+                      <stop offset="0" stopOpacity="1" />
+                      <stop offset="1" stopOpacity="0" />
                     </linearGradient>
                     <linearGradient
                       id="paint1_linear_2989_100980"
@@ -113,8 +113,8 @@ export default function Sidebar() {
                       x2="10.3357"
                       y2="24.1155"
                       gradientUnits="userSpaceOnUse">
-                      <stop offset="0" stop-opacity="1" />
-                      <stop offset="1" stop-opacity="0" />
+                      <stop offset="0" stopOpacity="1" />
+                      <stop offset="1" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                 </svg>

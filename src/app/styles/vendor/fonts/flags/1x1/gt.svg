@@ -15,10 +15,10 @@
     </radialGradient>
     <radialGradient id="gt-n" cx="489.1" cy="210.3" r=".3" fx="489.1" fy="210.3" gradientTransform="scale(.97707 1.02346)" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#fff"/>
-      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stopOpacity="0"/>
     </radialGradient>
     <linearGradient id="gt-h" x1="473.9" x2="472.4" y1="259.2" y2="232" gradientUnits="userSpaceOnUse">
-      <stop offset=".2" stop-color="#b07e09" stop-opacity="0"/>
+      <stop offset=".2" stop-color="#b07e09" stopOpacity="0"/>
       <stop offset="1" stop-color="#b07e09"/>
     </linearGradient>
     <linearGradient id="gt-i" x1="483.1" x2="485.5" y1="296.7" y2="326.6" gradientUnits="userSpaceOnUse">

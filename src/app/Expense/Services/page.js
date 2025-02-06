@@ -1,20 +1,111 @@
-import React from 'react'
+'use client'
+import React, { useState, useEffect } from 'react'
+import AddServiceModal from '@/app/components/AddServiceModal'
+import axios from 'axios';
 
 export default function page() {
+
+  const [services, setServices] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+
+  
+
+  const [entities, setEntities] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  // Fetch services using Axios
+  const fetchServices = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Get token from localStorage
+
+    if (!token) {
+      window.location.href = "/Login"; // Redirect if no token
+      return;
+    }
+
+      console.log("📢 Fetching services with token:", token);
+
+      const response = await axios.get('http://localhost:3000/api/Services', {
+        headers: { Authorization: token }, // Send token in header
+      });
+
+      console.log("✅ API Response:", response.data);
+
+      if (response) {
+        setServices(response.data.data);
+      } else {
+        alert(response.data.message || "Failed to fetch services.");
+      }
+    } catch (error) {
+      console.error('❌ Error fetching services:', error);
+
+      if (error.response) {
+        console.error("🔴 Server responded with:", error.response.data);
+        alert(error.response.data.message || "Something went wrong while fetching services.");
+      } else if (error.request) {
+        console.error("⚠️ No response received from server.");
+        alert("No response from server. Please check your API.");
+      } else {
+        console.error("❗ Unknown error:", error.message);
+        alert("Unexpected error occurred.");
+      }
+    }
+  };
+
+  // Fetch services on mount
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const handleServiceAdded = () =>{
+    fetchServices()
+  }
+
+  const fetchEntities = async () => {
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
+  
+    try {
+      const response = await axios.get("http://localhost:3000/api/Entities", {
+        headers: { Authorization: token }, // Ensure Bearer token format
+      });
+  
+      setEntities(response.data.data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+    }
+  };
+  
+  // Fetch entities on mount
+  useEffect(() => {
+    fetchEntities();
+  }, []);
+  
+
+  const getEntityName = (id) => {
+    const entity = entities.find((e) => e.id === id);
+    console.log(entity)
+    return entity ? entity.entity_name : "Unknown Entity";
+  };
+
   return (
     <>
 
       <div className="container-xxl flex-grow-1 container-p-y">
         <div className="row g-6">
-
-
           <div className="col-xxl-8 col-md-10">
             <div className="card h-100">
               <div className="card-header d-flex align-items-center justify-content-between border-bottom mb-4">
                 <h5 className="card-title m-0 me-2">List of Services</h5>
                 <div className="d-flex align-items-center">
                   <div>
-                    <button className="btn btn-primary">+</button>
+                    <button className="btn btn-primary"onClick={() => setShowModal(true)}>+</button>
                   </div>
                   <div className="dropdown">
                     <button className="btn btn-text-secondary rounded-pill text-muted border-0 p-1" type="button"
@@ -30,92 +121,37 @@ export default function page() {
                 </div>
               </div>
               <div className="card-body">
-                <ul className="p-0 m-0">
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5 ">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2 ">
-                      <div className="me-2">
-                        <h6 className="mb-0">Domain + Hosting SSL</h6>
-                        <small className="d-flex align-items-center">
-                          <span>Lorem ipsum dolor sit, amet consectetur adipisicing elit</span>
-                        </small>
-                        <small className="text-muted">Default Duration: 1 Year</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-primary rounded-pill me-2">Business</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Bike Insurance</h6>
-                        <small className="d-flex align-items-center">
-                          <span>Lorem ipsum dolor sit, amet consectetur adipisicing elit</span>
-                        </small>
-                        <small className="text-muted">Default Duration: 16 Months</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-warning rounded-pill me-2">Personal</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Office Rent</h6>
-                        <small className="d-flex align-items-center">
-                          <span>Lorem ipsum dolor sit, amet consectetur adipisicing elit</span>
-                        </small>
-                        <small className="text-muted">Default Duration: 1 Year</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-secondary rounded-pill me-2">Office</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Flat Rent</h6>
-                        <small className="d-flex align-items-center">
-                          <span>Lorem ipsum dolor sit, amet consectetur adipisicing elit</span>
-                        </small>
-                        <small className="text-muted">Default Duration: 2 Years</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-danger rounded-pill me-2">House</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Employee Salaries</h6>
-                        <small className="d-flex align-items-center">
-                          <span>Lorem ipsum dolor sit, amet consectetur adipisicing elit</span>
-                        </small>
-                        <small className="text-muted">Default Duration: Monthly</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-primary rounded-pill me-2">Business</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
+                {services.length === 0 ? (
+                  <p>No services available.</p>
+                ) : (
+                  <ul className="p-0 m-0">
+                    {services.map((service, index) => (
+                      <li key={index} className="d-flex align-items-center border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
+                        <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                          <div>
+                            <h6 className="mb-0">{service.service_name}</h6>
+                            <small>{service.service_desc}</small><br />
+                            <small className="text-muted">Default Duration [ monthly ] : {service.min_duration}</small>
+                          </div>
+                          <div className="d-flex align-items-center">
+                            {/* <div className="badge bg-label-primary rounded-pill me-2">{service.entity_id}</div> */}
+                            <div className="badge bg-label-primary rounded-pill me-2">{getEntityName(service.entity_id)}</div>
+                            <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
 
-
+          <AddServiceModal 
+        show={showModal} 
+        onClose={() => setShowModal(false)} 
+        onServiceAdded={handleServiceAdded} 
+      />
 
           <div className="col-12 col-xxl-4 col-md-6">
             <div className="card h-100 shadow-lg border-0">
