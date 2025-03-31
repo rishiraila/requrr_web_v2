@@ -8,107 +8,138 @@ export async function OPTIONS() {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
 }
 
-// GET request to fetch payees with user details, entity and service details from the database using Bearer token
+// Utility function to validate JWT and extract user ID
+async function getUserIdFromToken(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Authorization token is missing or invalid');
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    return decoded.user_id;
+  } catch (error) {
+    throw new Error('Invalid or expired token');
+  }
+}
+
+// 📌 **READ**: Fetch payees with user, entity, and service details
 export async function GET(request) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    
-    // Check if Authorization header is present
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
-    }
-
-    // Extract token from Authorization header
-    const token = authHeader.split(' ')[1];
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Query the database to fetch payees, user details, entity details, and service details
+    const user_id = await getUserIdFromToken(request);
     const [rows] = await db.execute(
-      `SELECT payees.*, users.username, users.sr AS user_id,
-              entities.id AS entity_id, entities.entity_name,
-              services.id AS service_id, services.service_name
+      `SELECT payees.*, users.username, entities.entity_name, services.service_name
        FROM payees
        JOIN users ON payees.user_id = users.sr
        LEFT JOIN entities ON payees.entity_id = entities.id
        LEFT JOIN services ON payees.service_id = services.id
-       WHERE users.sr = ?`,
-      [decoded.user_id]
+       WHERE payees.user_id = ?`,
+      [user_id]
     );
 
-    // Check if there are payees
     if (rows.length === 0) {
       return NextResponse.json({ message: 'No payees found' }, { status: 404 });
     }
-
-    // Send success response with fetched payees, user details, entity details, and service details
-    return NextResponse.json({
-      message: 'Payees fetched successfully',
-      data: rows,
-    }, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+    
+    return NextResponse.json({ message: 'Payees fetched successfully', data: rows }, { status: 200 });
 
   } catch (error) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 401 });
   }
 }
 
-
+// 📌 **CREATE**: Insert new payee
 export async function POST(request) {
   try {
-    // 1. Check for Authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
-    }
-
-    // 2. Extract and verify the token
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user_id = decoded.user_id;
-
-    // 3. Parse the request body
+    const user_id = await getUserIdFromToken(request);
     const body = await request.json();
-
-    // Destructure the fields from the request body
     const { entity_name, service_name, payee_name, phone, email, amount, category } = body;
 
-    // 4. Validate required fields
     if (!entity_name || !service_name || !payee_name || !phone || !email || !amount || !category) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
-    // 5. Get IDs from names
-    const [[entity]] = await db.execute('SELECT id FROM entities WHERE entity_name = ?', [entity_name]);
-    const [[service]] = await db.execute('SELECT id FROM services WHERE service_name = ?', [service_name]);
+    // Fetch entity and service IDs
+    const [[entity]] = await db.execute('SELECT id FROM entities WHERE entity_name = ? LIMIT 1', [entity_name]);
+    const [[service]] = await db.execute('SELECT id FROM services WHERE service_name = ? LIMIT 1', [service_name]);
 
-    // 6. Check if the IDs exist
-    if (!entity || !service) {
-      return NextResponse.json({ message: 'Invalid entity or service name' }, { status: 404 });
-    }
+    if (!entity) return NextResponse.json({ message: 'Entity not found' }, { status: 404 });
+    if (!service) return NextResponse.json({ message: 'Service not found' }, { status: 404 });
 
-    // 7. Insert the payee into the database
+    // Insert new payee
     await db.execute(
       'INSERT INTO payees (user_id, entity_id, service_id, payee_name, phone, email, amount, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [user_id, entity.id, service.id, payee_name, phone, email, amount, category]
     );
 
-    // 8. Respond with success message
     return NextResponse.json({ message: 'Payee created successfully' }, { status: 201 });
 
   } catch (error) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
+// 📌 **UPDATE**: Modify an existing payee
+export async function PUT(request) {
+  try {
+    const user_id = await getUserIdFromToken(request);
+    const body = await request.json();
+    const { payee_id, entity_name, service_name, payee_name, phone, email, amount, category } = body;
+
+    if (!payee_id || !entity_name || !service_name || !payee_name || !phone || !email || !amount || !category) {
+      return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
+    }
+
+    // Fetch entity and service IDs
+    const [[entity]] = await db.execute('SELECT id FROM entities WHERE entity_name = ? LIMIT 1', [entity_name]);
+    const [[service]] = await db.execute('SELECT id FROM services WHERE service_name = ? LIMIT 1', [service_name]);
+
+    if (!entity) return NextResponse.json({ message: 'Entity not found' }, { status: 404 });
+    if (!service) return NextResponse.json({ message: 'Service not found' }, { status: 404 });
+
+    // Update payee
+    const [updateResult] = await db.execute(
+      'UPDATE payees SET entity_id = ?, service_id = ?, payee_name = ?, phone = ?, email = ?, amount = ?, category = ? WHERE id = ? AND user_id = ?',
+      [entity.id, service.id, payee_name, phone, email, amount, category, payee_id, user_id]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      return NextResponse.json({ message: 'Payee not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Payee updated successfully' }, { status: 200 });
+
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
+// 📌 **DELETE**: Remove a payee by ID
+export async function DELETE(request) {
+  try {
+    const user_id = await getUserIdFromToken(request);
+    const url = new URL(request.url);
+    const payee_id = url.searchParams.get('payee_id');
+
+    if (!payee_id) {
+      return NextResponse.json({ message: 'Payee ID is required' }, { status: 400 });
+    }
+
+    const [deleteResult] = await db.execute('DELETE FROM payees WHERE id = ? AND user_id = ?', [payee_id, user_id]);
+
+    if (deleteResult.affectedRows === 0) {
+      return NextResponse.json({ message: 'Payee not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Payee deleted successfully' }, { status: 200 });
+
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}

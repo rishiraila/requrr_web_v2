@@ -8,29 +8,27 @@ export async function OPTIONS() {
     status: 200,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     },
   });
 }
 
-// GET request to fetch subscriptions with user, entity, service, payee details, and service duration from the database using Bearer token
+// Helper function to extract and verify token
+async function getUserIdFromToken(request) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    throw new Error('Authorization token is missing or invalid');
+  }
+  const token = authHeader.split(' ')[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  return decoded.user_id;
+}
+
+// GET: Fetch subscriptions
 export async function GET(request) {
   try {
-    const authHeader = request.headers.get('Authorization');
-    
-    // Check if Authorization header is present
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
-    }
-
-    // Extract token from Authorization header
-    const token = authHeader.split(' ')[1];
-
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Query the database to fetch subscriptions, user details, entity details, service details, and payee info
+    const user_id = await getUserIdFromToken(request);
     const [rows] = await db.execute(
       `SELECT subscriptions.*, users.username, users.sr AS user_id,
               entities.id AS entity_id, entities.entity_name,
@@ -42,76 +40,97 @@ export async function GET(request) {
        LEFT JOIN services ON subscriptions.service_id = services.id
        LEFT JOIN payees ON subscriptions.payee_id = payees.id
        WHERE users.sr = ?`,
-      [decoded.user_id]
+      [user_id]
     );
-
-    // Check if there are subscriptions
-    if (rows.length === 0) {
-      return NextResponse.json({ message: 'No subscriptions found' }, { status: 404 });
-    }
-
-    // Send success response with fetched subscriptions, user details, entity details, service details, and payee info
-    return NextResponse.json({
-      message: 'Subscriptions fetched successfully',
-      data: rows,
-    }, {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-
+    return NextResponse.json({ message: 'Subscriptions fetched successfully', data: rows }, { status: 200 });
   } catch (error) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
-
+// POST: Create subscription
 export async function POST(request) {
   try {
-    // 1. Check for Authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
-    }
-
-    // 2. Extract and verify the token
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user_id = decoded.user_id;
-
-    // 3. Parse the request body
+    const user_id = await getUserIdFromToken(request);
     const body = await request.json();
-
-    // Destructure the fields from the request body
     const { entity_name, service_name, payee_name, startDate, endDate, amount, paymentDate, category } = body;
 
-    // 4. Validate required fields
     if (!entity_name || !service_name || !payee_name || !startDate || !endDate || !amount || !paymentDate || !category) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
-    // 5. Get IDs from names
     const [[entity]] = await db.execute('SELECT id FROM entities WHERE entity_name = ?', [entity_name]);
     const [[service]] = await db.execute('SELECT id FROM services WHERE service_name = ?', [service_name]);
     const [[payee]] = await db.execute('SELECT id FROM payees WHERE payee_name = ?', [payee_name]);
 
-    // 6. Check if the IDs exist
     if (!entity || !service || !payee) {
       return NextResponse.json({ message: 'Invalid entity, service, or payee name' }, { status: 404 });
     }
 
-    // 7. Insert the subscription into the database
     await db.execute(
       'INSERT INTO subscriptions (user_id, entity_id, service_id, payee_id, startDate, endDate, amount, paymentDate, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [user_id, entity.id, service.id, payee.id, startDate, endDate, amount, paymentDate, category]
     );
 
-    // 8. Respond with success message
     return NextResponse.json({ message: 'Subscription created successfully' }, { status: 201 });
-
   } catch (error) {
-    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
 
+// PUT: Update subscription
+export async function PUT(request) {
+  try {
+    const user_id = await getUserIdFromToken(request);
+    const body = await request.json();
+    const { id, entity_name, service_name, payee_name, startDate, endDate, amount, paymentDate, category } = body;
+
+    if (!id || !entity_name || !service_name || !payee_name || !startDate || !endDate || !amount || !paymentDate || !category) {
+      return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
+    }
+
+    const [[entity]] = await db.execute('SELECT id FROM entities WHERE entity_name = ?', [entity_name]);
+    const [[service]] = await db.execute('SELECT id FROM services WHERE service_name = ?', [service_name]);
+    const [[payee]] = await db.execute('SELECT id FROM payees WHERE payee_name = ?', [payee_name]);
+
+    if (!entity || !service || !payee) {
+      return NextResponse.json({ message: 'Invalid entity, service, or payee name' }, { status: 404 });
+    }
+
+    const [updateResult] = await db.execute(
+      'UPDATE subscriptions SET entity_id = ?, service_id = ?, payee_id = ?, startDate = ?, endDate = ?, amount = ?, paymentDate = ?, category = ? WHERE id = ? AND user_id = ?',
+      [entity.id, service.id, payee.id, startDate, endDate, amount, paymentDate, category, id, user_id]
+    );
+
+    if (updateResult.affectedRows === 0) {
+      return NextResponse.json({ message: 'Subscription not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Subscription updated successfully' }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
+
+// DELETE: Remove subscription
+export async function DELETE(request) {
+  try {
+    const user_id = await getUserIdFromToken(request);
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ message: 'Subscription ID is required' }, { status: 400 });
+    }
+
+    const [deleteResult] = await db.execute('DELETE FROM subscriptions WHERE id = ? AND user_id = ?', [id, user_id]);
+
+    if (deleteResult.affectedRows === 0) {
+      return NextResponse.json({ message: 'Subscription not found or unauthorized' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Subscription deleted successfully' }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}
