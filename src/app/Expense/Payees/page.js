@@ -6,7 +6,18 @@ export default function page() {
 
   const [payees, setPayees] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [newPayee, setNewPayee] = useState({ name: '', phone: '', email: '', entity: '', service: '' });
+  const [EditShowModal, setEditShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedPayee, setSelectedPayee] = useState(null);
+  const [newPayee, setNewPayee] = useState({
+    payee_name: '',
+    phone: '',
+    email: '',
+    entity_name: '',
+    service_name: '',
+    amount: '',
+    category: ''
+  });
 
   useEffect(() => {
     fetchPayees();
@@ -15,10 +26,11 @@ export default function page() {
   const fetchPayees = async () => {
     try {
       const token = localStorage.getItem("token");
+      console.log(token)
       const response = await axios.get('http://localhost:3000/api/Payees', {
-        headers: { Authorization: token }, // Send token in header
-      }); // Replace with actual API
-      setPayees(response.data);
+        headers: { Authorization: `${token}` },
+      });
+      setPayees(response.data.data); // Fix: Use response.data.data
     } catch (error) {
       console.error('Error fetching payees:', error);
     }
@@ -30,14 +42,44 @@ export default function page() {
       console.log("Sending Payload:", newPayee);
       await axios.post('http://localhost:3000/api/Payees', newPayee, {
         headers: {
-          "Authorization": token,
+          "Authorization": `${token}`, // Add 'Bearer ' prefix
           "Content-Type": "application/json",
         },
       });
       setShowModal(false);
-      fetchPayees(); // Refresh list after adding
+      fetchPayees();
     } catch (error) {
-      console.error('Error adding payee:', error);
+      console.error('Error adding payee:', error.response?.data || error.message);
+    }
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (isEditing) {
+        await axios.put('http://localhost:3000/api/Payees', { ...newPayee, payee_id: selectedPayee.id }, {
+          headers: { "Authorization": `${token}`, "Content-Type": "application/json" },
+        });
+      } 
+      setEditShowModal(false);
+      fetchPayees();
+    } catch (error) {
+      console.error('Error saving payee:', error.response?.data || error.message);
+    }
+  };
+
+  const handleDelete = async (payeeId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:3000/api/Payees?payee_id=${payeeId}`, {
+        headers: { 
+          "Authorization": `${token}`,
+          "Content-Type": "application/json",
+        }
+      });
+      fetchPayees();
+    } catch (error) {
+      console.error('Error deleting payee:', error.response?.data || error.message);
     }
   };
 
@@ -64,59 +106,6 @@ export default function page() {
                 </div>
               </div>
 
-              {/* <div className="card-body">
-                <ul className="p-0 m-0">
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">John Doe</h6>
-                        <small className="d-flex align-items-center">Phone: +1 234 567 890</small>
-                        <small className="d-flex align-items-center">Email: johndoe@example.com</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-primary rounded-pill me-2">Entity: Business</div>
-                        <div className="badge bg-label-success rounded-pill me-2">Service: Accounting</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Jane Smith</h6>
-                        <small className="d-flex align-items-center">Phone: +1 987 654 321</small>
-                        <small className="d-flex align-items-center">Email: janesmith@example.com</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-secondary rounded-pill me-2">Entity: Personal</div>
-                        <div className="badge bg-label-info rounded-pill me-2">Service: Consulting</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-
-                  <li className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-0">Michael Lee</h6>
-                        <small className="d-flex align-items-center">Phone: +1 555 666 777</small>
-                        <small className="d-flex align-items-center">Email: michaellee@example.com</small>
-                      </div>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-label-warning rounded-pill me-2">Entity: Home</div>
-                        <div className="badge bg-label-dark rounded-pill me-2">Service: Maintenance</div>
-                        <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                      </div>
-                    </div>
-                  </li>
-
-
-                </ul>
-              </div> */}
 
               <div className="card-body">
                 <ul className="p-0 m-0">
@@ -129,8 +118,20 @@ export default function page() {
                           <small className="d-flex align-items-center">Email: {payee.email}</small>
                         </div>
                         <div className="d-flex align-items-center">
-                          <div className="badge bg-label-primary rounded-pill me-2">Entity: {payee.entity}</div>
-                          <div className="badge bg-label-success rounded-pill me-2">Service: {payee.service}</div>
+                          <div className="badge bg-label-primary rounded-pill me-2">Entity</div>
+                          <div className="badge bg-label-success rounded-pill me-2">Service</div>
+                        </div>
+                      </div>
+                      <div className="dropdown">
+                        <button className="btn btn-light border-0" data-bs-toggle="dropdown"><i className="ri-more-2-line"></i></button>
+                        <div className="dropdown-menu dropdown-menu-end">
+                          <button className="dropdown-item" onClick={() => {
+                            setIsEditing(true);
+                            setSelectedPayee(payee);
+                            setNewPayee(payee);
+                            setEditShowModal(true);
+                          }}>Edit</button>
+                          <button className="dropdown-item text-danger" onClick={() => handleDelete(payee.id)}>Delete</button>
                         </div>
                       </div>
                     </li>
@@ -140,6 +141,32 @@ export default function page() {
 
             </div>
           </div>
+
+          {EditShowModal && (
+            <div className="modal show d-block" style={{ background: 'rgba(0,0,0,0.5)' }}>
+              <div className="modal-dialog">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5>{isEditing ? 'Edit Payee' : 'Add Payee'}</h5>
+                    <button className="btn-close" onClick={() => setShowModal(false)}></button>
+                  </div>
+                  <div className="modal-body">
+                    <input type="text" value={newPayee.payee_name} placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, payee_name: e.target.value })} />
+                    <input type="text" value={newPayee.phone} placeholder="Phone" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, phone: e.target.value })} />
+                    <input type="email" value={newPayee.email} placeholder="Email" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, email: e.target.value })} />
+                    <input type="text" value={newPayee.entity_name} placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} />
+                    <input type="text" value={newPayee.service_name} placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} />
+                    <input type="text" value={newPayee.amount} placeholder="Amount" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, amount: e.target.value })} />
+                    <input type="text" value={newPayee.category} placeholder="Category" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, category: e.target.value })} />
+                  </div>
+                  <div className="modal-footer">
+                    <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button className="btn btn-primary" onClick={handleSubmit}>{isEditing ? 'Update' : 'Add'}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
 
           {showModal && (
@@ -151,11 +178,13 @@ export default function page() {
                     <button className="btn-close" onClick={() => setShowModal(false)}></button>
                   </div>
                   <div className="modal-body">
-                    <input type="text" placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, name: e.target.value })} />
+                    <input type="text" placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, payee_name: e.target.value })} />
                     <input type="text" placeholder="Phone" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, phone: e.target.value })} />
                     <input type="email" placeholder="Email" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, email: e.target.value })} />
-                    <input type="text" placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity: e.target.value })} />
-                    <input type="text" placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service: e.target.value })} />
+                    <input type="text" placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} />
+                    <input type="text" placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} />
+                    <input type="text" placeholder="Amount" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, amount: e.target.value })} />
+                    <input type="text" placeholder="Category" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, category: e.target.value })} />
                   </div>
                   <div className="modal-footer">
                     <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>

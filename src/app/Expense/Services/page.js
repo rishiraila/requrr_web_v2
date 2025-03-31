@@ -2,11 +2,21 @@
 import React, { useState, useEffect } from 'react'
 import AddServiceModal from '@/app/components/AddServiceModal'
 import axios from 'axios';
-
+import EditServiceModal from '@/app/components/EditServiceModal'
 export default function page() {
 
   const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
+
+  const [editingService, setEditingService] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleEdit = (service) => {
+    
+    setEditingService(service);
+    setShowEditModal(true);
+  };
+
 
   const [entities, setEntities] = useState([]);
 
@@ -92,6 +102,22 @@ export default function page() {
     return entity ? entity.entity_name : "Unknown Entity";
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this service?")) {
+      try {
+        const token = localStorage.getItem("token");
+        await axios.delete("http://localhost:3000/api/Services", {
+          headers: { Authorization: token },
+          data: { id },
+        });
+        fetchServices(); // Refresh the list
+      } catch (error) {
+        console.error("Error deleting service:", error);
+      }
+    }
+  };
+
+
   return (
     <>
 
@@ -131,11 +157,23 @@ export default function page() {
                             <small>{service.service_desc}</small><br />
                             <small className="text-muted">Default Duration [ monthly ] : {service.min_duration}</small>
                           </div>
-                          <div className="d-flex align-items-center">
-                            {/* <div className="badge bg-label-primary rounded-pill me-2">{service.entity_id}</div> */}
+                          {/* <div className="d-flex align-items-center">
                             <div className="badge bg-label-primary rounded-pill me-2">{getEntityName(service.entity_id)}</div>
                             <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
+                          </div> */}
+                          <div className="d-flex align-items-center">
+                            <div className="badge bg-label-primary rounded-pill me-2">{getEntityName(service.entity_id)}</div>
+                            <div className="dropdown">
+                              <button className="btn btn-text-secondary border-0 p-1" type="button" data-bs-toggle="dropdown">
+                                <i className="ri-more-2-line ri-20px"></i>
+                              </button>
+                              <div className="dropdown-menu dropdown-menu-end">
+                                <button className="dropdown-item" onClick={() => handleEdit(service)}>Edit</button>
+                                <button className="dropdown-item text-danger" onClick={() => handleDelete(service.id)}>Delete</button>
+                              </div>
+                            </div>
                           </div>
+
                         </div>
                       </li>
                     ))}
@@ -149,6 +187,13 @@ export default function page() {
             show={showModal}
             onClose={() => setShowModal(false)}
             onServiceAdded={handleServiceAdded}
+          />
+
+          <EditServiceModal
+            show={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            service={editingService}
+            onServiceUpdated={fetchServices}
           />
 
           <div className="col-12 col-xxl-4 col-md-6">
