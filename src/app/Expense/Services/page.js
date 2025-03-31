@@ -8,8 +8,6 @@ export default function page() {
   const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
-  
-
   const [entities, setEntities] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -19,10 +17,10 @@ export default function page() {
     try {
       const token = localStorage.getItem("token"); // Get token from localStorage
 
-    if (!token) {
-      window.location.href = "/Login"; // Redirect if no token
-      return;
-    }
+      if (!token) {
+        window.location.href = "/Login"; // Redirect if no token
+        return;
+      }
 
       console.log("📢 Fetching services with token:", token);
 
@@ -58,35 +56,35 @@ export default function page() {
     fetchServices();
   }, []);
 
-  const handleServiceAdded = () =>{
+  const handleServiceAdded = () => {
     fetchServices()
   }
 
   const fetchEntities = async () => {
     const token = localStorage.getItem("token");
-  
+
     if (!token) {
       window.location.href = "/Login";
       return;
     }
-  
+
     try {
       const response = await axios.get("http://localhost:3000/api/Entities", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
-  
+
       setEntities(response.data.data);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching entities:", err);
     }
   };
-  
+
   // Fetch entities on mount
   useEffect(() => {
     fetchEntities();
   }, []);
-  
+
 
   const getEntityName = (id) => {
     const entity = entities.find((e) => e.id === id);
@@ -105,7 +103,7 @@ export default function page() {
                 <h5 className="card-title m-0 me-2">List of Services</h5>
                 <div className="d-flex align-items-center">
                   <div>
-                    <button className="btn btn-primary"onClick={() => setShowModal(true)}>+</button>
+                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>+</button>
                   </div>
                   <div className="dropdown">
                     <button className="btn btn-text-secondary rounded-pill text-muted border-0 p-1" type="button"
@@ -147,11 +145,11 @@ export default function page() {
             </div>
           </div>
 
-          <AddServiceModal 
-        show={showModal} 
-        onClose={() => setShowModal(false)} 
-        onServiceAdded={handleServiceAdded} 
-      />
+          <AddServiceModal
+            show={showModal}
+            onClose={() => setShowModal(false)}
+            onServiceAdded={handleServiceAdded}
+          />
 
           <div className="col-12 col-xxl-4 col-md-6">
             <div className="card h-100 shadow-lg border-0">

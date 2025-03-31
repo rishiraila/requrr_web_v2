@@ -26,6 +26,8 @@ export default function page() {
     category: "income",
   });
 
+  const [DeleteClick, setDeleteClick] = useState({id:null})
+
 
   useEffect(() => {
     fetchEntities();
@@ -58,74 +60,108 @@ export default function page() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-   
- // Handle form submission
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  const token = localStorage.getItem("token");
 
-  try {
-    const response = await axios.post("http://localhost:3000/api/Entities", formData, {
-      headers: { 
-        "Authorization": token,
-        "Content-Type": "application/json",
-      },
-    });
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
 
-    console.log("Entity Added:", response.data);
-    setShowModal(false); // Close modal
-    fetchEntities(); // Refresh list
-  } catch (err) {
-    console.error("Error adding entity:", err);
-    setError("Failed to add entity");
-  }
-};
-
-// Handle form input changes
-const handleEditChange = (e) => {
-  setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
-};
-
-
- // Open Edit Modal with Entity Data
- const handleEditClick = (entity) => {
-  setEditFormData({
-    id: entity.id, // Store ID for updating
-    entity_name: entity.entity_name,
-    entity_desc: entity.entity_desc,
-    entity_short_desc: entity.entity_short_desc,
-    category: entity.category,
-  });
-  setShowEditModal(true);
-};
-
-// Handle Edit Form Submission
-const handleEditSubmit = async (e) => {
-  e.preventDefault();
-  const token = localStorage.getItem("token");
-
-  console.log(editFormData.id)
-
-  try {
-    const response = await axios.put(
-      `http://localhost:3000/api/Entities/${editFormData.id}`, // Send entity ID in URL
-      editFormData,
-      {
+    try {
+      const response = await axios.post("http://localhost:3000/api/Entities", formData, {
         headers: {
-          Authorization: token,
+          "Authorization": token,
           "Content-Type": "application/json",
         },
-      }
-    );
+      });
 
-    console.log("Entity Updated:", response.data);
-    setShowEditModal(false); // Close modal
-    fetchEntities(); // Refresh list
-  } catch (err) {
-    console.error("Error updating entity:", err);
-    setError("Failed to update entity");
-  }
+      console.log("Entity Added:", response.data);
+      setShowModal(false); // Close modal
+      fetchEntities(); // Refresh list
+    } catch (err) {
+      console.error("Error adding entity:", err);
+      setError("Failed to add entity");
+    }
+  };
+
+  // Handle form input changes
+  const handleEditChange = (e) => {
+    setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+  };
+
+
+  // Open Edit Modal with Entity Data
+  const handleEditClick = (entity) => {
+    setEditFormData({
+      id: entity.id, // Store ID for updating
+      entity_name: entity.entity_name,
+      entity_desc: entity.entity_desc,
+      entity_short_desc: entity.entity_short_desc,
+      category: entity.category,
+    });
+    setShowEditModal(true);
+  };
+
+  // Handle Edit Form Submission
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+
+    console.log(editFormData.id)
+
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/Entities/`, // Send entity ID in URL
+        editFormData,
+        {
+          headers: {
+            Authorization: token,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Entity Updated:", response.data);
+      setShowEditModal(false); // Close modal
+      fetchEntities(); // Refresh list
+    } catch (err) {
+      console.error("Error updating entity:", err);
+      setError("Failed to update entity");
+    }
+  };
+
+  const handleDeleteClick = async (entity) => {
+    let token = localStorage.getItem("token");
+
+    if (!token) {
+        console.error("No token found in localStorage.");
+        return;
+    }
+
+    // Ensure token does not have "Bearer " prefix twice
+    if (token.startsWith("Bearer ")) {
+        token = token.replace("Bearer ", "");
+    }
+
+    try {
+        console.log("Using token:", token); // Debugging: Log token before request
+
+        const response = await axios.delete('/api/Entities', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            data: { id: entity.id }, // Sending body correctly in DELETE request
+        });
+
+        console.log(response.data.message);
+        fetchEntities(); // Refresh entity list after deletion
+    } catch (error) {
+        console.error("Error deleting entity:", error.response?.data?.message || error.message);
+    }
 };
+
+  
+  
 
   return (
     <>
@@ -147,77 +183,16 @@ const handleEditSubmit = async (e) => {
                     <i className="ri-more-2-line ri-20px"></i>
                   </button>
                   <div className="dropdown-menu dropdown-menu-end" aria-labelledby="entityDropdownId">
-                    <div style={{display:"flex", justifyContent:"center"}}>
-                    <button className='btn btn-outline-primary' onClick={() => setShowModal(true)}>Add</button>
+                    <div style={{ display: "flex", justifyContent: "center" }}>
+                      <button className='btn btn-outline-primary' onClick={() => setShowModal(true)}>Add</button>
                     </div>
-                    
+
                   </div>
                 </div>
               </div>
 
-              {/* <div className="card-body">
 
-                <div className="card mb-3">
-                  <div className="card-body">
-                    <h6 className="card-title">Personal</h6>
-                    <p className="card-text">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus numquam asperiores quasi reprehenderit error quis inventore ipsa, aut minus officiis illum doloribus accusantium consectetur esse est nulla sunt cupiditate.
-                    </p>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-primary">Edit</button>
-                      <button className="btn btn-sm btn-outline-danger">Delete</button>
-                    </div>
-                  </div>
-                </div>
-
-
-
-                <div className="card mb-3">
-                  <div className="card-body">
-                    <h6 className="card-title">Office</h6>
-                    <p className="card-text">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus numquam asperiores quasi reprehenderit error quis inventore ipsa, aut minus officiis illum doloribus accusantium consectetur esse est nulla sunt cupiditate.
-                    </p>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-primary">Edit</button>
-                      <button className="btn btn-sm btn-outline-danger">Delete</button>
-                    </div>
-                  </div>
-                </div>
-
-
-
-                <div className="card mb-3">
-                  <div className="card-body">
-                    <h6 className="card-title">Business</h6>
-                    <p className="card-text">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus numquam asperiores quasi reprehenderit error quis inventore ipsa, aut minus officiis illum doloribus accusantium consectetur esse est nulla sunt cupiditate.
-                    </p>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-primary">Edit</button>
-                      <button className="btn btn-sm btn-outline-danger">Delete</button>
-                    </div>
-                  </div>
-                </div>
-
-
-
-                <div className="card mb-3">
-                  <div className="card-body">
-                    <h6 className="card-title">House</h6>
-                    <p className="card-text">
-                      Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus numquam asperiores quasi reprehenderit error quis inventore ipsa, aut minus officiis illum doloribus accusantium consectetur esse est nulla sunt cupiditate.
-                    </p>
-                    <div className="d-flex gap-2">
-                      <button className="btn btn-sm btn-outline-primary">Edit</button>
-                      <button className="btn btn-sm btn-outline-danger">Delete</button>
-                    </div>
-                  </div>
-                </div>
-
-              </div> */}
-
-<div className="card-body">
+              <div className="card-body">
                 {loading ? (
                   <p>Loading...</p>
                 ) : error ? (
@@ -231,8 +206,8 @@ const handleEditSubmit = async (e) => {
                         <h6 className="card-title">{entity.entity_name}</h6>
                         <p className="card-text">{entity.entity_desc}</p>
                         <div className="d-flex gap-2">
-                          <button className="btn btn-sm btn-outline-primary"onClick={() => handleEditClick(entity)}>Edit</button>
-                          <button className="btn btn-sm btn-outline-danger">Delete</button>
+                          <button className="btn btn-sm btn-outline-primary" onClick={() => handleEditClick(entity)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(entity)}>Delete</button>
                         </div>
                       </div>
                     </div>
@@ -242,146 +217,146 @@ const handleEditSubmit = async (e) => {
             </div>
           </div>
 
-{/* Modal (Popup) Form */}
-{showModal && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Add New Entity</h5>
-                <button type="button" className="close btn" onClick={() => setShowModal(false)}>
-                  ×
-                </button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-3">
-                    <label className="form-label">Entity Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="entity_name"
-                      value={formData.entity_name}
-                      onChange={handleChange}
-                      required
-                    />
+          {/* Modal (Popup) Form */}
+          {showModal && (
+            <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
+              <div className="modal-dialog" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Add New Entity</h5>
+                    <button type="button" className="close btn" onClick={() => setShowModal(false)}>
+                      ×
+                    </button>
                   </div>
+                  <div className="modal-body">
+                    <form onSubmit={handleSubmit}>
+                      <div className="mb-3">
+                        <label className="form-label">Entity Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="entity_name"
+                          value={formData.entity_name}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
 
-                  <div className="mb-3">
-                    <label className="form-label">Entity Description</label>
-                    <textarea
-                      className="form-control"
-                      name="entity_desc"
-                      value={formData.entity_desc}
-                      onChange={handleChange}
-                      required
-                    />
+                      <div className="mb-3">
+                        <label className="form-label">Entity Description</label>
+                        <textarea
+                          className="form-control"
+                          name="entity_desc"
+                          value={formData.entity_desc}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Short Description</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="entity_short_desc"
+                          value={formData.entity_short_desc}
+                          onChange={handleChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Category</label>
+                        <select
+                          className="form-control"
+                          name="category"
+                          value={formData.category}
+                          onChange={handleChange}
+                          required
+                        >
+                          <option value="income">Income</option>
+                          <option value="expense">Expense</option>
+                        </select>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary">Save</button>
+                    </form>
                   </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Short Description</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="entity_short_desc"
-                      value={formData.entity_short_desc}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Category</label>
-                    <select
-                      className="form-control"
-                      name="category"
-                      value={formData.category}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="income">Income</option>
-                      <option value="expense">Expense</option>
-                    </select>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary">Save</button>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Edit Modal (Popup Form) */}
-      {showEditModal && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Edit Entity</h5>
-                <button type="button" className="close btn" onClick={() => setShowEditModal(false)}>
-                  ×
-                </button>
-              </div>
-              <div className="modal-body">
-                <form onSubmit={handleEditSubmit}>
-                  <div className="mb-3">
-                    <label className="form-label">Entity Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="entity_name"
-                      value={editFormData.entity_name}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Entity Description</label>
-                    <textarea
-                      className="form-control"
-                      name="entity_desc"
-                      value={editFormData.entity_desc}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Short Description</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="entity_short_desc"
-                      value={editFormData.entity_short_desc}
-                      onChange={handleEditChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="mb-3">
-                    <label className="form-label">Category</label>
-                    <select
-                      className="form-control"
-                      name="category"
-                      value={editFormData.category}
-                      onChange={handleEditChange}
-                      required
-                    >
-                      <option value="income">Income</option>
-                      <option value="expense">Expense</option>
-                    </select>
-                  </div>
-
-                  <button type="submit" className="btn btn-primary">Update</button>
-                </form>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+
+          {/* Edit Modal (Popup Form) */}
+          {showEditModal && (
+            <div className="modal show d-block" tabIndex="-1" role="dialog" style={{ background: "rgba(0,0,0,0.5)" }}>
+              <div className="modal-dialog" role="document">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Edit Entity</h5>
+                    <button type="button" className="close btn" onClick={() => setShowEditModal(false)}>
+                      ×
+                    </button>
+                  </div>
+                  <div className="modal-body">
+                    <form onSubmit={handleEditSubmit}>
+                      <div className="mb-3">
+                        <label className="form-label">Entity Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="entity_name"
+                          value={editFormData.entity_name}
+                          onChange={handleEditChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Entity Description</label>
+                        <textarea
+                          className="form-control"
+                          name="entity_desc"
+                          value={editFormData.entity_desc}
+                          onChange={handleEditChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Short Description</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="entity_short_desc"
+                          value={editFormData.entity_short_desc}
+                          onChange={handleEditChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Category</label>
+                        <select
+                          className="form-control"
+                          name="category"
+                          value={editFormData.category}
+                          onChange={handleEditChange}
+                          required
+                        >
+                          <option value="income">Income</option>
+                          <option value="expense">Expense</option>
+                        </select>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary">Update</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="col-md-6 col-xxl-4">
             <div className="card h-100">
