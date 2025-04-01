@@ -8,6 +8,8 @@ export default function page() {
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
 
+  const [ServiceCount, setServiceCount] = useState([])
+
 
   const [showModal, setShowModal] = useState(false); // Show/hide modal
   const [formData, setFormData] = useState({
@@ -26,7 +28,7 @@ export default function page() {
     category: "income",
   });
 
-  const [DeleteClick, setDeleteClick] = useState({id:null})
+  const [DeleteClick, setDeleteClick] = useState({ id: null })
 
 
   useEffect(() => {
@@ -133,35 +135,62 @@ export default function page() {
     let token = localStorage.getItem("token");
 
     if (!token) {
-        console.error("No token found in localStorage.");
-        return;
+      console.error("No token found in localStorage.");
+      return;
     }
 
     // Ensure token does not have "Bearer " prefix twice
     if (token.startsWith("Bearer ")) {
-        token = token.replace("Bearer ", "");
+      token = token.replace("Bearer ", "");
     }
 
     try {
-        console.log("Using token:", token); // Debugging: Log token before request
+      console.log("Using token:", token); // Debugging: Log token before request
 
-        const response = await axios.delete('/api/Entities', {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-            },
-            data: { id: entity.id }, // Sending body correctly in DELETE request
-        });
+      const response = await axios.delete('/api/Entities', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        data: { id: entity.id }, // Sending body correctly in DELETE request
+      });
 
-        console.log(response.data.message);
-        fetchEntities(); // Refresh entity list after deletion
+      console.log(response.data.message);
+      fetchEntities(); // Refresh entity list after deletion
     } catch (error) {
-        console.error("Error deleting entity:", error.response?.data?.message || error.message);
+      console.error("Error deleting entity:", error.response?.data?.message || error.message);
     }
-};
+  };
 
-  
-  
+  const fetchServiceCount = async () => {
+    const token = localStorage.getItem("token"); // Get token from localStorage
+
+    if (!token) {
+      window.location.href = "/Login"; // Redirect if no token
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:3000/api/GET_SERVICES_COUNT_BY_ENTITY", {
+        headers: { Authorization: token }, // Send token in header
+      });
+
+      setServiceCount(response.data.data); // Set data
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+      setError("Failed to load entities");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  useEffect(() => {
+    fetchServiceCount()
+  }, [])
+
+
+
 
   return (
     <>
@@ -177,17 +206,10 @@ export default function page() {
                   <h5 className="card-title mb-1">Top Entities</h5>
                   <p className="card-subtitle mb-0">Number of entities you mostly use</p>
                 </div>
-                <div className="dropdown">
-                  <button className="btn btn-text-secondary rounded-pill text-muted border-0 p-1" type="button"
-                    id="entityDropdownId" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i className="ri-more-2-line ri-20px"></i>
-                  </button>
-                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="entityDropdownId">
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                      <button className='btn btn-outline-primary' onClick={() => setShowModal(true)}>Add</button>
-                    </div>
-
-                  </div>
+                
+                
+                <div style={{ display: "flex", justifyContent: "center" }}>
+                  <button className='btn btn-primary' onClick={() => setShowModal(true)}>+ Entity</button>
                 </div>
               </div>
 
@@ -207,7 +229,7 @@ export default function page() {
                         <p className="card-text">{entity.entity_desc}</p>
                         <div className="d-flex gap-2">
                           <button className="btn btn-sm btn-outline-primary" onClick={() => handleEditClick(entity)}>Edit</button>
-                          <button className="btn btn-sm btn-outline-danger" onClick={()=>handleDeleteClick(entity)}>Delete</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteClick(entity)}>Delete</button>
                         </div>
                       </div>
                     </div>
@@ -367,11 +389,7 @@ export default function page() {
                     id="projectStatus" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i className="ri-more-2-line ri-20px"></i>
                   </button>
-                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="projectStatus">
-                    <a className="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Last Month</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Last Year</a>
-                  </div>
+
                 </div>
               </div>
               <div className="d-flex justify-content-between p-4 border-bottom">
@@ -380,82 +398,43 @@ export default function page() {
               </div>
               <div className="card-body">
                 <ul className="p-0 m-0">
-                  <li className="d-flex align-items-center mb-6">
-                    <div className="avatar avatar-md flex-shrink-0 me-4">
-                      <div className="avatar-initial bg-light-gray rounded-3">
-                        <div>
-                          <img src="../../assets/img/icons/misc/3d-illustration.png" alt="User" className="h-25" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-1">Personal</h6>
-                        <small>Personal Expenses</small>
-                      </div>
-                      <div className="badge bg-label-primary rounded-pill">6</div>
-                    </div>
-                  </li>
-                  <li className="d-flex align-items-center mb-6">
-                    <div className="avatar avatar-md flex-shrink-0 me-4">
-                      <div className="avatar-initial bg-light-gray rounded-3">
-                        <div>
-                          <img src="../../assets/img/icons/misc/finance-app-design.png" alt="User" className="h-25" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-1">Office </h6>
-                        <small>Expense related to work place</small>
-                      </div>
-                      <div className="badge bg-label-primary rounded-pill">4</div>
-                    </div>
-                  </li>
-                  <li className="d-flex align-items-center mb-6">
-                    <div className="avatar avatar-md flex-shrink-0 me-4">
-                      <div className="avatar-initial bg-light-gray rounded-3">
-                        <div>
-                          <img src="../../assets/img/icons/misc/4-square.png" alt="User" className="h-25" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-1">Business</h6>
-                        <small>Expense form business</small>
-                      </div>
-                      <div className="badge bg-label-primary rounded-pill">14</div>
-                    </div>
-                  </li>
-                  <li className="d-flex align-items-center mb-6">
-                    <div className="avatar avatar-md flex-shrink-0 me-4">
-                      <div className="avatar-initial bg-light-gray rounded-3">
-                        <div>
-                          <img src="../../assets/img/icons/misc/delta-web-app.png" alt="User" className="h-25" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                      <div className="me-2">
-                        <h6 className="mb-1">House</h6>
-                        <small>House hold expense </small>
-                      </div>
-                      <div className="badge bg-label-primary rounded-pill">12</div>
-                    </div>
-                  </li>
+                  {loading ? (
+                    <p>Loading...</p>
+                  ) : error ? (
+                    <p className="text-danger">{error}</p>
+                  ) : entities.length === 0 ? (
+                    <p>No entities found.</p>
+                  ) : (
+                    entities.map((entity) => {
+                      // Find the corresponding service count for the entity
+                      const serviceCountData = ServiceCount.find(count => count.entity_name === entity.entity_name);
+                      const serviceCount = serviceCountData ? serviceCountData.service_count : 0; // Default to 0 if not found
 
+                      return (
+                        <li key={entity.id} className="d-flex align-items-center mb-6">
+                          <div className="avatar avatar-md flex-shrink-0 me-4">
+                            <div className="avatar-initial bg-light-gray rounded-3">
+                              <div>
+                                <img src="../../assets/img/icons/misc/3d-illustration.png" alt="User " className="h-25" />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
+                            <div className="me-2">
+                              <h6 className="mb-1">{entity.entity_name}</h6>
+                              <small>{entity.entity_desc}</small>
+                            </div>
+                            <div className="badge bg-label-primary rounded-pill">{serviceCount}</div> {/* Render service count */}
+                          </div>
+                        </li>
+                      );
+                    })
+                  )}
                 </ul>
               </div>
             </div>
           </div>
-
-
-
-
-
-
-
 
         </div>
       </div>

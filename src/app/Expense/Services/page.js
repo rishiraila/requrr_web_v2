@@ -8,11 +8,13 @@ export default function page() {
   const [services, setServices] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
+  const [ServiceCount, setServiceCount] = useState([])
+
   const [editingService, setEditingService] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
 
   const handleEdit = (service) => {
-    
+
     setEditingService(service);
     setShowEditModal(true);
   };
@@ -117,6 +119,33 @@ export default function page() {
     }
   };
 
+  const fetchServiceCount = async () => {
+    const token = localStorage.getItem("token"); // Get token from localStorage
+
+    if (!token) {
+      window.location.href = "/Login"; // Redirect if no token
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:3000/api/GET_SERVICES_COUNT_BY_ENTITY", {
+        headers: { Authorization: token }, // Send token in header
+      });
+
+      setServiceCount(response.data.data); // Set data
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+      setError("Failed to load entities");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  useEffect(() => {
+    fetchServiceCount()
+  }, [])
+
 
   return (
     <>
@@ -129,19 +158,9 @@ export default function page() {
                 <h5 className="card-title m-0 me-2">List of Services</h5>
                 <div className="d-flex align-items-center">
                   <div>
-                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>+</button>
+                    <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Service</button>
                   </div>
-                  <div className="dropdown">
-                    <button className="btn btn-text-secondary rounded-pill text-muted border-0 p-1" type="button"
-                      id="meetingSchedule" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i className="ri-more-2-line ri-20px"></i>
-                    </button>
-                    <div className="dropdown-menu dropdown-menu-end" aria-labelledby="meetingSchedule">
-                      <a className="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                      <a className="dropdown-item" href="javascript:void(0);">Last Month</a>
-                      <a className="dropdown-item" href="javascript:void(0);">Last Year</a>
-                    </div>
-                  </div>
+
                 </div>
               </div>
               <div className="card-body">
@@ -205,45 +224,51 @@ export default function page() {
                     id="salesCountryDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <i className="ri-more-2-line ri-20px"></i>
                   </button>
-                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="salesCountryDropdown">
-                    <a className="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Last Month</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Last Year</a>
-                  </div>
+
                 </div>
               </div>
               <div className="card-body pb-1 px-0">
 
                 <div className="px-3 mt-4">
                   <ul className="list-group">
-                    <li className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
-                      <div className="d-flex align-items-center">
-                        <i className="ri-user-3-line ri-24px text-primary me-3"></i>
-                        <span>Personal</span>
-                      </div>
-                      <span className="badge bg-label-primary rounded-pill text-dark">24 Services</span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
-                      <div className="d-flex align-items-center">
-                        <i className="ri-briefcase-4-line ri-24px text-success me-3"></i>
-                        <span>Business</span>
-                      </div>
-                      <span className="badge bg-label-success rounded-pill text-dark">18 Services</span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
-                      <div className="d-flex align-items-center">
-                        <i className="ri-home-5-line ri-24px text-warning me-3"></i>
-                        <span>Home</span>
-                      </div>
-                      <span className="badge bg-label-warning rounded-pill text-dark">12 Services</span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
-                      <div className="d-flex align-items-center">
-                        <i className="ri-building-4-line ri-24px text-secondary me-3"></i>
-                        <span>Office</span>
-                      </div>
-                      <span className="badge bg-label-secondary rounded-pill text-dark">30 Services</span>
-                    </li>
+                  {entities.map((entity) => {
+        // Find the corresponding service count for the entity
+        const serviceCountData = ServiceCount.find(count => count.entity_name === entity.entity_name);
+        const serviceCount = serviceCountData ? serviceCountData.service_count : 0; // Default to 0 if not found
+
+        // Determine the icon class based on entity name
+        let iconClass;
+        switch (entity.entity_name) {
+          case 'Business':
+            iconClass = 'ri-briefcase-4-line ri-24px text-success';
+            break;
+          case 'Personal':
+            iconClass = 'ri-user-3-line ri-24px text-primary';
+            break;
+          case 'Home':
+            iconClass = 'ri-home-5-line ri-24px text-warning';
+            break;
+          case 'Office':
+            iconClass = 'ri-building-4-line ri-24px text-secondary';
+            break;
+          default:
+            iconClass = 'ri-question-line ri-24px'; // Default icon if none match
+        }
+
+        return (
+          <li key={entity.id} className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
+            <div className="d-flex align-items-center">
+              <i className={iconClass}></i> {/* Render the appropriate icon */}
+              <span className="ms-2">{entity.entity_name}</span>
+            </div>
+            <span className={`badge ${serviceCount > 0 ? 'bg-label-primary' : 'bg-label-secondary'} rounded-pill text-dark`}>
+              {serviceCount > 0 ? serviceCount : 'No Services'} Services
+            </span>
+          </li>
+        );
+      })}
+
+                    
                   </ul>
                 </div>
               </div>

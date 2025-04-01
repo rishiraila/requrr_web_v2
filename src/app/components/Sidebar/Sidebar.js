@@ -150,7 +150,7 @@ export default function Sidebar() {
           <li className="menu-item active open">
             <Link href="/Expense/Dashboard" className="menu-link menu-toggle">
               <i className="menu-icon tf-icons ri-hand-coin-line"></i>
-              <div >Expense Board</div>
+              <div > Board</div>
               <div className="badge bg-danger rounded-pill ms-auto">5</div>
             </Link>
             <ul className="menu-sub">
@@ -183,115 +183,12 @@ export default function Sidebar() {
             </ul>
           </li>
 
-          <li className="menu-item active open">
-            <a href="javascript:void(0);" className="menu-link menu-toggle">
-              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
-              <div >Income Board</div>
-              <div className="badge bg-danger rounded-pill ms-auto">2</div>
-            </a>
-            <ul className="menu-sub">
-              <li className="menu-item">
-                <a href="/Income/Dashboard" className="menu-link">
-                  <div>Dashboard</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Income/Entities" className="menu-link">
-                  <div>Entities</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Income/Services" className="menu-link">
-                  <div>Services</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Income/Payers" className="menu-link">
-                  <div>Payers</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Income/Subscriptions" className="menu-link">
-                  <div>Subscriptions</div>
-                </a>
-              </li>
-            </ul>
-          </li>
+         
 
 
 
 
-          <li className="menu-header mt-5">
-            <span className="menu-header-text" data-i18n="Apps & Pages">Apps &amp; Pages</span>
-          </li>
-
-          <li className="menu-item">
-            <a href="javascript:void(0);" className="menu-link menu-toggle">
-              <i className="menu-icon tf-icons ri-layout-left-line"></i>
-              <div data-i18n="Pages">Pages</div>
-            </a>
-            <ul className="menu-sub">
-              <li className="menu-item">
-                <a href="javascript:void(0);" className="menu-link menu-toggle">
-                  <div data-i18n="User Profile">User Profile</div>
-                </a>
-                <ul className="menu-sub">
-                  <li className="menu-item">
-                    <a href="/Profile/User" className="menu-link">
-                      <div data-i18n="Profile">Profile</div>
-                    </a>
-                  </li>
-                  <li className="menu-item">
-                    <a href="/Profile/Teams" className="menu-link">
-                      <div data-i18n="Teams">Teams</div>
-                    </a>
-                  </li>
-                  <li className="menu-item">
-                    <a href="/Profile/Project" className="menu-link">
-                      <div data-i18n="Projects">Projects</div>
-                    </a>
-                  </li>
-                  <li className="menu-item">
-                    <a href="/Profile/Connections" className="menu-link">
-                      <div data-i18n="Connections">Connections</div>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li className="menu-item">
-                <a href="javascript:void(0);" className="menu-link menu-toggle">
-                  <div data-i18n="Account Settings">Account Settings</div>
-                </a>
-                <ul className="menu-sub">
-                  <li className="menu-item">
-                    <a href="/Accounts/Account" className="menu-link">
-                      <div data-i18n="Account">Account</div>
-                    </a>
-                  </li>
-                  <li className="menu-item">
-                    <a href="/Accounts/Security" className="menu-link">
-                      <div data-i18n="Security">Security</div>
-                    </a>
-                  </li>
-                  <li className="menu-item">
-                    <a href="/Accounts/Billing" className="menu-link">
-                      <div data-i18n="Billing & Plans">Billing & Plans</div>
-                    </a>
-                  </li>
-                </ul>
-              </li>
-              <li className="menu-item">
-                <a href="/Faq" className="menu-link">
-                  <div data-i18n="FAQ">FAQ</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Pricing" className="menu-link">
-                  <div data-i18n="Pricing">Pricing</div>
-                </a>
-              </li>
-            </ul>
-          </li>
+        
 
         </ul>
       </aside>

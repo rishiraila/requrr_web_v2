@@ -121,3 +121,26 @@ export async function DELETE(request) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
+// GET request to count services by entity
+export async function GET_SERVICES_COUNT_BY_ENTITY(request) {
+  try {
+    const decoded = await authenticate(request);
+    
+    const [rows] = await db.execute(
+      `SELECT entities.entity_name, COUNT(services.id) AS service_count
+       FROM entities
+       LEFT JOIN services ON entities.id = services.entity_id
+       GROUP BY entities.id`
+    );
+
+    return NextResponse.json({
+      message: 'Service counts by entity fetched successfully',
+      data: rows,
+    }, {
+      status: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' },
+    });
+  } catch (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+}

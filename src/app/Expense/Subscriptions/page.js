@@ -121,8 +121,24 @@ export default function page() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return ""; // Ensure it's not undefined or null
+    return new Date(dateString).toISOString().split("T")[0]; // Convert to YYYY-MM-DD
+  };
+
+  // const handleEdit = (subscription) => {
+  //   console.log("Editing subscription:", subscription);
+  //   setUpdateFormData(subscription); // Populate update form with selected subscription data
+  // };
+
   const handleEdit = (subscription) => {
-    setUpdateFormData(subscription); // Populate update form with selected subscription data
+    console.log(subscription.endDate)
+    setUpdateFormData({
+      ...subscription,
+      startDate: formatDate(subscription.startDate),
+      endDate: formatDate(subscription.endDate),
+      paymentDate: formatDate(subscription.paymentDate),
+    });
   };
 
   // Handle form submission
@@ -172,11 +188,12 @@ export default function page() {
         <div className="card shadow-lg border-0">
           <div className="card-header d-flex justify-content-between align-items-center border-bottom mb-4">
             <h4 className="card-title mb-4">All Subscriptions</h4>
-            <button className="btn btn-primary" onClick={() => setShowForm(true)}>+</button>
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Subscriptions</button>
           </div>
 
           {showForm && (
             <div className="form-container">
+              <h4>Update Subscription</h4>
               <form onSubmit={handleSubmit} className="mb-4">
                 <input type="text" name="entity_name" placeholder="Entity Name" value={formData.entity_name} onChange={handleInputChange} required />
                 <input type="text" name="service_name" placeholder="Service Name" value={formData.service_name} onChange={handleInputChange} required />
@@ -186,7 +203,7 @@ export default function page() {
                 <input type="number" name="amount" placeholder="Amount" value={formData.amount} onChange={handleInputChange} required />
                 <input type="date" name="paymentDate" value={formData.paymentDate} onChange={handleInputChange} required />
                 <input type="text" name="category" placeholder="Category" value={formData.category} onChange={handleInputChange} required />
-                <button type="submit" className="btn btn-success">Add Subscription</button>
+                <button type="submit" className="btn btn-success">Add</button>
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancel</button>
               </form>
             </div>
@@ -194,6 +211,7 @@ export default function page() {
 
           {updateFormData.id && (
             <div className="form-container">
+              <h4>Update Subscription</h4>
               <form onSubmit={handleUpdateSubmit} className="mb-4">
                 <input type="text" name="entity_name" placeholder="Entity Name" value={updateFormData.entity_name} onChange={handleUpdateInputChange} required />
                 <input type="text" name="service_name" placeholder="Service Name" value={updateFormData.service_name} onChange={handleUpdateInputChange} required />
@@ -203,7 +221,7 @@ export default function page() {
                 <input type="number" name="amount" placeholder="Amount" value={updateFormData.amount} onChange={handleUpdateInputChange} required />
                 <input type="date" name="paymentDate" value={updateFormData.paymentDate} onChange={handleUpdateInputChange} required />
                 <input type="text" name="category" placeholder="Category" value={updateFormData.category} onChange={handleUpdateInputChange} required />
-                <button type="submit" className="btn btn-success">Update Subscription</button>
+                <button type="submit" className="btn btn-success">Update</button>
                 <button type="button" className="btn btn-secondary" onClick={() => setUpdateFormData({ id: null, entity_name: '', service_name: '', payee_name: '', startDate: '', endDate: '', amount: '', paymentDate: '', category: '' })}>Cancel</button>
               </form>
             </div>
@@ -245,11 +263,11 @@ export default function page() {
                       </div>
                       <div className="d-flex justify-content-between align-items-center mt-3">
                         <span className="fw-bold text-success">Amt: ${subscription.amount}</span>
-                        <small className="text-muted">Start: {subscription.startDate}</small>
-                        <small className="text-muted">End: {subscription.endDate}</small>
+                        <small className="text-muted">Start: {new Date(subscription.startDate).toLocaleDateString()}</small>
+                        <small className="text-muted">End: {new Date(subscription.endDate).toLocaleDateString()}</small>
                       </div>
                       <p className="text-muted mt-3 mb-0">
-                        Payment Date: {subscription.paymentDate}
+                        Payment Date: {new Date(subscription.paymentDate).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

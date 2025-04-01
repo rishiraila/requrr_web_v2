@@ -30,6 +30,7 @@ export default function page() {
       const response = await axios.get('http://localhost:3000/api/Payees', {
         headers: { Authorization: `${token}` },
       });
+      console.log(response.data)
       setPayees(response.data.data); // Fix: Use response.data.data
     } catch (error) {
       console.error('Error fetching payees:', error);
@@ -92,17 +93,7 @@ export default function page() {
               <div className="card-header d-flex align-items-center justify-content-between border-bottom mb-4">
                 <h5 className="card-title m-0 me-2">Payee Details</h5>
                 <div className="d-flex align-items-center">
-                  <button className="btn btn-primary rounded-pill me-2" onClick={() => setShowModal(true)}>+</button>
-                  <div className="dropdown">
-                    <button className="btn btn-text-secondary rounded-pill text-muted border-0 p-1" type="button" id="payeeMenu" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      <i className="ri-more-2-line ri-20px"></i>
-                    </button>
-                    <div className="dropdown-menu dropdown-menu-end" aria-labelledby="payeeMenu">
-                      <a className="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                      <a className="dropdown-item" href="javascript:void(0);">Last Month</a>
-                      <a className="dropdown-item" href="javascript:void(0);">Last Year</a>
-                    </div>
-                  </div>
+                  <button className="btn btn-primary rounded-pill me-2" onClick={() => setShowModal(true)}>+ Payees</button>
                 </div>
               </div>
 
@@ -113,13 +104,13 @@ export default function page() {
                     <li key={index} className="d-flex align-items-center mb-6 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
                       <div className="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
                         <div className="me-2">
-                          <h6 className="mb-0">{payee.name}</h6>
+                          <h6 className="mb-0">{payee.payee_name}</h6>
                           <small className="d-flex align-items-center">Phone: {payee.phone}</small>
                           <small className="d-flex align-items-center">Email: {payee.email}</small>
                         </div>
                         <div className="d-flex align-items-center">
-                          <div className="badge bg-label-primary rounded-pill me-2">Entity</div>
-                          <div className="badge bg-label-success rounded-pill me-2">Service</div>
+                          <div className="badge bg-label-primary rounded-pill me-2">{payee.entity_name}</div>
+                          <div className="badge bg-label-success rounded-pill me-2">{payee.service_name}</div>
                         </div>
                       </div>
                       <div className="dropdown">
@@ -148,7 +139,7 @@ export default function page() {
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5>{isEditing ? 'Edit Payee' : 'Add Payee'}</h5>
-                    <button className="btn-close" onClick={() => setShowModal(false)}></button>
+                    <button className="btn-close" onClick={() => setEditShowModal(false)}></button>
                   </div>
                   <div className="modal-body">
                     <input type="text" value={newPayee.payee_name} placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, payee_name: e.target.value })} />
@@ -160,7 +151,7 @@ export default function page() {
                     <input type="text" value={newPayee.category} placeholder="Category" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, category: e.target.value })} />
                   </div>
                   <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
+                    <button className="btn btn-secondary" onClick={() => setEditShowModal(false)}>Cancel</button>
                     <button className="btn btn-primary" onClick={handleSubmit}>{isEditing ? 'Update' : 'Add'}</button>
                   </div>
                 </div>
@@ -205,32 +196,18 @@ export default function page() {
 
               <div className="card-body">
                 <ul className="p-0 m-0">
+                {payees.map((payee, index) => (
 
                   <li className="d-flex align-items-center justify-content-between mb-4 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
                     <div>
-                      <h6 className="mb-0">John Doe</h6>
-                      <small className="text-muted">Entity: Business</small>
+                      <h6 className="mb-0">{payee.payee_name}</h6>
+                      <small className="text-muted">Entity: {payee.entity_name}</small><br />
+                      <small className="text-muted">Service: {payee.service_name}</small>
                     </div>
-                    <span className="fw-bold text-success">$500</span>
+                    <span className="fw-bold text-success">${payee.amount}</span>
                   </li>
+                ))}
 
-
-                  <li className="d-flex align-items-center justify-content-between mb-4 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div>
-                      <h6 className="mb-0">Jane Smith</h6>
-                      <small className="text-muted">Entity: Personal</small>
-                    </div>
-                    <span className="fw-bold text-success">$350</span>
-                  </li>
-
-
-                  <li className="d-flex align-items-center justify-content-between mb-4 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div>
-                      <h6 className="mb-0">Michael Lee</h6>
-                      <small className="text-muted">Entity: Home</small>
-                    </div>
-                    <span className="fw-bold text-success">$275</span>
-                  </li>
                 </ul>
               </div>
             </div>
