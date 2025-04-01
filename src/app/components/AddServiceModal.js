@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-export default function AddServiceModal({ show, onClose, onServiceAdded }) {
+export default function AddServiceModal({ show, onClose, onServiceAdded, entities }) {
   const [formData, setFormData] = useState({
     service_name: '',
     service_desc: '',
@@ -40,6 +40,11 @@ export default function AddServiceModal({ show, onClose, onServiceAdded }) {
     }
   };
 
+  useEffect(() => {
+    console.log("Entites are been consoled",entities)
+  }, [])
+  
+
   return (
     show && (
       <div className="modal fade show d-block" tabIndex="-1" style={{ background: 'rgba(0, 0, 0, 0.5)' }}>
@@ -63,7 +68,14 @@ export default function AddServiceModal({ show, onClose, onServiceAdded }) {
 
                 <div className="mb-3">
                   <label className="form-label">Entity Name</label>
-                  <input type="text" className="form-control" name="entity_name" onChange={handleChange} required />
+                  <select className="form-control" name="entity_name" onChange={handleChange} required>
+                    <option value="">Select an entity</option>
+                    {
+                      entities.map((entity, index) => (
+                        <option key={index} value={entity.entity_name}>{entity.entity_name}</option>
+                      ))
+                    }
+                  </select>
                 </div>
 
                 <div className="mb-3">

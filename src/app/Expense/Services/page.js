@@ -206,6 +206,7 @@ export default function page() {
             show={showModal}
             onClose={() => setShowModal(false)}
             onServiceAdded={handleServiceAdded}
+            entities={entities}
           />
 
           <EditServiceModal

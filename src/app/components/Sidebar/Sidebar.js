@@ -139,56 +139,42 @@ export default function Sidebar() {
 
         <ul className="menu-inner py-1">
 
-          <li className="menu-item">
-            <Link href="/" className="menu-link ">
-              <i className="menu-icon tf-icons ri-dashboard-line"></i>
-              <div >General Dashboard</div>
-            </Link>
-          </li>
-
-
-          <li className="menu-item active open">
-            <Link href="/Expense/Dashboard" className="menu-link menu-toggle">
-              <i className="menu-icon tf-icons ri-hand-coin-line"></i>
-              <div > Board</div>
-              <div className="badge bg-danger rounded-pill ms-auto">5</div>
-            </Link>
-            <ul className="menu-sub">
-              <li className="menu-item">
-                <Link href="/Expense/Dashboard" className="menu-link">
-                  <div >Dashboard</div>
-                </Link>
-              </li>
-              <li className="menu-item">
-                <Link href="/Expense/Entities" className="menu-link">
-                  <div >Entities</div>
-                </Link>
-              </li>
-              <li className="menu-item">
-                <a href="/Expense/Services" className="menu-link">
-                  <div>Services</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Expense/Payees" className="menu-link">
-                  <div>Payees</div>
-                </a>
-              </li>
-              <li className="menu-item">
-                <a href="/Expense/Subscriptions" className="menu-link">
-                  <div>Subscriptions</div>
-                </a>
-              </li>
-
-            </ul>
-          </li>
-
          
 
+          <li className="menu-item">
+            <Link href="/" className="menu-link ">
+              <i className="menu-icon tf-icons ri-bar-chart-fill"></i>
+              <div >Dashboard</div>
+            </Link>
+          </li>
 
+          <li className="menu-item">
+            <Link href="/Expense/Entities" className="menu-link ">
+              <i className="menu-icon tf-icons ri-stack-line"></i>
+              <div >Entities</div>
+            </Link>
+          </li>
 
+          <li className="menu-item">
+            <Link href="/Expense/Services" className="menu-link ">
+              <i className="menu-icon tf-icons ri-cloud-line"></i>
+              <div >Services</div>
+            </Link>
+          </li>
 
-        
+          <li className="menu-item">
+            <Link href="/Expense/Payees" className="menu-link ">
+              <i className="menu-icon tf-icons ri-bank-line"></i>
+              <div >Payees</div>
+            </Link>
+          </li>
+
+          <li className="menu-item">
+            <Link href="/Expense/Subscriptions" className="menu-link ">
+              <i className="menu-icon tf-icons ri-loop-left-line"></i>
+              <div >Subscriptions</div>
+            </Link>
+          </li>
 
         </ul>
       </aside>

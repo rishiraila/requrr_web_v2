@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react'
 import axios from 'axios';
 
 export default function page() {
-
+  const [Entities, setEntities] = useState([])
+  const [Services, setServices] = useState([])
   const [payees, setPayees] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [EditShowModal, setEditShowModal] = useState(false);
@@ -61,7 +62,7 @@ export default function page() {
         await axios.put('http://localhost:3000/api/Payees', { ...newPayee, payee_id: selectedPayee.id }, {
           headers: { "Authorization": `${token}`, "Content-Type": "application/json" },
         });
-      } 
+      }
       setEditShowModal(false);
       fetchPayees();
     } catch (error) {
@@ -73,7 +74,7 @@ export default function page() {
     try {
       const token = localStorage.getItem("token");
       await axios.delete(`http://localhost:3000/api/Payees?payee_id=${payeeId}`, {
-        headers: { 
+        headers: {
           "Authorization": `${token}`,
           "Content-Type": "application/json",
         }
@@ -83,6 +84,59 @@ export default function page() {
       console.error('Error deleting payee:', error.response?.data || error.message);
     }
   };
+
+
+
+  const fetchEntities = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:3000/api/Entities", {
+        headers: { Authorization: token }, // Ensure Bearer token format
+      });
+
+      const entities = response.data.data;
+
+      setEntities([...new Set(entities.map(entity => entity.entity_name))]); // Assuming entity has a 'name' property
+
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+    }
+  };
+
+  const fetchServices = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:3000/api/Services", {
+        headers: { Authorization: token }, // Ensure Bearer token format
+      });
+
+      const services = response.data.data
+
+      setServices([...new Set(services.map(service => service.service_name))]); // Assuming service has a 'name' property
+
+    } catch (err) {
+      console.error("Error fetching entities:", err);
+    }
+  };
+  // Fetch entities on mount
+  useEffect(() => {
+    fetchEntities();
+    fetchServices()
+  }, []);
+
+
 
   return (
     <>
@@ -143,9 +197,25 @@ export default function page() {
                   </div>
                   <div className="modal-body">
                     <input type="text" value={newPayee.payee_name} placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, payee_name: e.target.value })} />
+
                     <input type="text" value={newPayee.phone} placeholder="Phone" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, phone: e.target.value })} />
+
                     <input type="email" value={newPayee.email} placeholder="Email" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, email: e.target.value })} />
-                    <input type="text" value={newPayee.entity_name} placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} />
+                    {/* <input type="text" value={newPayee.entity_name} placeholder="Entity"  className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} /> */}
+                    <select value={newPayee.entity_name} onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} className="form-control mb-2">
+                      <option value="">Select Entity</option>
+                      {Entities.map((entity, index) => (
+                        <option key={index} value={entity}>{entity}</option>
+                      ))}
+                    </select>
+
+                    <select value={newPayee.service_name} onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} className="form-control mb-2">
+                      <option value="">Select Service</option>
+                      {Services.map((service, index) => (
+                        <option key={index} value={service}>{service}</option>
+                      ))}
+                    </select>
+
                     <input type="text" value={newPayee.service_name} placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} />
                     <input type="text" value={newPayee.amount} placeholder="Amount" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, amount: e.target.value })} />
                     <input type="text" value={newPayee.category} placeholder="Category" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, category: e.target.value })} />
@@ -172,8 +242,20 @@ export default function page() {
                     <input type="text" placeholder="Name" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, payee_name: e.target.value })} />
                     <input type="text" placeholder="Phone" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, phone: e.target.value })} />
                     <input type="email" placeholder="Email" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, email: e.target.value })} />
-                    <input type="text" placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} />
-                    <input type="text" placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} />
+                    {/* <input type="text" placeholder="Entity" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} /> */}
+                    <select value={newPayee.entity_name} onChange={(e) => setNewPayee({ ...newPayee, entity_name: e.target.value })} className="form-control mb-2">
+                      <option value="">Select Entity</option>
+                      {Entities.map((entity, index) => (
+                        <option key={index} value={entity}>{entity}</option>
+                      ))}
+                    </select>
+                    <select value={newPayee.service_name} onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} className="form-control mb-2">
+                      <option value="">Select Service</option>
+                      {Services.map((service, index) => (
+                        <option key={index} value={service}>{service}</option>
+                      ))}
+                    </select>
+                    {/* <input type="text" placeholder="Service" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, service_name: e.target.value })} /> */}
                     <input type="text" placeholder="Amount" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, amount: e.target.value })} />
                     <input type="text" placeholder="Category" className="form-control mb-2" onChange={(e) => setNewPayee({ ...newPayee, category: e.target.value })} />
                   </div>
@@ -196,17 +278,17 @@ export default function page() {
 
               <div className="card-body">
                 <ul className="p-0 m-0">
-                {payees.map((payee, index) => (
+                  {payees.map((payee, index) => (
 
-                  <li className="d-flex align-items-center justify-content-between mb-4 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
-                    <div>
-                      <h6 className="mb-0">{payee.payee_name}</h6>
-                      <small className="text-muted">Entity: {payee.entity_name}</small><br />
-                      <small className="text-muted">Service: {payee.service_name}</small>
-                    </div>
-                    <span className="fw-bold text-success">${payee.amount}</span>
-                  </li>
-                ))}
+                    <li className="d-flex align-items-center justify-content-between mb-4 border-0 rounded-3 shadow-sm mb-2 py-5 px-5">
+                      <div>
+                        <h6 className="mb-0">{payee.payee_name}</h6>
+                        <small className="text-muted">Entity: {payee.entity_name}</small><br />
+                        <small className="text-muted">Service: {payee.service_name}</small>
+                      </div>
+                      <span className="fw-bold text-success">${payee.amount}</span>
+                    </li>
+                  ))}
 
                 </ul>
               </div>
