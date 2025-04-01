@@ -78,10 +78,10 @@ $(function () {
           targets: 1,
           orderable: false,
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           },
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input" >';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input" >';
           },
           searchable: false
         },
@@ -104,7 +104,7 @@ $(function () {
                 $image +
                 '" alt="Product-' +
                 $id +
-                '" class="rounded-2">';
+                '" className="rounded-2">';
             } else {
               // For Product badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -113,21 +113,21 @@ $(function () {
                 $name = full['product_brand'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for Product name and product_brand
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center product-name">' +
-              '<div class="avatar-wrapper me-3">' +
-              '<div class="avatar rounded-3 bg-label-secondary">' +
+              '<div className="d-flex justify-content-start align-items-center product-name">' +
+              '<div className="avatar-wrapper me-3">' +
+              '<div className="avatar rounded-3 bg-label-secondary">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<span class="text-nowrap text-heading fw-medium">' +
+              '<div className="d-flex flex-column">' +
+              '<span className="text-nowrap text-heading fw-medium">' +
               $name +
               '</span>' +
-              '<small class="text-truncate d-none d-sm-block">' +
+              '<small className="text-truncate d-none d-sm-block">' +
               $product_brand +
               '</small>' +
               '</div>' +
@@ -144,19 +144,19 @@ $(function () {
             var $category = categoryObj[full['category']].title;
             var categoryBadgeObj = {
               Household:
-                '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-warning me-3"><i class="ri-home-6-line"></i></span>',
+                '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-warning me-3"><i className="ri-home-6-line"></i></span>',
               Office:
-                '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-success me-3"><i class="ri-briefcase-line"></i></span>',
+                '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-success me-3"><i className="ri-briefcase-line"></i></span>',
               Electronics:
-                '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-primary me-3"><i class="ri-smartphone-line"></i></span>',
+                '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-primary me-3"><i className="ri-smartphone-line"></i></span>',
               Shoes:
-                '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-info me-3"><i class="ri-footprint-line"></i></span>',
+                '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-info me-3"><i className="ri-footprint-line"></i></span>',
               Accessories:
-                '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-secondary me-3"><i class="ri-headphone-line"></i></span>',
-              Game: '<span class="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-dark me-3"><i class="ri-gamepad-line"></i></span>'
+                '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-secondary me-3"><i className="ri-headphone-line"></i></span>',
+              Game: '<span className="avatar-sm rounded-circle d-flex justify-content-center align-items-center bg-label-dark me-3"><i className="ri-gamepad-line"></i></span>'
             };
             return (
-              "<h6 class='text-truncate d-flex align-items-center mb-0 fw-normal'>" +
+              "<h6 className='text-truncate d-flex align-items-center mb-0 fw-normal'>" +
               categoryBadgeObj[$category] +
               $category +
               '</h6>'
@@ -172,26 +172,26 @@ $(function () {
             var $stock = full['stock'];
             var stockSwitchObj = {
               Out_of_Stock:
-                '<label class="switch switch-primary switch-sm">' +
-                '<input type="checkbox" class="switch-input" id="switch">' +
-                '<span class="switch-toggle-slider">' +
-                '<span class="switch-off">' +
+                '<label className="switch switch-primary switch-sm">' +
+                '<input type="checkbox" className="switch-input" id="switch">' +
+                '<span className="switch-toggle-slider">' +
+                '<span className="switch-off">' +
                 '</span>' +
                 '</span>' +
                 '</label>',
               In_Stock:
-                '<label class="switch switch-primary switch-sm">' +
-                '<input type="checkbox" class="switch-input" checked="">' +
-                '<span class="switch-toggle-slider">' +
-                '<span class="switch-on">' +
+                '<label className="switch switch-primary switch-sm">' +
+                '<input type="checkbox" className="switch-input" checked="">' +
+                '<span className="switch-toggle-slider">' +
+                '<span className="switch-on">' +
                 '</span>' +
                 '</span>' +
                 '</label>'
             };
             return (
-              "<span class='text-truncate'>" +
+              "<span className='text-truncate'>" +
               stockSwitchObj[stockObj[$stock].title] +
-              '<span class="d-none">' +
+              '<span className="d-none">' +
               stockObj[$stock].title +
               '</span>' +
               '</span>'
@@ -233,7 +233,7 @@ $(function () {
             var $status = full['status'];
 
             return (
-              '<span class="badge rounded-pill ' +
+              '<span className="badge rounded-pill ' +
               statusObj[$status].class +
               '" text-capitalized>' +
               statusObj[$status].title +
@@ -249,12 +249,12 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             return (
-              '<div class="d-inline-block text-nowrap">' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill me-50"><i class="ri-edit-box-line ri-20px"></i></button>' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="javascript:0;" class="dropdown-item">View</a>' +
-              '<a href="javascript:0;" class="dropdown-item">Suspend</a>' +
+              '<div className="d-inline-block text-nowrap">' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill me-50"><i className="ri-edit-box-line ri-20px"></i></button>' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i className="ri-more-2-line ri-20px"></i></button>' +
+              '<div className="dropdown-menu dropdown-menu-end m-0">' +
+              '<a href="javascript:0;" className="dropdown-item">View</a>' +
+              '<a href="javascript:0;" className="dropdown-item">Suspend</a>' +
               '</div>' +
               '</div>'
             );
@@ -283,11 +283,11 @@ $(function () {
         {
           extend: 'collection',
           className: 'btn btn-outline-secondary dropdown-toggle me-4 waves-effect waves-light',
-          text: '<i class="ri-upload-2-line ri-16px me-2"></i><span class="d-none d-sm-inline-block">Export </span>',
+          text: '<i className="ri-upload-2-line ri-16px me-2"></i><span className="d-none d-sm-inline-block">Export </span>',
           buttons: [
             {
               extend: 'print',
-              text: '<i class="ri-printer-line me-1" ></i>Print',
+              text: '<i className="ri-printer-line me-1" ></i>Print',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -324,7 +324,7 @@ $(function () {
             },
             {
               extend: 'csv',
-              text: '<i class="ri-file-text-line me-1" ></i>Csv',
+              text: '<i className="ri-file-text-line me-1" ></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -348,7 +348,7 @@ $(function () {
             },
             {
               extend: 'excel',
-              text: '<i class="ri-file-excel-line me-1"></i>Excel',
+              text: '<i className="ri-file-excel-line me-1"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -372,7 +372,7 @@ $(function () {
             },
             {
               extend: 'pdf',
-              text: '<i class="ri-file-pdf-line me-1"></i>Pdf',
+              text: '<i className="ri-file-pdf-line me-1"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -396,7 +396,7 @@ $(function () {
             },
             {
               extend: 'copy',
-              text: '<i class="ri-file-copy-line me-1"></i>Copy',
+              text: '<i className="ri-file-copy-line me-1"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -421,7 +421,7 @@ $(function () {
           ]
         },
         {
-          text: '<i class="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i><span class="d-none d-sm-inline-block">Add Product</span>',
+          text: '<i className="ri-add-line ri-16px me-0 me-sm-2 align-baseline"></i><span className="d-none d-sm-inline-block">Add Product</span>',
           className: 'add-new btn btn-primary waves-effect waves-light',
           action: function () {
             window.location.href = productAdd;
@@ -457,7 +457,7 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       },
@@ -468,7 +468,7 @@ $(function () {
           .every(function () {
             var column = this;
             var select = $(
-              '<select id="ProductStatus" class="form-select text-capitalize"><option value="">Status</option></select>'
+              '<select id="ProductStatus" className="form-select text-capitalize"><option value="">Status</option></select>'
             )
               .appendTo('.product_status')
               .on('change', function () {
@@ -490,7 +490,7 @@ $(function () {
           .every(function () {
             var column = this;
             var select = $(
-              '<select id="ProductCategory" class="form-select text-capitalize"><option value="">Category</option></select>'
+              '<select id="ProductCategory" className="form-select text-capitalize"><option value="">Category</option></select>'
             )
               .appendTo('.product_category')
               .on('change', function () {
@@ -512,7 +512,7 @@ $(function () {
           .every(function () {
             var column = this;
             var select = $(
-              '<select id="ProductStock" class="form-select text-capitalize"><option value=""> Stock </option></select>'
+              '<select id="ProductStock" className="form-select text-capitalize"><option value=""> Stock </option></select>'
             )
               .appendTo('.product_stock')
               .on('change', function () {

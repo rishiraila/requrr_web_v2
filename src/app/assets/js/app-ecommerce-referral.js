@@ -61,10 +61,10 @@ $(function () {
           responsivePriority: 3,
           checkboxes: true,
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input">';
           },
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           }
         },
         {
@@ -78,7 +78,7 @@ $(function () {
             if ($image) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -87,23 +87,23 @@ $(function () {
                 $name = full['user'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center customer-name">' +
-              '<div class="avatar-wrapper me-3">' +
-              '<div class="avatar avatar-sm">' +
+              '<div className="d-flex justify-content-start align-items-center customer-name">' +
+              '<div className="avatar-wrapper me-3">' +
+              '<div className="avatar avatar-sm">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
+              '<div className="d-flex flex-column">' +
               '<a href="' +
               customerView +
-              '"class="text-heading"><span class="fw-medium text-truncate">' +
+              '"className="text-heading"><span className="fw-medium text-truncate">' +
               $name +
               '</span></a>' +
-              '<small class="text-nowrap">' +
+              '<small className="text-nowrap">' +
               $email +
               '</small>' +
               '</div>' +
@@ -117,7 +117,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var $role = full['referred_id'];
 
-            return '<span class="text-heading">' + $role + '</span>';
+            return '<span className="text-heading">' + $role + '</span>';
           }
         },
 
@@ -128,7 +128,7 @@ $(function () {
             var $status = full['status'];
 
             return (
-              '<span class="badge rounded-pill ' +
+              '<span className="badge rounded-pill ' +
               statusObj[$status].class +
               '" text-capitalized>' +
               statusObj[$status].title +
@@ -142,7 +142,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var $plan = full['value'];
 
-            return '<span  class="text-heading">' + $plan + '</span>';
+            return '<span  className="text-heading">' + $plan + '</span>';
           }
         },
         {
@@ -151,7 +151,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var $earn = full['earning'];
 
-            return '<span  class="text-heading">' + $earn + '</span > ';
+            return '<span  className="text-heading">' + $earn + '</span > ';
           }
         }
       ],
@@ -171,11 +171,11 @@ $(function () {
         {
           extend: 'collection',
           className: 'btn btn-primary dropdown-toggle waves-effect waves-light',
-          text: '<i class="ri-upload-2-line ri-16px me-1"></i> <span class="d-none d-sm-inline-block">Export</span>',
+          text: '<i className="ri-upload-2-line ri-16px me-1"></i> <span className="d-none d-sm-inline-block">Export</span>',
           buttons: [
             {
               extend: 'print',
-              text: '<i class="ri-printer-line me-1" ></i>Print',
+              text: '<i className="ri-printer-line me-1" ></i>Print',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -212,7 +212,7 @@ $(function () {
             },
             {
               extend: 'csv',
-              text: '<i class="ri-file-text-line me-1" ></i>Csv',
+              text: '<i className="ri-file-text-line me-1" ></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -236,7 +236,7 @@ $(function () {
             },
             {
               extend: 'excel',
-              text: '<i class="ri-file-excel-line me-1"></i>Excel',
+              text: '<i className="ri-file-excel-line me-1"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -260,7 +260,7 @@ $(function () {
             },
             {
               extend: 'pdf',
-              text: '<i class="ri-file-pdf-line me-1"></i>Pdf',
+              text: '<i className="ri-file-pdf-line me-1"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -284,7 +284,7 @@ $(function () {
             },
             {
               extend: 'copy',
-              text: '<i class="ri-file-copy-line me-1"></i>Copy',
+              text: '<i className="ri-file-copy-line me-1"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -338,12 +338,12 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }
     });
-    $('div.head-label').html('<h5 class="card-title text-nowrap mb-5 mb-sm-0">Referred users</h5>');
+    $('div.head-label').html('<h5 className="card-title text-nowrap mb-5 mb-sm-0">Referred users</h5>');
     $('.dt-action-buttons').addClass('pt-0');
   }
 });

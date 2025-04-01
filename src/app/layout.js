@@ -40,18 +40,18 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
 
-        <div class="layout-wrapper layout-content-navbar">
-          <div class="layout-container">
+        <div className="layout-wrapper layout-content-navbar">
+          <div className="layout-container">
 
             {/* <Sidebar /> */}
             {!isAuthPage && <Sidebar />}
 
-            <div class="layout-page">
+            <div className="layout-page">
 
               {/* <Navbar /> */}
               {!isAuthPage && <Navbar />}
 
-              <div class="content-wrapper">
+              <div className="content-wrapper">
 
                 {children}
 

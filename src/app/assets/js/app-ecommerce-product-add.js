@@ -24,20 +24,20 @@
 
   // ! Don't change it unless you really know what you are doing
 
-  const previewTemplate = `<div class="dz-preview dz-file-preview">
-<div class="dz-details">
-  <div class="dz-thumbnail">
+  const previewTemplate = `<div className="dz-preview dz-file-preview">
+<div className="dz-details">
+  <div className="dz-thumbnail">
     <img data-dz-thumbnail>
-    <span class="dz-nopreview">No preview</span>
-    <div class="dz-success-mark"></div>
-    <div class="dz-error-mark"></div>
-    <div class="dz-error-message"><span data-dz-errormessage></span></div>
-    <div class="progress">
-      <div class="progress-bar progress-bar-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-dz-uploadprogress></div>
+    <span className="dz-nopreview">No preview</span>
+    <div className="dz-success-mark"></div>
+    <div className="dz-error-mark"></div>
+    <div className="dz-error-message"><span data-dz-errormessage></span></div>
+    <div className="progress">
+      <div className="progress-bar progress-bar-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" data-dz-uploadprogress></div>
     </div>
   </div>
-  <div class="dz-filename" data-dz-name></div>
-  <div class="dz-size" data-dz-size></div>
+  <div className="dz-filename" data-dz-name></div>
+  <div className="dz-size" data-dz-size></div>
 </div>
 </div>`;
 
@@ -86,7 +86,7 @@ $(function () {
     select2.each(function () {
       var $this = $(this);
       select2Focus($this);
-      $this.wrap('<div class="position-relative"></div>').select2({
+      $this.wrap('<div className="position-relative"></div>').select2({
         dropdownParent: $this.parent(),
         placeholder: $this.data('placeholder') // for dynamic placeholder
       });

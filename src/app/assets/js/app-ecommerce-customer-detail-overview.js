@@ -57,7 +57,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var date = new Date(full.date); // convert the date string to a Date object
             var formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            return '<span class="text-nowrap">' + formattedDate + '</span > ';
+            return '<span className="text-nowrap">' + formattedDate + '</span > ';
           }
         },
         {
@@ -67,7 +67,7 @@ $(function () {
             var $status = full['status'];
 
             return (
-              '<span class="badge rounded-pill ' +
+              '<span className="badge rounded-pill ' +
               statusObj[$status].class +
               '" text-capitalized>' +
               statusObj[$status].title +
@@ -93,10 +93,10 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div>' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="javascript:;" class="dropdown-item">View</a>' +
-              '<a href="javascript:;" class="dropdown-item  delete-record">Delete</a>' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i className="ri-more-2-line ri-20px"></i></button>' +
+              '<div className="dropdown-menu dropdown-menu-end m-0">' +
+              '<a href="javascript:;" className="dropdown-item">View</a>' +
+              '<a href="javascript:;" className="dropdown-item  delete-record">Delete</a>' +
               '</div>' +
               '</div>'
             );
@@ -148,12 +148,12 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }
     });
-    $('div.head-label').html('<h5 class="card-title mb-0 text-nowrap">Orders placed</h5>');
+    $('div.head-label').html('<h5 className="card-title mb-0 text-nowrap">Orders placed</h5>');
     $('.pagination').addClass('justify-content-xxl-end justify-content-center');
   }
 

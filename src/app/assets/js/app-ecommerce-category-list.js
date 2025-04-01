@@ -43,7 +43,7 @@ $(function () {
     select2.each(function () {
       var $this = $(this);
       select2Focus($this);
-      $this.wrap('<div class="position-relative"></div>').select2({
+      $this.wrap('<div className="position-relative"></div>').select2({
         dropdownParent: $this.parent(),
         placeholder: $this.data('placeholder') //for dynamic placeholder
       });
@@ -83,10 +83,10 @@ $(function () {
           responsivePriority: 4,
           checkboxes: true,
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input">';
           },
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           }
         },
         {
@@ -107,7 +107,7 @@ $(function () {
                 $image +
                 '" alt="Product-' +
                 $id +
-                '" class="rounded">';
+                '" className="rounded">';
             } else {
               // For Product badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -116,21 +116,21 @@ $(function () {
                 $name = full['category_detail'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for Categories and Category Detail
             var $row_output =
-              '<div class="d-flex align-items-center">' +
-              '<div class="avatar-wrapper me-3 rounded bg-label-secondary user-name">' +
-              '<div class="avatar">' +
+              '<div className="d-flex align-items-center">' +
+              '<div className="avatar-wrapper me-3 rounded bg-label-secondary user-name">' +
+              '<div className="avatar">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column justify-content-center">' +
-              '<span class="text-heading fw-medium text-wrap">' +
+              '<div className="d-flex flex-column justify-content-center">' +
+              '<span className="text-heading fw-medium text-wrap">' +
               $name +
               '</span>' +
-              '<small class="text-truncate mb-0 d-none d-sm-block">' +
+              '<small className="text-truncate mb-0 d-none d-sm-block">' +
               $category_detail +
               '</small>' +
               '</div>' +
@@ -144,7 +144,7 @@ $(function () {
           responsivePriority: 3,
           render: function (data, type, full, meta) {
             var $total_products = full['total_products'];
-            return '<div class="text-sm-end">' + $total_products + '</div>';
+            return '<div className="text-sm-end">' + $total_products + '</div>';
           }
         },
         {
@@ -153,7 +153,7 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             var $total_earnings = full['total_earnings'];
-            return "<div class='text-sm-end'>" + $total_earnings + '</div>';
+            return "<div className='text-sm-end'>" + $total_earnings + '</div>';
           }
         },
         {
@@ -164,12 +164,12 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             return (
-              '<div class="d-flex align-items-sm-center justify-content-sm-center">' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill"><i class="ri-edit-box-line ri-20px"></i></button>' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="javascript:0;" class="dropdown-item">View</a>' +
-              '<a href="javascript:0;" class="dropdown-item">Suspend</a>' +
+              '<div className="d-flex align-items-sm-center justify-content-sm-center">' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill"><i className="ri-edit-box-line ri-20px"></i></button>' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i className="ri-more-2-line ri-20px"></i></button>' +
+              '<div className="dropdown-menu dropdown-menu-end m-0">' +
+              '<a href="javascript:0;" className="dropdown-item">View</a>' +
+              '<a href="javascript:0;" className="dropdown-item">Suspend</a>' +
               '</div>' +
               '</div>'
             );
@@ -197,11 +197,11 @@ $(function () {
         {
           extend: 'collection',
           className: 'btn btn-outline-secondary dropdown-toggle me-4 waves-effect waves-light',
-          text: '<i class="ri-upload-2-line me-1"></i> <span class="d-none d-sm-inline-block">Export</span>',
+          text: '<i className="ri-upload-2-line me-1"></i> <span className="d-none d-sm-inline-block">Export</span>',
           buttons: [
             {
               extend: 'print',
-              text: '<i class="ri-printer-line me-1"></i>Print',
+              text: '<i className="ri-printer-line me-1"></i>Print',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -238,7 +238,7 @@ $(function () {
             },
             {
               extend: 'csv',
-              text: '<i class="ri-file-text-line me-1" ></i>Csv',
+              text: '<i className="ri-file-text-line me-1" ></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -262,7 +262,7 @@ $(function () {
             },
             {
               extend: 'excel',
-              text: '<i class="ri-file-excel-line me-1"></i>Excel',
+              text: '<i className="ri-file-excel-line me-1"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -286,7 +286,7 @@ $(function () {
             },
             {
               extend: 'pdf',
-              text: '<i class="ri-file-pdf-line me-1"></i>Pdf',
+              text: '<i className="ri-file-pdf-line me-1"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -310,7 +310,7 @@ $(function () {
             },
             {
               extend: 'copy',
-              text: '<i class="ri-file-copy-line me-1"></i>Copy',
+              text: '<i className="ri-file-copy-line me-1"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -335,7 +335,7 @@ $(function () {
           ]
         },
         {
-          text: '<i class="ri-add-line ri-16px me-0 me-sm-1 align-baseline"></i><span class="d-none d-sm-inline-block">Add Category</span>',
+          text: '<i className="ri-add-line ri-16px me-0 me-sm-1 align-baseline"></i><span className="d-none d-sm-inline-block">Add Category</span>',
           className: 'add-new btn btn-primary waves-effect waves-light',
           attr: {
             'data-bs-toggle': 'offcanvas',
@@ -365,14 +365,14 @@ $(function () {
                     col.title +
                     ':' +
                     '</td> ' +
-                    '<td class="ps-0">' +
+                    '<td className="ps-0">' +
                     col.data +
                     '</td>' +
                     '</tr>'
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }

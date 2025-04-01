@@ -40,3 +40,59 @@ a {
     color-scheme: dark;
   }
 }
+
+/* General form styles */
+.form-container {
+  background-color: #f8f9fa; /* Light background for contrast */
+  border-radius: 8px; /* Rounded corners */
+  padding: 20px; /* Padding for spacing */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  margin-bottom: 20px; /* Space between forms */
+}
+
+/* Input styles */
+.form-container input {
+  width: 100%; /* Full width */
+  padding: 10px; /* Padding for comfort */
+  margin: 10px 0; /* Margin for spacing */
+  border: 1px solid #ced4da; /* Light border */
+  border-radius: 4px; /* Rounded corners */
+  transition: border-color 0.3s; /* Smooth transition */
+}
+
+/* Input focus styles */
+.form-container input:focus {
+  border-color: #007bff; /* Change border color on focus */
+  outline: none; /* Remove default outline */
+}
+
+/* Button styles */
+.form-container button {
+  padding: 10px 15px; /* Padding for buttons */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
+  transition: background-color 0.3s; /* Smooth transition */
+}
+
+/* Primary button styles */
+.form-container .btn-success {
+  background-color: #28a745; /* Green background */
+  color: white; /* White text */
+}
+
+/* Primary button hover effect */
+.form-container .btn-success:hover {
+  background-color: #218838; /* Darker green on hover */
+}
+
+/* Secondary button styles */
+.form-container .btn-secondary {
+  background-color: #6c757d; /* Grey background */
+  color: white; /* White text */
+}
+
+/* Secondary button hover effect */
+.form-container .btn-secondary:hover {
+  background-color: #5a6268; /* Darker grey on hover */
+}

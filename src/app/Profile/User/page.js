@@ -1,15 +1,98 @@
 'use client'
-import React from 'react'
-
+import React, { useState, useEffect } from 'react';
+import axios from 'axios'
 import "@/app/assets/vendor/css/pages/page-profile.css"
 
-
 export default function page() {
+
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    name: '',
+    phone: '',
+  });
+
+  const [isEdited, setIsEdited] = useState(false);
+
+  const fetchUserData = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.get('http://localhost:3000/api/EditUser ', {
+        headers: {
+          'Authorization': `${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setFormData(response.data);
+      } else {
+        console.error('Error fetching user data:', response.status, response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error.response ? error.response.data : error.message);
+    }
+  };
+  useEffect(() => {
+
+    fetchUserData();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setIsEdited(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.put('/api/EditUser', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${token}`, // Replace with actual token
+        },
+      });
+
+      if (response.status === 200) {
+        console.log('Profile updated successfully:', response.data);
+        setIsEdited(false); // Reset the edited state after submission
+      } else {
+        console.error('Error updating profile:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    if (confirmDelete) {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.delete('/api/DeleteUser ', {
+          headers: {
+            'Authorization': `${token}`,
+          },
+        });
+
+        if (response.status === 200) {
+          console.log('User  deleted successfully:', response.data);
+          // Optionally, redirect or update the UI after deletion
+          localStorage.removeItem('token'); // Remove token from local storage
+        } else {
+          console.error('Error deleting user:', response.data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+  };
   return (
     <>
 
       <div className="container-xxl flex-grow-1 container-p-y">
-       
+
         <div className="row">
           <div className="col-12">
             <div className="card mb-6">
@@ -27,7 +110,7 @@ export default function page() {
                   <div
                     className="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-5 flex-md-row flex-column gap-6">
                     <div className="user-profile-info">
-                      <h4 className="mb-2">John Doe</h4>
+                    <h4 className="mb-2">{formData.name || 'John Doe'}</h4>
                       <ul
                         className="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-4">
                         <li className="list-inline-item">
@@ -42,52 +125,29 @@ export default function page() {
                         </li>
                       </ul>
                     </div>
-                    <a href="javascript:void(0)" className="btn btn-primary">
-                      <i className="ri-user-follow-line ri-16px me-2"></i>Connected
-                    </a>
+                    <div>
+                      <button onClick={handleDelete} className="btn btn-danger">
+                      <i className="ri-user-follow-line ri-16px me-2"></i>Delete User
+                      </button>
+                    </div>
+                    
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
 
 
 
-        <div className="row">
-          <div className="col-md-12">
-            <div className="nav-align-top">
-              <ul className="nav nav-pills flex-column flex-sm-row mb-6 row-gap-2">
-                <li className="nav-item">
-                  <a className="nav-link active" href="javascript:void(0);"
-                  ><i className="ri-user-3-line me-2"></i>Profile</a>
-                </li>
 
-                
-                <li className="nav-item">
-                  <a className="nav-link" href="/Profile/Teams"><i className="ri-team-line me-2"></i>Teams</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/Profile/Project"
-                  ><i className="ri-computer-line me-2"></i>Projects</a
-                  >
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/Profile/Connections"
-                  ><i className="ri-link-m me-2"></i>Connections</a
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        
 
-        
+
+
+
         <div className="row">
           <div className="col-xl-4 col-lg-5 col-md-5">
-           
+
             <div className="card mb-6">
               <div className="card-body">
                 <small className="card-text text-uppercase text-muted small">About</small>
@@ -145,7 +205,7 @@ export default function page() {
                 </ul>
               </div>
             </div>
-            
+
 
 
             <div className="card mb-6">
@@ -167,422 +227,76 @@ export default function page() {
                 </ul>
               </div>
             </div>
-            
+
           </div>
+
+
           <div className="col-xl-8 col-lg-7 col-md-7">
-           
             <div className="card card-action mb-6">
               <div className="card-header align-items-center">
                 <h5 className="card-action-title mb-0">
-                  <i className="ri-bar-chart-2-line ri-24px text-body me-4"></i>Activity Timeline
+                  <i className="ri-user-3-line ri-24px text-body me-4"></i>Edit Profile
                 </h5>
-                <div className="card-action-element">
-                  <div className="dropdown">
-                    <button
-                      type="button"
-                      className="btn dropdown-toggle hide-arrow p-0"
-                      data-bs-toggle="dropdown"
-                      aria-expanded="false">
-                      <i className="ri-more-2-line ri-22px text-muted"></i>
-                    </button>
-                    <ul className="dropdown-menu dropdown-menu-end">
-                      <li><a className="dropdown-item" href="javascript:void(0);">Share timeline</a></li>
-                      <li><a className="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
-                      <li>
-                        <hr className="dropdown-divider" />
-                      </li>
-                      <li><a className="dropdown-item" href="javascript:void(0);">Report bug</a></li>
-                    </ul>
-                  </div>
-                </div>
               </div>
-              <div className="card-body pt-5">
-                <ul className="timeline mb-0">
-                  <li className="timeline-item timeline-item-transparent">
-                    <span className="timeline-point timeline-point-primary"></span>
-                    <div className="timeline-event">
-                      <div className="timeline-header mb-3">
-                        <h6 className="mb-0">12 Invoices have been paid</h6>
-                        <small className="text-muted">12 min ago</small>
-                      </div>
-                      <p className="mb-2">Invoices have been paid to the company</p>
-                      <div className="d-flex align-items-center">
-                        <div className="badge bg-lighter rounded-3">
-                          <img src="/assets//img/icons/misc/pdf.png" alt="img" width="15" className="me-2" />
-                          <span className="h6 mb-0 text-body">invoices.pdf</span>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="timeline-item timeline-item-transparent">
-                    <span className="timeline-point timeline-point-success"></span>
-                    <div className="timeline-event">
-                      <div className="timeline-header mb-3">
-                        <h6 className="mb-0">Client Meeting</h6>
-                        <small className="text-muted">45 min ago</small>
-                      </div>
-                      <p className="mb-2">Project meeting with john @10:15am</p>
-                      <div className="d-flex justify-content-between flex-wrap gap-2">
-                        <div className="d-flex flex-wrap align-items-center">
-                          <div className="avatar avatar-sm me-2">
-                            <img src="/assets/img/avatars/1.png" alt="Avatar" className="rounded-circle" />
-                          </div>
-                          <div>
-                            <p className="mb-0 small fw-medium">Lester McCarthy (Client)</p>
-                            <small>CEO of ThemeSelection</small>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                  <li className="timeline-item timeline-item-transparent">
-                    <span className="timeline-point timeline-point-info"></span>
-                    <div className="timeline-event">
-                      <div className="timeline-header mb-3">
-                        <h6 className="mb-0">Create a new project for client</h6>
-                        <small className="text-muted">2 Day Ago</small>
-                      </div>
-                      <p className="mb-2">6 team members in a project</p>
-                      <ul className="list-group list-group-flush">
-                        <li
-                          className="list-group-item d-flex justify-content-between align-items-center flex-wrap p-0">
-                          <div className="d-flex flex-wrap align-items-center">
-                            <ul className="list-unstyled users-list d-flex align-items-center avatar-group m-0 me-2">
-                              <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Vinnie Mostowy"
-                                className="avatar pull-up">
-                                <img className="rounded-circle" src="/assets/img/avatars/5.png" alt="Avatar" />
-                              </li>
-                              <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Allen Rieske"
-                                className="avatar pull-up">
-                                <img className="rounded-circle" src="/assets/img/avatars/12.png" alt="Avatar" />
-                              </li>
-                              <li
-                                data-bs-toggle="tooltip"
-                                data-popup="tooltip-custom"
-                                data-bs-placement="top"
-                                title="Julee Rossignol"
-                                className="avatar pull-up">
-                                <img className="rounded-circle" src="/assets/img/avatars/6.png" alt="Avatar" />
-                              </li>
-                              <li className="avatar">
-                                <span
-                                  className="avatar-initial rounded-circle pull-up text-heading"
-                                  data-bs-toggle="tooltip"
-                                  data-bs-placement="bottom"
-                                  title="3 more"
-                                >+3</span
-                                >
-                              </li>
-                            </ul>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </li>
-                </ul>
+              <div className="card-body">
+                <form onSubmit={handleSubmit}>
+                  <div className="mb-3">
+                    <label htmlFor="username" className="form-label">Username</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="username"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="name" className="form-label">Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="phone" className="form-label">Phone</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="phone"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  {isEdited && (
+                    <button type="submit" className="btn btn-primary">Update</button>
+                  )}
+                </form>
               </div>
             </div>
-           
-            <div className="row">
-              
-              <div className="col-lg-12 col-xl-6">
-                <div className="card card-action mb-6">
-                  <div className="card-header align-items-center">
-                    <h5 className="card-action-title mb-0">Connections</h5>
-                    <div className="card-action-element">
-                      <div className="dropdown">
-                        <button
-                          type="button"
-                          className="btn dropdown-toggle hide-arrow p-0"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false">
-                          <i className="ri-more-2-line ri-22px text-muted"></i>
-                        </button>
-                        <ul className="dropdown-menu dropdown-menu-end">
-                          <li><a className="dropdown-item" href="javascript:void(0);">Share connections</a></li>
-                          <li><a className="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
-                          <li>
-                            <hr className="dropdown-divider" />
-                          </li>
-                          <li><a className="dropdown-item" href="javascript:void(0);">Report bug</a></li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <ul className="list-unstyled mb-0">
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img src="/assets/img/avatars/2.png" alt="Avatar" className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Cecilia Payne</h6>
-                              <small>45 Connections</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <button className="btn btn-outline-primary btn-icon">
-                              <i className="ri-user-add-line ri-22px"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img src="/assets/img/avatars/3.png" alt="Avatar" className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Curtis Fletcher</h6>
-                              <small>1.32k Connections</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <button className="btn btn-primary btn-icon">
-                              <i className="ri-user-3-line ri-22px"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img src="/assets/img/avatars/8.png" alt="Avatar" className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Alice Stone</h6>
-                              <small>125 Connections</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <button className="btn btn-primary btn-icon">
-                              <i className="ri-user-3-line ri-22px"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img src="/assets/img/avatars/7.png" alt="Avatar" className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Darrell Barnes</h6>
-                              <small>456 Connections</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <button className="btn btn-outline-primary btn-icon">
-                              <i className="ri-user-add-line ri-22px"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-
-                      <li className="mb-5">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img src="/assets/img/avatars/12.png" alt="Avatar" className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Eugenia Moore</h6>
-                              <small>1.2k Connections</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <button className="btn btn-outline-primary btn-icon">
-                              <i className="ri-user-add-line ri-22px"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </li>
-                      <li className="text-center">
-                        <a href="javascript:;">View all connections</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              
-
-              <div className="col-lg-12 col-xl-6">
-                <div className="card card-action mb-6">
-                  <div className="card-header align-items-center">
-                    <h5 className="card-action-title mb-0">Teams</h5>
-                    <div className="card-action-element">
-                      <div className="dropdown">
-                        <button
-                          type="button"
-                          className="btn dropdown-toggle hide-arrow p-0"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false">
-                          <i className="ri-more-2-line ri-24px text-muted"></i>
-                        </button>
-                        <ul className="dropdown-menu dropdown-menu-end">
-                          <li><a className="dropdown-item" href="javascript:void(0);">Share teams</a></li>
-                          <li><a className="dropdown-item" href="javascript:void(0);">Suggest edits</a></li>
-                          <li>
-                            <hr className="dropdown-divider" />
-                          </li>
-                          <li><a className="dropdown-item" href="javascript:void(0);">Report bug</a></li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="card-body">
-                    <ul className="list-unstyled mb-0">
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img
-                                src="/assets/img/icons/brands/react-label.png"
-                                alt="Avatar"
-                                className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">React Developers</h6>
-                              <small>72 Members</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <a href="javascript:;"
-                            ><span className="badge bg-label-danger rounded-pill">Developer</span></a
-                            >
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img
-                                src="/assets/img/icons/brands/support-label.png"
-                                alt="Avatar"
-                                className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Support Team</h6>
-                              <small>122 Members</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <a href="javascript:;"
-                            ><span className="badge bg-label-primary rounded-pill">Support</span></a
-                            >
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img
-                                src="/assets/img/icons/brands/figma-label.png"
-                                alt="Avatar"
-                                className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">UI Designers</h6>
-                              <small>7 Members</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <a href="javascript:;"
-                            ><span className="badge bg-label-info rounded-pill">Designer</span></a
-                            >
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-4">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img
-                                src="/assets/img/icons/brands/vue-label.png"
-                                alt="Avatar"
-                                className="rounded-circle" />
-                            </div>
-                            <div className="me-2">
-                              <h6 className="mb-1">Vue.js Developers</h6>
-                              <small>289 Members</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <a href="javascript:;"
-                            ><span className="badge bg-label-danger rounded-pill">Developer</span></a
-                            >
-                          </div>
-                        </div>
-                      </li>
-                      <li className="mb-5">
-                        <div className="d-flex align-items-center">
-                          <div className="d-flex align-items-center">
-                            <div className="avatar me-2">
-                              <img
-                                src="/assets/img/icons/brands/twitter-label.png"
-                                alt="Avatar"
-                                className="rounded-circle" />
-                            </div>
-                            <div className="me-w">
-                              <h6 className="mb-1">Digital Marketing</h6>
-                              <small>24 Members</small>
-                            </div>
-                          </div>
-                          <div className="ms-auto">
-                            <a href="javascript:;"
-                            ><span className="badge bg-label-secondary rounded-pill">Marketing</span></a
-                            >
-                          </div>
-                        </div>
-                      </li>
-                      <li className="text-center">
-                        <a href="javascript:;">View all teams</a>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-
-            
-            <div className="card mb-4">
-              <h5 className="card-header">Project List</h5>
-              <div className="card-datatable table-responsive pb-0">
-                <table className="table datatable-project table-border-bottom-0">
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th></th>
-                      <th>Project</th>
-                      <th>leader</th>
-                      <th>teams</th>
-                      <th>Progress</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                </table>
-              </div>
-            </div>
-            
           </div>
-        </div>
-        
+          </div>
+
       </div>
 
     </>

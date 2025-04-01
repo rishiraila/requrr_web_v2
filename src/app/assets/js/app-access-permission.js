@@ -44,7 +44,7 @@ $(function () {
           targets: 2,
           render: function (data, type, full, meta) {
             var $name = full['name'];
-            return '<span class="text-nowrap text-heading">' + $name + '</span>';
+            return '<span className="text-nowrap text-heading">' + $name + '</span>';
           }
         },
         {
@@ -58,23 +58,23 @@ $(function () {
               Admin:
                 '<a href="' +
                 userList +
-                '"><span class="badge rounded-pill bg-label-primary me-4">Administrator</span></a>',
+                '"><span className="badge rounded-pill bg-label-primary me-4">Administrator</span></a>',
               Manager:
-                '<a href="' + userList + '"><span class="badge rounded-pill bg-label-warning me-4">Manager</span></a>',
+                '<a href="' + userList + '"><span className="badge rounded-pill bg-label-warning me-4">Manager</span></a>',
               Users:
-                '<a href="' + userList + '"><span class="badge rounded-pill bg-label-success me-4">Users</span></a>',
+                '<a href="' + userList + '"><span className="badge rounded-pill bg-label-success me-4">Users</span></a>',
               Support:
-                '<a href="' + userList + '"><span class="badge rounded-pill bg-label-info me-4">Support</span></a>',
+                '<a href="' + userList + '"><span className="badge rounded-pill bg-label-info me-4">Support</span></a>',
               Restricted:
                 '<a href="' +
                 userList +
-                '"><span class="badge rounded-pill bg-label-danger me-4">Restricted User</span></a>'
+                '"><span className="badge rounded-pill bg-label-danger me-4">Restricted User</span></a>'
             };
             for (var i = 0; i < $assignedTo.length; i++) {
               var val = $assignedTo[i];
               $output += roleBadgeObj[val];
             }
-            return '<span class="text-nowrap">' + $output + '</span>';
+            return '<span className="text-nowrap">' + $output + '</span>';
           }
         },
         {
@@ -83,7 +83,7 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             var $date = full['created_date'];
-            return '<span class="text-nowrap">' + $date + '</span>';
+            return '<span className="text-nowrap">' + $date + '</span>';
           }
         },
         {
@@ -94,9 +94,9 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             return (
-              '<div class="d-flex align-items-center">' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect waves-light me-1"><i class="ri-delete-bin-7-line ri-20px"></i></button>' +
-              '<span class="text-nowrap"><button class="btn btn-sm btn-icon btn-text-secondary text-body rounded-pill waves-effect waves-light" data-bs-target="#editPermissionModal" data-bs-toggle="modal" data-bs-dismiss="modal"><i class="ri-edit-box-line ri-20px"></i></button></span>' +
+              '<div className="d-flex align-items-center">' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary rounded-pill delete-record text-body waves-effect waves-light me-1"><i className="ri-delete-bin-7-line ri-20px"></i></button>' +
+              '<span className="text-nowrap"><button className="btn btn-sm btn-icon btn-text-secondary text-body rounded-pill waves-effect waves-light" data-bs-target="#editPermissionModal" data-bs-toggle="modal" data-bs-dismiss="modal"><i className="ri-edit-box-line ri-20px"></i></button></span>' +
               '</div>'
             );
           }
@@ -120,7 +120,7 @@ $(function () {
       // Buttons with Dropdown
       buttons: [
         {
-          text: '<i class="ri-add-line me-0 me-sm-1"></i><span class="d-none d-sm-inline-block">Add Permission</span>',
+          text: '<i className="ri-add-line me-0 me-sm-1"></i><span className="d-none d-sm-inline-block">Add Permission</span>',
           className: 'add-new btn btn-primary mb-5 mb-md-0 waves-effect waves-light',
           attr: {
             'data-bs-toggle': 'modal',
@@ -160,7 +160,7 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       },
@@ -171,7 +171,7 @@ $(function () {
           .every(function () {
             var column = this;
             var select = $(
-              '<select id="UserRole" class="form-select text-capitalize"><option value=""> Select Role </option></select>'
+              '<select id="UserRole" className="form-select text-capitalize"><option value=""> Select Role </option></select>'
             )
               .appendTo('.user_role')
               .on('change', function () {
@@ -184,7 +184,7 @@ $(function () {
               .unique()
               .sort()
               .each(function (d, j) {
-                select.append('<option value="' + d + '" class="text-capitalize">' + d + '</option>');
+                select.append('<option value="' + d + '" className="text-capitalize">' + d + '</option>');
               });
           });
       }

@@ -25,7 +25,7 @@ $(function () {
   if (select2.length) {
     var $this = select2;
     select2Focus($this);
-    $this.wrap('<div class="position-relative"></div>').select2({
+    $this.wrap('<div className="position-relative"></div>').select2({
       placeholder: 'United States ',
       dropdownParent: $this.parent()
     });
@@ -65,10 +65,10 @@ $(function () {
           responsivePriority: 3,
           checkboxes: true,
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input">';
           },
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           }
         },
         {
@@ -83,7 +83,7 @@ $(function () {
             if ($image) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -92,23 +92,23 @@ $(function () {
                 $name = full['customer'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center customer-name">' +
-              '<div class="avatar-wrapper me-3">' +
-              '<div class="avatar avatar-sm">' +
+              '<div className="d-flex justify-content-start align-items-center customer-name">' +
+              '<div className="avatar-wrapper me-3">' +
+              '<div className="avatar avatar-sm">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
+              '<div className="d-flex flex-column">' +
               '<a href="' +
               customerView +
-              '"class="text-heading"><span class="fw-medium text-truncate">' +
+              '"className="text-heading"><span className="fw-medium text-truncate">' +
               $name +
               '</span></a>' +
-              '<small class="text-truncate">' +
+              '<small className="text-truncate">' +
               $email +
               '</small>' +
               '</div>' +
@@ -122,7 +122,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var $id = full['customer_id'];
 
-            return '<span class="text-heading">#' + $id + '</span>';
+            return '<span className="text-heading">#' + $id + '</span>';
           }
         },
         {
@@ -140,7 +140,7 @@ $(function () {
             }
 
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center customer-country">' +
+              '<div className="d-flex justify-content-start align-items-center customer-country">' +
               '<div>' +
               $output_code +
               '</div>' +
@@ -168,7 +168,7 @@ $(function () {
           render: function (data, type, full, meta) {
             var $spent = full['total_spent'];
 
-            return '<h6 class="mb-0">' + $spent + '</h6>';
+            return '<h6 className="mb-0">' + $spent + '</h6>';
           }
         }
       ],
@@ -194,11 +194,11 @@ $(function () {
         {
           extend: 'collection',
           className: 'btn btn-outline-secondary dropdown-toggle me-4 waves-effect waves-light',
-          text: '<i class="ri-upload-2-line ri-16px me-1"></i> <span class="d-none d-sm-inline-block">Export</span>',
+          text: '<i className="ri-upload-2-line ri-16px me-1"></i> <span className="d-none d-sm-inline-block">Export</span>',
           buttons: [
             {
               extend: 'print',
-              text: '<i class="ri-printer-line me-1"></i>Print',
+              text: '<i className="ri-printer-line me-1"></i>Print',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -235,7 +235,7 @@ $(function () {
             },
             {
               extend: 'csv',
-              text: '<i class="ri-file-text-line me-1" ></i>Csv',
+              text: '<i className="ri-file-text-line me-1" ></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -259,7 +259,7 @@ $(function () {
             },
             {
               extend: 'excel',
-              text: '<i class="ri-file-excel-line me-1"></i>Excel',
+              text: '<i className="ri-file-excel-line me-1"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -283,7 +283,7 @@ $(function () {
             },
             {
               extend: 'pdf',
-              text: '<i class="ri-file-pdf-line me-1"></i>Pdf',
+              text: '<i className="ri-file-pdf-line me-1"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -307,7 +307,7 @@ $(function () {
             },
             {
               extend: 'copy',
-              text: '<i class="ri-file-copy-line me-1"></i>Copy',
+              text: '<i className="ri-file-copy-line me-1"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -332,7 +332,7 @@ $(function () {
           ]
         },
         {
-          text: '<i class="ri-add-line ri-16px me-0 me-sm-1 align-baseline"></i><span class="d-none d-sm-inline-block">Add Customer</span>',
+          text: '<i className="ri-add-line ri-16px me-0 me-sm-1 align-baseline"></i><span className="d-none d-sm-inline-block">Add Customer</span>',
           className: 'add-new btn btn-primary waves-effect waves-light',
           attr: {
             'data-bs-toggle': 'offcanvas',
@@ -369,7 +369,7 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }

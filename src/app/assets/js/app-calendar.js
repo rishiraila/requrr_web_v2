@@ -64,12 +64,12 @@ document.addEventListener('DOMContentLoaded', function () {
           return option.text;
         }
         var $badge =
-          "<span class='badge badge-dot bg-" + $(option.element).data('label') + " me-2'> " + '</span>' + option.text;
+          "<span className='badge badge-dot bg-" + $(option.element).data('label') + " me-2'> " + '</span>' + option.text;
 
         return $badge;
       }
       select2Focus(eventLabel);
-      eventLabel.wrap('<div class="position-relative"></div>').select2({
+      eventLabel.wrap('<div className="position-relative"></div>').select2({
         placeholder: 'Select value',
         dropdownParent: eventLabel.parent(),
         templateResult: renderBadges,
@@ -88,13 +88,13 @@ document.addEventListener('DOMContentLoaded', function () {
           return option.text;
         }
         var $avatar =
-          "<div class='d-flex flex-wrap align-items-center'>" +
-          "<div class='avatar avatar-xs me-2'>" +
+          "<div className='d-flex flex-wrap align-items-center'>" +
+          "<div className='avatar avatar-xs me-2'>" +
           "<img src='" +
           assetsPath +
           'img/avatars/' +
           $(option.element).data('avatar') +
-          "' alt='avatar' class='rounded-circle' />" +
+          "' alt='avatar' className='rounded-circle' />" +
           '</div>' +
           option.text +
           '</div>';
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return $avatar;
       }
       select2Focus(eventGuests);
-      eventGuests.wrap('<div class="position-relative"></div>').select2({
+      eventGuests.wrap('<div className="position-relative"></div>').select2({
         placeholder: 'Select value',
         dropdownParent: eventGuests.parent(),
         closeOnSelect: false,
@@ -207,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
       fcSidebarToggleButton.setAttribute('data-bs-toggle', 'sidebar');
       fcSidebarToggleButton.setAttribute('data-overlay', '');
       fcSidebarToggleButton.setAttribute('data-target', '#app-calendar-sidebar');
-      fcSidebarToggleButton.insertAdjacentHTML('beforeend', '<i class="ri-menu-line ri-24px text-body"></i>');
+      fcSidebarToggleButton.insertAdjacentHTML('beforeend', '<i className="ri-menu-line ri-24px text-body"></i>');
     }
 
     // Filter events by calender

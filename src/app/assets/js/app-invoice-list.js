@@ -42,10 +42,10 @@ $(function () {
           targets: 1,
           orderable: false,
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           },
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input">';
           },
           searchable: false
         },
@@ -67,23 +67,23 @@ $(function () {
               $due_date = full['due_date'],
               $balance = full['balance'];
             var roleBadgeObj = {
-              Sent: '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-secondary"><i class="ri-save-line ri-16px"></i></span></span>',
+              Sent: '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-secondary"><i className="ri-save-line ri-16px"></i></span></span>',
               Draft:
-                '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-primary"><i class="ri-mail-line ri-16px"></i></span></span>',
+                '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-primary"><i className="ri-mail-line ri-16px"></i></span></span>',
               'Past Due':
-                '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-danger"><i class="ri-error-warning-line ri-16px"></i></span></span>',
+                '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-danger"><i className="ri-error-warning-line ri-16px"></i></span></span>',
               'Partial Payment':
-                '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-success"><i class="ri-check-line ri-16px"></i></span></span>',
-              Paid: '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-warning"><i class="ri-line-chart-line ri-16px"></i></span></span>',
+                '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-success"><i className="ri-check-line ri-16px"></i></span></span>',
+              Paid: '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-warning"><i className="ri-line-chart-line ri-16px"></i></span></span>',
               Downloaded:
-                '<span class="avatar avatar-sm"> <span class="avatar-initial rounded-circle bg-label-info"><i class="ri-arrow-down-line ri-16px"></i></span></span>'
+                '<span className="avatar avatar-sm"> <span className="avatar-initial rounded-circle bg-label-info"><i className="ri-arrow-down-line ri-16px"></i></span></span>'
             };
             return (
-              "<div class='d-inline-flex' data-bs-toggle='tooltip' data-bs-html='true' title='<span>" +
+              "<div className='d-inline-flex' data-bs-toggle='tooltip' data-bs-html='true' title='<span>" +
               $invoice_status +
-              '<br> <span class="fw-medium">Balance:</span> ' +
+              '<br> <span className="fw-medium">Balance:</span> ' +
               $balance +
-              '<br> <span class="fw-medium">Due Date:</span> ' +
+              '<br> <span className="fw-medium">Due Date:</span> ' +
               $due_date +
               "</span>'>" +
               roleBadgeObj[$invoice_status] +
@@ -104,7 +104,7 @@ $(function () {
             if ($image === true) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $user_img + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $user_img + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6),
@@ -113,21 +113,21 @@ $(function () {
                 $name = full['client_name'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center">' +
-              '<div class="avatar-wrapper">' +
-              '<div class="avatar avatar-sm me-3">' +
+              '<div className="d-flex justify-content-start align-items-center">' +
+              '<div className="avatar-wrapper">' +
+              '<div className="avatar avatar-sm me-3">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<a href="pages-profile-user.html" class="text-truncate text-heading"><p class="mb-0 fw-medium">' +
+              '<div className="d-flex flex-column">' +
+              '<a href="pages-profile-user.html" className="text-truncate text-heading"><p className="mb-0 fw-medium">' +
               $name +
               '</p></a>' +
-              '<small class="text-truncate">' +
+              '<small className="text-truncate">' +
               $service +
               '</small>' +
               '</div>' +
@@ -150,7 +150,7 @@ $(function () {
             var $due_date = new Date(full['due_date']);
             // Creates full output for row
             var $row_output =
-              '<span class="d-none">' +
+              '<span className="d-none">' +
               moment($due_date).format('YYYYMMDD') +
               '</span>' +
               moment($due_date).format('DD MMM YYYY');
@@ -166,9 +166,9 @@ $(function () {
             var $balance = full['balance'];
             if ($balance === 0) {
               var $badge_class = 'bg-label-success';
-              return '<span class="badge rounded-pill ' + $badge_class + '" text-capitalized> Paid </span>';
+              return '<span className="badge rounded-pill ' + $badge_class + '" text-capitalized> Paid </span>';
             } else {
-              return '<span class="text-heading">' + $balance + '</span>';
+              return '<span className="text-heading">' + $balance + '</span>';
             }
           }
         },
@@ -184,14 +184,14 @@ $(function () {
           orderable: false,
           render: function (data, type, full, meta) {
             return (
-              '<div class="d-flex align-items-center">' +
-              '<a href="javascript:;" data-bs-toggle="tooltip" class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill delete-record" data-bs-placement="top" title="Delete Invoice"><i class="ri-delete-bin-7-line ri-20px"></i></a>' +
-              '<a href="app-invoice-preview.html" data-bs-toggle="tooltip" class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill"  data-bs-placement="top" title="Preview Invoice"><i class="ri-eye-line ri-20px"></i></a>' +
-              '<div class="dropdown">' +
-              '<a href="javascript:;" class="btn btn-icon btn-sm btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></a>' +
-              '<div class="dropdown-menu dropdown-menu-end">' +
-              '<a href="javascript:;" class="dropdown-item">Download</a>' +
-              '<a href="app-invoice-edit.html" class="dropdown-item">Edit</a>' +
+              '<div className="d-flex align-items-center">' +
+              '<a href="javascript:;" data-bs-toggle="tooltip" className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill delete-record" data-bs-placement="top" title="Delete Invoice"><i className="ri-delete-bin-7-line ri-20px"></i></a>' +
+              '<a href="app-invoice-preview.html" data-bs-toggle="tooltip" className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill"  data-bs-placement="top" title="Preview Invoice"><i className="ri-eye-line ri-20px"></i></a>' +
+              '<div className="dropdown">' +
+              '<a href="javascript:;" className="btn btn-icon btn-sm btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow p-0" data-bs-toggle="dropdown"><i className="ri-more-2-line ri-20px"></i></a>' +
+              '<div className="dropdown-menu dropdown-menu-end">' +
+              '<a href="javascript:;" className="dropdown-item">Download</a>' +
+              '<a href="app-invoice-edit.html" className="dropdown-item">Edit</a>' +
               '<a href="javascript:;" class="dropdown-item">Duplicate</a>' +
               '</div>' +
               '</div>' +

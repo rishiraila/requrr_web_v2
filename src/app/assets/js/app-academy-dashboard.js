@@ -220,7 +220,7 @@
           highlightDataSeries: false
         },
         custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-          return '<div class="px-3 py-2">' + '<span>' + series[seriesIndex][dataPointIndex] + '%</span>' + '</div>';
+          return '<div className="px-3 py-2">' + '<span>' + series[seriesIndex][dataPointIndex] + '%</span>' + '</div>';
         }
       },
       legend: {
@@ -297,14 +297,14 @@
   var dt_academy_course = $('.datatables-academy-course'),
     logoObj = {
       angular:
-        '<div class="avatar"><div class="avatar-initial bg-label-danger rounded"><i class="ri-angularjs-line ri-28px"></i></div></div>',
+        '<div className="avatar"><div className="avatar-initial bg-label-danger rounded"><i className="ri-angularjs-line ri-28px"></i></div></div>',
       figma:
-        '<div class="avatar"><div class="avatar-initial bg-label-warning rounded"><i class="ri-pencil-line ri-28px"></i></div></div>',
+        '<div className="avatar"><div className="avatar-initial bg-label-warning rounded"><i className="ri-pencil-line ri-28px"></i></div></div>',
       react:
-        '<div class="avatar"><div class="avatar-initial bg-label-info rounded"><i class="ri-reactjs-line ri-28px"></i></div></div>',
-      art: '<div class="avatar"><div class="avatar-initial bg-label-success rounded"><i class="ri-palette-line ri-28px"></i></div></div>',
+        '<div className="avatar"><div className="avatar-initial bg-label-info rounded"><i className="ri-reactjs-line ri-28px"></i></div></div>',
+      art: '<div className="avatar"><div className="avatar-initial bg-label-success rounded"><i className="ri-palette-line ri-28px"></i></div></div>',
       fundamentals:
-        '<div class="avatar"><div class="avatar-initial bg-label-primary rounded"><i class="ri-star-smile-line ri-28px"></i></div></div>'
+        '<div className="avatar"><div className="avatar-initial bg-label-primary rounded"><i className="ri-star-smile-line ri-28px"></i></div></div>'
     };
 
   // orders datatable
@@ -339,10 +339,10 @@
           searchable: false,
           checkboxes: true,
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input">';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input">';
           },
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           }
         },
         {
@@ -357,7 +357,7 @@
             if ($image) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $image + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -366,25 +366,25 @@
                 $name = full['user'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex align-items-center">' +
-              '<span class="me-4">' +
+              '<div className="d-flex align-items-center">' +
+              '<span className="me-4">' +
               logoObj[$logo] +
               '</span>' +
               '<div>' +
-              '<a href="app-academy-course-details.html" class="text-heading"><span class="text-wrap fw-medium">' +
+              '<a href="app-academy-course-details.html" className="text-heading"><span className="text-wrap fw-medium">' +
               $course +
               '</span></a>' +
-              '<div class="d-flex align-items-center">' +
-              '<div class="avatar-wrapper me-2">' +
-              '<div class="avatar avatar-xs">' +
+              '<div className="d-flex align-items-center">' +
+              '<div className="avatar-wrapper me-2">' +
+              '<div className="avatar avatar-xs">' +
               $output +
               '</div>' +
               '</div>' +
-              '<small class="text-nowrap text-heading">' +
+              '<small className="text-nowrap text-heading">' +
               $user +
               '</small>' +
               '</div>' +
@@ -401,7 +401,7 @@
             var Hs = Math.floor(duration.asHours());
             var minutes = Math.floor(duration.asMinutes()) - Hs * 60;
             var formattedTime = Hs + 'h ' + minutes + 'm';
-            return '<h6 class="mb-0 text-nowrap">' + formattedTime + '</h6>';
+            return '<h6 className="mb-0 text-nowrap">' + formattedTime + '</h6>';
           }
         },
         {
@@ -412,12 +412,12 @@
             var $average_number = full['number'];
 
             return (
-              '<div class="d-flex align-items-center gap-4">' +
-              '<h6 class="mb-0">' +
+              '<div className="d-flex align-items-center gap-4">' +
+              '<h6 className="mb-0">' +
               $status_number +
               '</h6>' +
-              '<div class="progress w-100 rounded-pill" style="height: 8px;">' +
-              '<div class="progress-bar" style="width: ' +
+              '<div className="progress w-100 rounded-pill" style="height: 8px;">' +
+              '<div className="progress-bar" style="width: ' +
               $status_number +
               '" aria-valuenow="' +
               $status_number +
@@ -438,18 +438,18 @@
             var $view = full['view'];
 
             return (
-              '<div class="d-flex align-items-center justify-content-between">' +
-              '<div class="w-px-50 d-flex align-items-center">' +
-              '<i class="ri-group-line ri-24px me-1_5 text-primary"></i>' +
+              '<div className="d-flex align-items-center justify-content-between">' +
+              '<div className="w-px-50 d-flex align-items-center">' +
+              '<i className="ri-group-line ri-24px me-1_5 text-primary"></i>' +
               $user_number +
               'k' +
               '</div>' +
-              '<div class="w-px-50 d-flex align-items-center">' +
-              '<i class="ri-computer-line ri-24px me-1_5 text-info" ></i>' +
+              '<div className="w-px-50 d-flex align-items-center">' +
+              '<i className="ri-computer-line ri-24px me-1_5 text-info" ></i>' +
               $note +
               '</div>' +
-              '<div class="w-px-50 d-flex align-items-center">' +
-              '<i class="ri-video-upload-line ri-24px me-1_5 text-danger scaleX-n1-rtl" ></i>' +
+              '<div className="w-px-50 d-flex align-items-center">' +
+              '<i className="ri-video-upload-line ri-24px me-1_5 text-danger scaleX-n1-rtl" ></i>' +
               $view +
               '</div>' +
               '</div>'
@@ -502,12 +502,12 @@
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }
     });
-    $('div.head-label').html('<h5 class="card-title mb-0 text-nowrap">Course you are taking</h5>');
+    $('div.head-label').html('<h5 className="card-title mb-0 text-nowrap">Course you are taking</h5>');
   }
 
   // Delete Record

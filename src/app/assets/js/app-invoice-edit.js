@@ -128,7 +128,7 @@ $(function () {
     if ($this.next('textarea').length) {
       $this.next('textarea').val(value);
     } else {
-      $this.after('<textarea class="form-control" rows="2">' + value + '</textarea>');
+      $this.after('<textarea className="form-control" rows="2">' + value + '</textarea>');
     }
   });
 });

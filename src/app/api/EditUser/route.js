@@ -52,3 +52,37 @@ export async function PUT(request) {
     return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
   }
 }
+
+
+
+// GET API for fetching user details
+export async function GET(request) {
+  try {
+    // 1. Get authorization header
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ message: 'Authorization token is missing or invalid' }, { status: 401 });
+    }
+
+    // 2. Verify the token
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user_id = decoded.user_id;
+
+    // 3. Fetch user details from the database
+    const [rows] = await db.execute(
+      'SELECT username, email, name, phone FROM users WHERE sr = ?',
+      [user_id]
+    );
+
+    if (rows.length === 0) {
+      return NextResponse.json({ message: 'User  not found' }, { status: 404 });
+    }
+
+    // 4. Return user details
+    return NextResponse.json(rows[0], { status: 200 });
+
+  } catch (error) {
+    return NextResponse.json({ message: 'Something went wrong', error: error.message }, { status: 500 });
+  }
+}

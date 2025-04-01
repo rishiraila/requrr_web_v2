@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // ? Using jquery vars due to BlockUI jQuery dependency
       refreshEmails.addEventListener('click', e => {
         emailListJq.block({
-          message: '<div class="spinner-border text-primary" role="status"></div>',
+          message: '<div className="spinner-border text-primary" role="status"></div>',
           timeout: 1000,
           css: {
             backgroundColor: 'transparent',
@@ -311,20 +311,20 @@ document.addEventListener('DOMContentLoaded', function () {
             return option.text;
           }
           let $avatar =
-            "<div class='d-flex flex-wrap align-items-center lh-1 me-1'>" +
-            "<div class='avatar avatar-xs me-2 w-px-20 h-px-20'>" +
+            "<div className='d-flex flex-wrap align-items-center lh-1 me-1'>" +
+            "<div className='avatar avatar-xs me-2 w-px-20 h-px-20'>" +
             "<img src='" +
             assetsPath +
             'img/avatars/' +
             $(option.element).data('avatar') +
-            "' alt='avatar' class='rounded-circle' />" +
+            "' alt='avatar' className='rounded-circle' />" +
             '</div>' +
             option.text +
             '</div>';
 
           return $avatar;
         }
-        emailContacts.wrap('<div class="position-relative"></div>').select2({
+        emailContacts.wrap('<div className="position-relative"></div>').select2({
           placeholder: 'Select value',
           dropdownParent: emailContacts.parent(),
           closeOnSelect: false,

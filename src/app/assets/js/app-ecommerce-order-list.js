@@ -69,10 +69,10 @@ $(function () {
           targets: 1,
           orderable: false,
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           },
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input" >';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input" >';
           },
           searchable: false
         },
@@ -98,7 +98,7 @@ $(function () {
               year: 'numeric',
               time: 'numeric'
             });
-            return '<span class="text-nowrap">' + formattedDate + ', ' + timeX + '</span>';
+            return '<span className="text-nowrap">' + formattedDate + ', ' + timeX + '</span>';
           }
         },
         {
@@ -112,7 +112,7 @@ $(function () {
             if ($avatar) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $avatar + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $avatar + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -121,22 +121,22 @@ $(function () {
                 $name = full['customer'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center user-name">' +
-              '<div class="avatar-wrapper me-3">' +
-              '<div class="avatar avatar-sm">' +
+              '<div className="d-flex justify-content-start align-items-center user-name">' +
+              '<div className="avatar-wrapper me-3">' +
+              '<div className="avatar avatar-sm">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<a href="pages-profile-user.html" class="text-truncate text-heading">' +
-              '<span class="fw-medium" > ' +
+              '<div className="d-flex flex-column">' +
+              '<a href="pages-profile-user.html" className="text-truncate text-heading">' +
+              '<span className="fw-medium" > ' +
               $name +
               '</span></a>' +
-              '<small class="text-truncate">' +
+              '<small className="text-truncate">' +
               $email +
               '</small>' +
               '</div>' +
@@ -151,10 +151,10 @@ $(function () {
               $paymentObj = paymentObj[$payment];
             if ($paymentObj) {
               return (
-                '<h6 class="mb-0 w-px-100 d-flex align-items-center ' +
+                '<h6 className="mb-0 w-px-100 d-flex align-items-center ' +
                 $paymentObj.class +
                 '">' +
-                '<i class="ri-circle-fill ri-10px me-1"></i>' +
+                '<i className="ri-circle-fill ri-10px me-1"></i>' +
                 $paymentObj.title +
                 '</h6>'
               );
@@ -169,7 +169,7 @@ $(function () {
             var $status = full['status'];
 
             return (
-              '<span class="badge px-2 rounded-pill ' +
+              '<span className="badge px-2 rounded-pill ' +
               statusObj[$status].class +
               '" text-capitalized>' +
               statusObj[$status].title +
@@ -188,15 +188,15 @@ $(function () {
               $method_number = '@gmail.com';
             }
             return (
-              '<div class="d-flex align-items-center text-nowrap">' +
+              '<div className="d-flex align-items-center text-nowrap">' +
               '<img src="' +
               assetsPath +
               'img/icons/payments/' +
               $method +
               '.png" alt="' +
               $method +
-              '" class="me-2" width="29">' +
-              '<span><i class="ri-more-line"></i>' +
+              '" className="me-2" width="29">' +
+              '<span><i className="ri-more-line"></i>' +
               $method_number +
               '</span>' +
               '</div>'
@@ -212,10 +212,10 @@ $(function () {
           render: function (data, type, full, meta) {
             return (
               '<div>' +
-              '<button class="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="ri-more-2-line ri-20px"></i></button>' +
-              '<div class="dropdown-menu dropdown-menu-end m-0">' +
-              '<a href="app-ecommerce-order-details.html" class="dropdown-item">View</a>' +
-              '<a href="javascript:0;" class="dropdown-item delete-record">' +
+              '<button className="btn btn-sm btn-icon btn-text-secondary waves-effect waves-light rounded-pill dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i className="ri-more-2-line ri-20px"></i></button>' +
+              '<div className="dropdown-menu dropdown-menu-end m-0">' +
+              '<a href="app-ecommerce-order-details.html" className="dropdown-item">View</a>' +
+              '<a href="javascript:0;" className="dropdown-item delete-record">' +
               'Delete' +
               '</a>' +
               '</div>' +
@@ -244,11 +244,11 @@ $(function () {
         {
           extend: 'collection',
           className: 'btn btn-outline-secondary dropdown-toggle waves-effect waves-light',
-          text: '<i class="ri-upload-2-line ri-16px me-2"></i> <span class="d-none d-sm-inline-block">Export</span>',
+          text: '<i className="ri-upload-2-line ri-16px me-2"></i> <span className="d-none d-sm-inline-block">Export</span>',
           buttons: [
             {
               extend: 'print',
-              text: '<i class="ri-printer-line me-1" ></i>Print',
+              text: '<i className="ri-printer-line me-1" ></i>Print',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -285,7 +285,7 @@ $(function () {
             },
             {
               extend: 'csv',
-              text: '<i class="ri-file-text-line me-1" ></i>Csv',
+              text: '<i className="ri-file-text-line me-1" ></i>Csv',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -309,7 +309,7 @@ $(function () {
             },
             {
               extend: 'excel',
-              text: '<i class="ri-file-excel-line me-1"></i>Excel',
+              text: '<i className="ri-file-excel-line me-1"></i>Excel',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -333,7 +333,7 @@ $(function () {
             },
             {
               extend: 'pdf',
-              text: '<i class="ri-file-pdf-line me-1"></i>Pdf',
+              text: '<i className="ri-file-pdf-line me-1"></i>Pdf',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -357,7 +357,7 @@ $(function () {
             },
             {
               extend: 'copy',
-              text: '<i class="ri-file-copy-line me-1"></i>Copy',
+              text: '<i className="ri-file-copy-line me-1"></i>Copy',
               className: 'dropdown-item',
               exportOptions: {
                 columns: [1, 2, 3, 4, 5],
@@ -411,7 +411,7 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }

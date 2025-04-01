@@ -7057,7 +7057,7 @@ h6, .h6 {
 .row-bordered > [class^="col "],
 .row-bordered > [class*=" col "],
 .row-bordered > [class$=" col"],
-.row-bordered > [class=col] {
+.row-bordered > [className=col] {
   position: relative;
   padding-top: 1px;
 }
@@ -7067,7 +7067,7 @@ h6, .h6 {
 .row-bordered > [class^="col "]::before,
 .row-bordered > [class*=" col "]::before,
 .row-bordered > [class$=" col"]::before,
-.row-bordered > [class=col]::before {
+.row-bordered > [className=col]::before {
   content: "";
   position: absolute;
   right: 0;
@@ -7083,7 +7083,7 @@ h6, .h6 {
 .row-bordered > [class^="col "]::after,
 .row-bordered > [class*=" col "]::after,
 .row-bordered > [class$=" col"]::after,
-.row-bordered > [class=col]::after {
+.row-bordered > [className=col]::after {
   content: "";
   position: absolute;
   top: 0;
@@ -7104,8 +7104,8 @@ h6, .h6 {
 .row-bordered.row-border-light > [class*=" col "]::after,
 .row-bordered.row-border-light > [class$=" col"]::before,
 .row-bordered.row-border-light > [class$=" col"]::after,
-.row-bordered.row-border-light > [class=col]::before,
-.row-bordered.row-border-light > [class=col]::after {
+.row-bordered.row-border-light > [className=col]::before,
+.row-bordered.row-border-light > [className=col]::after {
   border-color: rgba(234, 234, 255, 0.06);
 }
 
@@ -7115,7 +7115,7 @@ h6, .h6 {
 [dir=rtl] .row-bordered > [class^="col "]::after,
 [dir=rtl] .row-bordered > [class*=" col "]::after,
 [dir=rtl] .row-bordered > [class$=" col"]::after,
-[dir=rtl] .row-bordered > [class=col]::after {
+[dir=rtl] .row-bordered > [className=col]::after {
   left: auto;
   right: -1px;
 }
@@ -13428,9 +13428,9 @@ button.list-group-item-gray.active {
 .card .row-bordered > [class^=col-] .card .row-bordered > [class$=" col"],
 .card .row-bordered > [class^=col-]::before,
 .card .row-bordered > [class^=col-]::after,
-.card .row-bordered > [class=col] .card .row-bordered > [class$=" col"],
-.card .row-bordered > [class=col]::before,
-.card .row-bordered > [class=col]::after {
+.card .row-bordered > [className=col] .card .row-bordered > [class$=" col"],
+.card .row-bordered > [className=col]::before,
+.card .row-bordered > [className=col]::after {
   border-color: rgba(255, 255, 255, 0.09);
 }
 

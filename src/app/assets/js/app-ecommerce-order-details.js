@@ -41,10 +41,10 @@ $(function () {
           targets: 1,
           orderable: false,
           checkboxes: {
-            selectAllRender: '<input type="checkbox" class="form-check-input">'
+            selectAllRender: '<input type="checkbox" className="form-check-input">'
           },
           render: function () {
-            return '<input type="checkbox" class="dt-checkboxes form-check-input" >';
+            return '<input type="checkbox" className="dt-checkboxes form-check-input" >';
           },
           searchable: false
         },
@@ -67,7 +67,7 @@ $(function () {
                 $image +
                 '" alt="product-' +
                 $name +
-                '" class="rounded-2">';
+                '" className="rounded-2">';
             } else {
               // For Product badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -76,21 +76,21 @@ $(function () {
                 $name = full['product_name'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-2 bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for Product name and product_brand
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center product-name">' +
-              '<div class="avatar-wrapper me-3">' +
-              '<div class="avatar avatar-sm rounded bg-label-secondary">' +
+              '<div className="d-flex justify-content-start align-items-center product-name">' +
+              '<div className="avatar-wrapper me-3">' +
+              '<div className="avatar avatar-sm rounded bg-label-secondary">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<span class="text-nowrap text-heading fw-medium">' +
+              '<div className="d-flex flex-column">' +
+              '<span className="text-nowrap text-heading fw-medium">' +
               $name +
               '</span>' +
-              '<small class="text-truncate d-none d-sm-block">' +
+              '<small className="text-truncate d-none d-sm-block">' +
               $product_brand +
               '</small>' +
               '</div>' +
@@ -163,7 +163,7 @@ $(function () {
                 : '';
             }).join('');
 
-            return data ? $('<table class="table"/><tbody />').append(data) : false;
+            return data ? $('<table className="table"/><tbody />').append(data) : false;
           }
         }
       }

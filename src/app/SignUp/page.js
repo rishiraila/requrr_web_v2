@@ -1,8 +1,59 @@
-import React from 'react'
+'use client'
+import React, {useState} from 'react'
 import Link from 'next/link'
 
 
 export default function page() {
+
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    username: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/Signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          phone: formData.phone
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message);
+        // router.push('/Login')
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      alert('Something went wrong: ' + error.message);
+    }
+  };
+
+
   return (
     <>
     
@@ -84,47 +135,95 @@ export default function page() {
             <h4 className="mb-1">Adventure starts here 🚀</h4>
             <p className="mb-5">Make your app management easy and fun!</p>
 
-            <form id="formAuthentication" className="mb-5" action="index.html" method="GET">
-              <div className="form-floating form-floating-outline mb-5">
-                <input
-                  type="text"
-                  className="form-control"
-                  id="username"
-                  name="username"
-                  placeholder="Enter your username"
-                  autofocus />
-                <label for="username">Username</label>
-              </div>
-              <div className="form-floating form-floating-outline mb-5">
-                <input type="text" className="form-control" id="email" name="email" placeholder="Enter your email" />
-                <label for="email">Email</label>
-              </div>
-              <div className="mb-5 form-password-toggle">
-                <div className="input-group input-group-merge">
-                  <div className="form-floating form-floating-outline">
-                    <input
-                      type="password"
-                      id="password"
-                      className="form-control"
-                      name="password"
-                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                      aria-describedby="password" />
-                    <label for="password">Password</label>
+            <form id="formAuthentication" className="mb-5" onSubmit={handleSubmit}>
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="name"
+                    name="name"
+                    placeholder="Enter your name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label htmlFor="name">Name</label>
+                </div>
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label htmlFor="email">Email</label>
+                </div>
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="phone"
+                    name="phone"
+                    placeholder="Enter your phone number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label htmlFor="phone">Phone</label>
+                </div>
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="username"
+                    name="username"
+                    placeholder="Enter your username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label htmlFor="username">Username</label>
+                </div>
+                <div className="mb-5 form-password-toggle">
+                  <div className="input-group input-group-merge">
+                    <div className="form-floating form-floating-outline">
+                      <input
+                        type="password"
+                        id="password"
+                        className="form-control"
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                      />
+                      <label htmlFor="password">Password</label>
+                    </div>
                   </div>
-                  <span className="input-group-text cursor-pointer"><i className="ri-eye-off-line"></i></span>
                 </div>
-              </div>
-              <div className="mb-5">
-                <div className="form-check mt-2">
-                  <input className="form-check-input" type="checkbox" id="terms-conditions" name="terms" />
-                  <label className="form-check-label" for="terms-conditions">
-                    I agree to
-                    <a href="javascript:void(0);">privacy policy & terms</a>
-                  </label>
+                <div className="mb-5 form-password-toggle">
+                  <div className="input-group input-group-merge">
+                    <div className="form-floating form-floating-outline">
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        className="form-control"
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        required
+                      />
+                      <label htmlFor="confirmPassword">Confirm Password</label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <button className="btn btn-primary d-grid w-100">Sign up</button>
-            </form>
+                <button className="btn btn-primary d-grid w-100">Sign up</button>
+              </form>
 
             <p className="text-center">
               <span>Already have an account?</span>

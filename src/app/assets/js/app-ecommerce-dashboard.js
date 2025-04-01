@@ -413,7 +413,7 @@
             if ($user_img) {
               // For Avatar image
               var $output =
-                '<img src="' + assetsPath + 'img/avatars/' + $user_img + '" alt="Avatar" class="rounded-circle">';
+                '<img src="' + assetsPath + 'img/avatars/' + $user_img + '" alt="Avatar" className="rounded-circle">';
             } else {
               // For Avatar badge
               var stateNum = Math.floor(Math.random() * 6);
@@ -422,21 +422,21 @@
                 $name = full['name'],
                 $initials = $name.match(/\b\w/g) || [];
               $initials = (($initials.shift() || '') + ($initials.pop() || '')).toUpperCase();
-              $output = '<span class="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
+              $output = '<span className="avatar-initial rounded-circle bg-label-' + $state + '">' + $initials + '</span>';
             }
             // Creates full output for row
             var $row_output =
-              '<div class="d-flex justify-content-start align-items-center user-name">' +
-              '<div class="avatar-wrapper">' +
-              '<div class="avatar avatar-sm me-3">' +
+              '<div className="d-flex justify-content-start align-items-center user-name">' +
+              '<div className="avatar-wrapper">' +
+              '<div className="avatar avatar-sm me-3">' +
               $output +
               '</div>' +
               '</div>' +
-              '<div class="d-flex flex-column">' +
-              '<span class="name text-truncate h6 mb-0">' +
+              '<div className="d-flex flex-column">' +
+              '<span className="name text-truncate h6 mb-0">' +
               $name +
               '</span>' +
-              '<small class="user_name text-truncate">@' +
+              '<small className="user_name text-truncate">@' +
               $username +
               '</small>' +
               '</div>' +
@@ -460,7 +460,7 @@
               return data;
             }
             return (
-              '<span class="d-flex align-items-center gap-2 text-heading"><i class="' +
+              '<span className="d-flex align-items-center gap-2 text-heading"><i className="' +
               $role[$role_name].icon +
               ' ri-22px text-' +
               $role[$role_name].class +
@@ -484,7 +484,7 @@
               return data;
             }
             return (
-              '<span class="badge rounded-pill ' +
+              '<span className="badge rounded-pill ' +
               $status[$status_number].class +
               '">' +
               $status[$status_number].title +
