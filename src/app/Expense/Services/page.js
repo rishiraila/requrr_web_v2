@@ -176,10 +176,7 @@ export default function page() {
                             <small>{service.service_desc}</small><br />
                             <small className="text-muted">Default Duration [ monthly ] : {service.min_duration}</small>
                           </div>
-                          {/* <div className="d-flex align-items-center">
-                            <div className="badge bg-label-primary rounded-pill me-2">{getEntityName(service.entity_id)}</div>
-                            <i className="ri-pencil-line text-primary" role="button" title="Edit"></i>
-                          </div> */}
+
                           <div className="d-flex align-items-center">
                             <div className="badge bg-label-primary rounded-pill me-2">{getEntityName(service.entity_id)}</div>
                             <div className="dropdown">
@@ -232,44 +229,93 @@ export default function page() {
 
                 <div className="px-3 mt-4">
                   <ul className="list-group">
-                  {entities.map((entity) => {
-        // Find the corresponding service count for the entity
-        const serviceCountData = ServiceCount.find(count => count.entity_name === entity.entity_name);
-        const serviceCount = serviceCountData ? serviceCountData.service_count : 0; // Default to 0 if not found
+                    {entities.map((entity) => {
+                      // Find the corresponding service count for the entity
+                      const serviceCountData = ServiceCount.find(count => count.entity_name === entity.entity_name);
+                      const serviceCount = serviceCountData ? serviceCountData.service_count : 0; // Default to 0 if not found
 
-        // Determine the icon class based on entity name
-        let iconClass;
-        switch (entity.entity_name) {
-          case 'Business':
-            iconClass = 'ri-briefcase-4-line ri-24px text-success';
-            break;
-          case 'Personal':
-            iconClass = 'ri-user-3-line ri-24px text-primary';
-            break;
-          case 'Home':
-            iconClass = 'ri-home-5-line ri-24px text-warning';
-            break;
-          case 'Office':
-            iconClass = 'ri-building-4-line ri-24px text-secondary';
-            break;
-          default:
-            iconClass = 'ri-question-line ri-24px'; // Default icon if none match
-        }
+                      // Determine the icon class based on entity name
+                      let iconClass;
+                      switch (entity.entity_name) {
+                        case 'Business':
+                          iconClass = 'ri-briefcase-4-line ri-24px text-success';
+                          break;
+                        case 'Personal':
+                          iconClass = 'ri-user-3-line ri-24px text-primary';
+                          break;
+                        case 'Home':
+                          iconClass = 'ri-home-5-line ri-24px text-warning';
+                          break;
+                        case 'Office':
+                          iconClass = 'ri-building-4-line ri-24px text-secondary';
+                          break;
+                        default:
+                          iconClass = 'ri-question-line ri-24px'; // Default icon if none match
+                      }
 
-        return (
-          <li key={entity.id} className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
-            <div className="d-flex align-items-center">
-              <i className={iconClass}></i> {/* Render the appropriate icon */}
-              <span className="ms-2">{entity.entity_name}</span>
-            </div>
-            <span className={`badge ${serviceCount > 0 ? 'bg-label-primary' : 'bg-label-secondary'} rounded-pill text-dark`}>
-              {serviceCount > 0 ? serviceCount : 'No Services'} Services
-            </span>
-          </li>
-        );
-      })}
+                      return (
+                        <li key={entity.id} className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
+                          <div className="d-flex align-items-center">
+                            <i className={iconClass}></i> {/* Render the appropriate icon */}
+                            <span className="ms-2">{entity.entity_name}</span>
+                          </div>
+                          <span className={`badge ${serviceCount > 0 ? 'bg-label-primary' : 'bg-label-secondary'} rounded-pill text-dark`}>
+                            {serviceCount > 0 ? serviceCount : 'No Services'} Services
+                          </span>
 
-                    
+                        </li>
+                      );
+                    })}
+
+
+                  </ul>
+                </div>
+              </div>
+
+    
+
+              <div className="card-body pb-1 px-0">
+                <h5 className='ms-4'>Entity Income & Expense Ratio</h5>
+                <div className="px-3 mt-4">
+                  <ul className="list-group">
+                    {services
+                      .filter((service, index, self) =>
+                        index === self.findIndex((s) =>
+                          s.entity_name === service.entity_name && s.category === service.category
+                        )
+                      )
+                      .map((service) => {
+
+                        // Determine the icon class based on entity name
+                      let iconClass;
+                      switch (service.entity_name) {
+                        case 'Business':
+                          iconClass = 'ri-briefcase-4-line ri-24px text-success';
+                          break;
+                        case 'Personal':
+                          iconClass = 'ri-user-3-line ri-24px text-primary';
+                          break;
+                        case 'Home':
+                          iconClass = 'ri-home-5-line ri-24px text-warning';
+                          break;
+                        case 'Office':
+                          iconClass = 'ri-building-4-line ri-24px text-secondary';
+                          break;
+                        default:
+                          iconClass = 'ri-question-line ri-24px'; // Default icon if none match
+                      }
+                        return (
+                          <li key={service.id} className="list-group-item d-flex justify-content-between align-items-center border-0 rounded-3 shadow-sm mb-2 py-5">
+                            <div className="d-flex align-items-center">
+                              <i className={iconClass}></i> {/* Render the appropriate icon */}
+                              <span className="ms-2">{service.entity_name}</span>
+                            </div>
+                            <span className={`badge ${service.category === "expense" ? 'bg-label-danger' : 'bg-label-success'} rounded-pill text-dark`}>
+                              {service.amount > 0 ? service.amount : '0'} Rs
+                            </span>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </div>
               </div>

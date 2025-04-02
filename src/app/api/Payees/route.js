@@ -55,13 +55,26 @@ export async function GET(request) {
 }
 
 // 📌 **CREATE**: Insert new payee
+// 📌 **CREATE**: Insert new payee
 export async function POST(request) {
   try {
-    const user_id = await getUserIdFromToken(request);
+    const user_id = await  getUserIdFromToken(request);
     const body = await request.json();
-    const { entity_name, service_name, payee_name, phone, email, amount, category } = body;
+    const { 
+      entity_name, 
+      service_name, 
+      payee_name, 
+      phone, 
+      email, 
+      amount, 
+      category, 
+      startDate, 
+      endDate, 
+      paidAmount, 
+      paymentDate 
+    } = body;
 
-    if (!entity_name || !service_name || !payee_name || !phone || !email || !amount || !category) {
+    if (!entity_name || !service_name || !payee_name || !phone || !email || !amount || !category || !startDate || !endDate || !paidAmount || !paymentDate) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
@@ -74,8 +87,8 @@ export async function POST(request) {
 
     // Insert new payee
     await db.execute(
-      'INSERT INTO payees (user_id, entity_id, service_id, payee_name, phone, email, amount, category) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [user_id, entity.id, service.id, payee_name, phone, email, amount, category]
+      'INSERT INTO payees (user_id, entity_id, service_id, payee_name, phone, email, amount, category, startDate, endDate, paidAmount, paymentDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [user_id, entity.id, service.id, payee_name, phone, email, amount, category, startDate, endDate, paidAmount, paymentDate]
     );
 
     return NextResponse.json({ message: 'Payee created successfully' }, { status: 201 });
@@ -86,13 +99,27 @@ export async function POST(request) {
 }
 
 // 📌 **UPDATE**: Modify an existing payee
+// 📌 **UPDATE**: Modify an existing payee
 export async function PUT(request) {
   try {
     const user_id = await getUserIdFromToken(request);
     const body = await request.json();
-    const { payee_id, entity_name, service_name, payee_name, phone, email, amount, category } = body;
+    const { 
+      payee_id, 
+      entity_name, 
+      service_name, 
+      payee_name, 
+      phone, 
+      email, 
+      amount, 
+      category, 
+      startDate, 
+      endDate, 
+      paidAmount, 
+      paymentDate 
+    } = body;
 
-    if (!payee_id || !entity_name || !service_name || !payee_name || !phone || !email || !amount || !category) {
+    if (!payee_id || !entity_name || !service_name || !payee_name || !phone || !email || !amount || !category || !startDate || !endDate || !paidAmount || !paymentDate) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
@@ -105,8 +132,8 @@ export async function PUT(request) {
 
     // Update payee
     const [updateResult] = await db.execute(
-      'UPDATE payees SET entity_id = ?, service_id = ?, payee_name = ?, phone = ?, email = ?, amount = ?, category = ? WHERE id = ? AND user_id = ?',
-      [entity.id, service.id, payee_name, phone, email, amount, category, payee_id, user_id]
+      'UPDATE payees SET entity_id = ?, service_id = ?, payee_name = ?, phone = ?, email = ?, amount = ?, category = ?, startDate = ?, endDate = ?, paidAmount = ?, paymentDate = ? WHERE id = ? AND user_id = ?',
+      [entity.id, service.id, payee_name, phone, email, amount, category, startDate, endDate, paidAmount, paymentDate, payee_id, user_id]
     );
 
     if (updateResult.affectedRows === 0) {
@@ -119,7 +146,6 @@ export async function PUT(request) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
-
 // 📌 **DELETE**: Remove a payee by ID
 export async function DELETE(request) {
   try {

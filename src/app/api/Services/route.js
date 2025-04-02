@@ -53,13 +53,19 @@ export async function POST(request) {
   try {
     const decoded = await authenticate(request);
     const body = await request.json();
-    const { service_name, service_desc, entity_name, min_duration, amount, category } = body;
-    if (!service_name || !service_desc || !min_duration || !amount || !category || !entity_name) {
+    const { service_name, service_desc, entity_name, min_duration, category } = body;
+
+    // Check for required fields excluding amount
+    if (!service_name || !service_desc || !min_duration || !category || !entity_name) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
+
+    // Validate category
     if (!['income', 'expense'].includes(category.toLowerCase())) {
       return NextResponse.json({ message: 'Invalid category' }, { status: 400 });
     }
+
+    // Check if entity exists
     const [entityRows] = await db.execute(
       `SELECT id FROM entities WHERE entity_name = ? LIMIT 1`,
       [entity_name]
@@ -68,11 +74,14 @@ export async function POST(request) {
       return NextResponse.json({ message: 'Entity not found' }, { status: 404 });
     }
     const entity_id = entityRows[0].id;
+
+    // Insert service without amount
     const [result] = await db.execute(
-      `INSERT INTO services (user_id, entity_id, service_name, service_desc, min_duration, amount, category)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [decoded.user_id, entity_id, service_name, service_desc, min_duration, amount, category.toLowerCase()]
+      `INSERT INTO services (user_id, entity_id, service_name, service_desc, min_duration, category)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [decoded.user_id, entity_id, service_name, service_desc, min_duration, category.toLowerCase()]
     );
+
     return NextResponse.json({
       message: 'Service created successfully',
       data: { id: result.insertId, ...body, entity_id },
@@ -90,14 +99,19 @@ export async function PUT(request) {
   try {
     const decoded = await authenticate(request);
     const body = await request.json();
-    const { id, service_name, service_desc, min_duration, amount, category } = body;
-    if (!id || !service_name || !service_desc || !min_duration || !amount || !category) {
+    const { id, service_name, service_desc, min_duration, category } = body;
+
+    // Check for required fields excluding amount
+    if (!id || !service_name || !service_desc || !min_duration || !category) {
       return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
     }
+
+    // Update service without amount
     await db.execute(
-      `UPDATE services SET service_name = ?, service_desc = ?, min_duration = ?, amount = ?, category = ? WHERE id = ? AND user_id = ?`,
-      [service_name, service_desc, min_duration, amount, category.toLowerCase(), id, decoded.user_id]
+      `UPDATE services SET service_name = ?, service_desc = ?, min_duration = ?, category = ? WHERE id = ? AND user_id = ?`,
+      [service_name, service_desc, min_duration, category.toLowerCase(), id, decoded.user_id]
     );
+
     return NextResponse.json({ message: 'Service updated successfully' }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: error.message }, { status: 500 });

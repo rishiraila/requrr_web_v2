@@ -162,19 +162,26 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li className="menu-item">
+          {/* <li className="menu-item">
             <Link href="/Expense/Payees" className="menu-link ">
               <i className="menu-icon tf-icons ri-bank-line"></i>
               <div >Payees</div>
             </Link>
-          </li>
+          </li> */}
 
           <li className="menu-item">
+            <Link href="/Expense/Payees" className="menu-link ">
+              <i className="menu-icon tf-icons ri-loop-left-line"></i>
+              <div >Payees & Subscriptions</div>
+            </Link>
+          </li>
+
+          {/* <li className="menu-item">
             <Link href="/Expense/Subscriptions" className="menu-link ">
               <i className="menu-icon tf-icons ri-loop-left-line"></i>
               <div >Subscriptions</div>
             </Link>
-          </li>
+          </li> */}
 
         </ul>
       </aside>

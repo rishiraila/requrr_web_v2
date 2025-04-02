@@ -55,7 +55,7 @@ export default function EditServiceModal({ show, onClose, service, onServiceUpda
                     <input type="text" name="service_name" value={formData.service_name || ''} onChange={handleChange} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
                     <textarea name="service_desc" value={formData.service_desc || ''} onChange={handleChange} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc', resize: 'none' }} />
                     <input type="number" name="min_duration" value={formData.min_duration || ''} onChange={handleChange} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
-                    <input type="number" name="amount" value={formData.amount || ''} onChange={handleChange} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} />
+                    {/* <input type="number" name="amount" value={formData.amount || ''} onChange={handleChange} required style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }} /> */}
                     <select name="category" value={formData.category || ''} onChange={handleChange} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}>
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>

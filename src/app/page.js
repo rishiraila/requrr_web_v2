@@ -19,7 +19,7 @@ export default function Home() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Subscriptions", {
+      const response = await axios.get("http://localhost:3000/api/Payees", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -27,62 +27,107 @@ export default function Home() {
 
       console.log(subscriptions)
 
-      setSubscriptions(response.data.data); // Assuming service has a 'name' property
+      setSubscriptions(subscriptions); // Assuming service has a 'name' property
 
     } catch (err) {
       console.error("Error fetching entities:", err);
     }
   };
+
   // Fetch entities on mount
   useEffect(() => {
     fetchSubscriptions();
   }, []);
 
-  // Update the chart data construction
-  const data = {
-    labels: Subscriptions.map(sub => sub.entity_name), // This will work now
-    datasets: [
-      {
-        label: 'Subscription Amounts',
-        data: Subscriptions.map(sub => sub.amount), // This will work now
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
+  // Calculate remaining payments
+  const calculateRemainingPayments = () => {
+    return Subscriptions.map(sub => {
+      const remainingAmount = parseFloat(sub.remainingAmount);
+      const category = sub.category;
+
+      return {
+        ...sub,
+        remainingPayment: category === 'income' ? remainingAmount : -remainingAmount, // Positive for income, negative for expense
+      };
+    });
   };
+
+  const updatedSubscriptions = calculateRemainingPayments();
+
+  // Group subscriptions by entity
+  const groupByEntity = (subscriptions) => {
+    return subscriptions.reduce((acc, sub) => {
+      if (!acc[sub.entity_name]) {
+        acc[sub.entity_name] = [];
+      }
+      acc[sub.entity_name].push(sub);
+      return acc;
+    }, {});
+  };
+
+  const groupedSubscriptions = groupByEntity(updatedSubscriptions);
 
   return (
     <>
       <div className='container'>
-
         <div className="card-body my-5">
-          <h4>Subscription Amounts Overview</h4>
-          <Bar data={data} options={{ responsive: true }} />
-          <div className="row row-cols-1 row-cols-md-3 g-4 mt-4">
-            {Subscriptions.map((subscription) => (
-              <div className="col" key={subscription.id}>
-                <div className="card shadow-sm border-0 h-100">
-                  <div className="card-body d-flex flex-column">
-                    <h5 className="card-title mb-1">{subscription.payee_name}</h5>
-                    <span className="badge bg-label-primary me-1">Entity: {subscription.entity_name}</span>
-                    <span className="badge bg-label-info">Service: {subscription.service_name}</span>
-                    <p className="mt-2 mb-1 text-muted">Phone: {subscription.payee_phone}</p>
-                    <p className="text-muted">Email: {subscription.payee_email}</p>
-                    <div className="d-flex justify-content-between align-items-center mt-3">
-                      <span className="fw-bold text-success">Amt: ${subscription.amount}</span>
-                      <small className="text-muted">Start: {new Date(subscription.startDate).toLocaleDateString()}</small>
-                      <small className="text-muted">End: {new Date(subscription.endDate).toLocaleDateString()}</small>
+          <div className='row'>
+
+            {Object.keys(groupedSubscriptions).map(entity => {
+              const entitySubscriptions = groupedSubscriptions[entity];
+
+              // Update the chart data construction for each entity
+              const data = {
+                labels: entitySubscriptions.map(sub => sub.payee_name), // Payee names as labels
+                datasets: [
+                  {
+                    label: 'Remaining Payments',
+                    data: entitySubscriptions.map(sub => sub.remainingPayment), // Remaining payments
+                    backgroundColor: entitySubscriptions.map(sub => sub.category === 'income' ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
+                    borderColor: entitySubscriptions.map(sub => sub.category === 'income' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
+                    borderWidth: 1,
+                  },
+                ],
+              };
+
+              return (
+                <div className='container'>
+
+                  <div key={entity} className="card p-5 mb-3">
+                    <h5>{entity} Entity Overview</h5>
+                    <Bar data={data} options={{ responsive: true }} />
+                    <div className="row row-cols-1 row-cols-md-3 g-4 mt-4">
+                      {entitySubscriptions.map((subscription) => (
+                        <div className="col" key={subscription.id}>
+                          <div className="card shadow-sm border-0 h-100">
+                            <div className="card-body d-flex flex-column">
+                              <h5 className="card-title mb-1">{subscription.payee_name}</h5>
+                              <span className="badge bg-label-primary me-1">Entity: {subscription.entity_name}</span>
+                              <span className="badge bg-label-info">Service: {subscription.service_name}</span>
+                              <p className="mt-2 mb-1 text-muted">Phone: {subscription.phone}</p>
+                              <p className="text-muted">Email: {subscription.email}</p>
+                              <div className="d-flex justify-content-between align-items-center mt-3">
+                                <span className={`fw-bold ${subscription.category === 'income' ? 'text-success' : 'text-danger'}`}>
+                                  Amt: ${Math.abs(subscription.remainingPayment)}
+                                </span>
+                                <small className="text-muted">Start: {new Date(subscription.startDate).toLocaleDateString()}</small>
+                                <small className="text-muted">End: {new Date(subscription.endDate).toLocaleDateString()}</small>
+                              </div>
+                              <p className="text-muted mt-3 mb-0">Payment Date: {new Date(subscription.paymentDate).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-muted mt-3 mb-0">Payment Date: {new Date(subscription.paymentDate).toLocaleDateString()}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+
           </div>
+
         </div>
       </div>
-
     </>
   );
 }

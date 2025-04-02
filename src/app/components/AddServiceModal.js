@@ -83,10 +83,10 @@ export default function AddServiceModal({ show, onClose, onServiceAdded, entitie
                   <input type="number" className="form-control" name="min_duration" onChange={handleChange} required />
                 </div>
 
-                <div className="mb-3">
+                {/* <div className="mb-3">
                   <label className="form-label">Amount</label>
                   <input type="number" className="form-control" name="amount" onChange={handleChange} required />
-                </div>
+                </div> */}
 
                 <div className="mb-3">
                   <label className="form-label">Category</label>
