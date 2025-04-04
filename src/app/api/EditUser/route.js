@@ -15,6 +15,7 @@ export async function OPTIONS() {
 };
 
 // PUT API for updating user details
+// PUT API for updating user details, including startAmount
 export async function PUT(request) {
   try {
     // 1. Get authorization header
@@ -29,17 +30,17 @@ export async function PUT(request) {
     const user_id = decoded.user_id;
 
     // 3. Parse request body
-    const { username, email, name, phone } = await request.json();
+    const { username, email, name, phone, startAmount } = await request.json();
 
     // 4. Validate required fields
-    if (!username || !email || !name || !phone) {
+    if (!username || !email || !name || !phone || startAmount === undefined) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
     // 5. Update user in the database
     const [result] = await db.execute(
-      'UPDATE users SET username = ?, email = ?, name = ?, phone = ? WHERE sr = ?',
-      [username, email, name, phone, user_id]
+      'UPDATE users SET username = ?, email = ?, name = ?, phone = ?, startAmount = ? WHERE sr = ?',
+      [username, email, name, phone, startAmount, user_id]
     );
 
     if (result.affectedRows === 0) {
@@ -55,7 +56,7 @@ export async function PUT(request) {
 
 
 
-// GET API for fetching user details
+// GET API for fetching user details, including startAmount
 export async function GET(request) {
   try {
     // 1. Get authorization header
@@ -71,12 +72,12 @@ export async function GET(request) {
 
     // 3. Fetch user details from the database
     const [rows] = await db.execute(
-      'SELECT username, email, name, phone FROM users WHERE sr = ?',
+      'SELECT username, email, name, phone, startAmount FROM users WHERE sr = ?',
       [user_id]
     );
 
     if (rows.length === 0) {
-      return NextResponse.json({ message: 'User  not found' }, { status: 404 });
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
     // 4. Return user details

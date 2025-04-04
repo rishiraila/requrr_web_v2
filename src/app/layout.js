@@ -2,7 +2,7 @@
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { usePathname, useRouter  } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -24,8 +24,8 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthPage  = ["/login", "/signup"].includes(pathname.toLowerCase()); 
-  
+  const isAuthPage = ["/login", "/signup"].includes(pathname.toLowerCase());
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -36,6 +36,13 @@ export default function RootLayout({ children }) {
   }, [pathname]); // Runs when pathname changes
   return (
     <html lang="en">
+      <head>
+        <link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css" />
+        <link rel="stylesheet" href="/assets/vendor/css/pages/app-logistics-dashboard.css" />
+        <link rel="stylesheet" href="/assets/vendor/css/pages/cards-statistics.css" />
+        <link rel="stylesheet" href="/assets/vendor/css/pages/cards-analytics.css" />
+
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
 
         <div className="layout-wrapper layout-content-navbar">

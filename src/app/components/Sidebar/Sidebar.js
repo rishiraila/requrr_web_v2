@@ -34,9 +34,11 @@ import "@fontsource/inter/600.css"; // Weight 600
 import "@fontsource/inter/700.css"; // Weight 700
 import Link from 'next/link';
 
+import { usePathname } from 'next/navigation'
 
 export default function Sidebar() {
 
+  const pathname = usePathname()
 
   return (
     <>
@@ -141,21 +143,21 @@ export default function Sidebar() {
 
          
 
-          <li className="menu-item">
+          <li className={`menu-item ${pathname == '/' ? 'active' : ''}`}>
             <Link href="/" className="menu-link ">
               <i className="menu-icon tf-icons ri-bar-chart-fill"></i>
               <div >Dashboard</div>
             </Link>
           </li>
 
-          <li className="menu-item">
+          <li className={`menu-item ${pathname == '/Expense/Entities' ? 'active' : ''}`}>
             <Link href="/Expense/Entities" className="menu-link ">
               <i className="menu-icon tf-icons ri-stack-line"></i>
               <div >Entities</div>
             </Link>
           </li>
 
-          <li className="menu-item">
+          <li className={`menu-item ${pathname == '/Expense/Services' ? 'active' : ''}`}>
             <Link href="/Expense/Services" className="menu-link ">
               <i className="menu-icon tf-icons ri-cloud-line"></i>
               <div >Services</div>
@@ -169,7 +171,7 @@ export default function Sidebar() {
             </Link>
           </li> */}
 
-          <li className="menu-item">
+          <li className={`menu-item ${pathname == '/Expense/Payees' ? 'active' : ''}`}>
             <Link href="/Expense/Payees" className="menu-link ">
               <i className="menu-icon tf-icons ri-loop-left-line"></i>
               <div >Payees & Subscriptions</div>

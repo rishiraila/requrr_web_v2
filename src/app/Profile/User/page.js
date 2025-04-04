@@ -10,6 +10,7 @@ export default function page() {
     email: '',
     name: '',
     phone: '',
+    startAmount: ''
   });
 
   const [isEdited, setIsEdited] = useState(false);
@@ -22,6 +23,8 @@ export default function page() {
           'Authorization': `${token}`,
         },
       });
+
+      console.log(response.data)
       if (response.status === 200) {
         setFormData(response.data);
       } else {
@@ -110,7 +113,7 @@ export default function page() {
                   <div
                     className="d-flex align-items-md-end align-items-sm-start align-items-center justify-content-md-between justify-content-start mx-5 flex-md-row flex-column gap-6">
                     <div className="user-profile-info">
-                    <h4 className="mb-2">{formData.name || 'John Doe'}</h4>
+                      <h4 className="mb-2">{formData.name || 'John Doe'}</h4>
                       <ul
                         className="list-inline mb-0 d-flex align-items-center flex-wrap justify-content-sm-start justify-content-center gap-4">
                         <li className="list-inline-item">
@@ -127,10 +130,10 @@ export default function page() {
                     </div>
                     <div>
                       <button onClick={handleDelete} className="btn btn-danger">
-                      <i className="ri-user-follow-line ri-16px me-2"></i>Delete User
+                        <i className="ri-user-follow-line ri-16px me-2"></i>Delete User
                       </button>
                     </div>
-                    
+
                   </div>
                 </div>
               </div>
@@ -288,6 +291,19 @@ export default function page() {
                       required
                     />
                   </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="startAmount" className="form-label">Start Amount</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      id="startAmount"
+                      name="startAmount"
+                      value={formData.startAmount}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                   {isEdited && (
                     <button type="submit" className="btn btn-primary">Update</button>
                   )}
@@ -295,7 +311,7 @@ export default function page() {
               </div>
             </div>
           </div>
-          </div>
+        </div>
 
       </div>
 
