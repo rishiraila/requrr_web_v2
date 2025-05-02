@@ -108,7 +108,7 @@ export default function page() {
             </svg>
           </span>
         </span>
-        <span className="app-brand-text demo text-heading fw-semibold">Materialize</span>
+        <span className="app-brand-text demo text-heading fw-semibold">Expirio</span>
       </a>
       
       <div className="authentication-inner row m-0">

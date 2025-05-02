@@ -122,7 +122,7 @@ export default function Sidebar() {
                 </svg>
               </span>
             </span>
-            <span className="app-brand-text demo menu-text fw-semibold ms-2">Materialize</span>
+            <span className="app-brand-text demo menu-text fw-semibold ms-2">Expirio</span>
           </Link>
 
           <Link href="/" className="layout-menu-toggle menu-link text-large ms-auto">

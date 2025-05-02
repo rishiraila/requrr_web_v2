@@ -94,7 +94,7 @@ export default function page() {
             </svg>
           </span>
         </span>
-        <span className="app-brand-text demo text-heading fw-semibold">Materialize</span>
+        <span className="app-brand-text demo text-heading fw-semibold">Expirio</span>
       </a>
       
       <div className="authentication-inner row m-0">
@@ -119,7 +119,7 @@ export default function page() {
         <div
           className="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-12 py-6">
           <div className="w-px-400 mx-auto pt-5 pt-lg-0">
-            <h4 className="mb-1">Welcome to Materialize! 👋</h4>
+            <h4 className="mb-1">Welcome to Expirio! 👋</h4>
             <p className="mb-5">Please sign-in to your account and start the adventure</p>
 
             <form id="formAuthentication" className="mb-5" onSubmit={handleLogin}>
