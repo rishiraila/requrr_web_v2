@@ -44,7 +44,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Entities", {
+      const response = await axios.get("/api/Entities", {
         headers: { Authorization: token }, // Send token in header
       });
 
@@ -69,7 +69,7 @@ export default function page() {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await axios.post("http://localhost:3000/api/Entities", formData, {
+      const response = await axios.post("/api/Entities", formData, {
         headers: {
           "Authorization": token,
           "Content-Type": "application/json",
@@ -112,7 +112,7 @@ export default function page() {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/Entities/`, // Send entity ID in URL
+        `/api/Entities/`, // Send entity ID in URL
         editFormData,
         {
           headers: {
@@ -171,7 +171,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/GET_SERVICES_COUNT_BY_ENTITY", {
+      const response = await axios.get("/api/GET_SERVICES_COUNT_BY_ENTITY", {
         headers: { Authorization: token }, // Send token in header
       });
 

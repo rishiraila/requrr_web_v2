@@ -17,7 +17,7 @@ export default function EditServiceModal({ show, onClose, service, onServiceUpda
         e.preventDefault();
         try {
             const token = localStorage.getItem("token");
-            await axios.put(`http://localhost:3000/api/Services/`, formData, {
+            await axios.put(`/api/Services/`, formData, {
                 headers: { Authorization: token },
             });
             onServiceUpdated();

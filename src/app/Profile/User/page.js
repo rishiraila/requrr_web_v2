@@ -18,7 +18,7 @@ export default function page() {
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get('http://localhost:3000/api/EditUser ', {
+      const response = await axios.get('/api/EditUser ', {
         headers: {
           'Authorization': `${token}`,
         },

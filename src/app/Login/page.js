@@ -18,7 +18,7 @@ export default function page() {
     setError(null);
 
     try {
-      const response = await axios.post("http://localhost:3000/api/Login", {
+      const response = await axios.post("/api/Login", {
         username: email,  // Adjust this if the backend expects `username`
         password: password,
       });

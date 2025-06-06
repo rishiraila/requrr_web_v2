@@ -36,7 +36,7 @@ export default function page() {
 
       console.log("📢 Fetching services with token:", token);
 
-      const response = await axios.get('http://localhost:3000/api/Services', {
+      const response = await axios.get('/api/Services', {
         headers: { Authorization: token }, // Send token in header
       });
 
@@ -81,7 +81,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Entities", {
+      const response = await axios.get("/api/Entities", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -108,7 +108,7 @@ export default function page() {
     if (window.confirm("Are you sure you want to delete this service?")) {
       try {
         const token = localStorage.getItem("token");
-        await axios.delete("http://localhost:3000/api/Services", {
+        await axios.delete("/api/Services", {
           headers: { Authorization: token },
           data: { id },
         });
@@ -128,7 +128,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/GET_SERVICES_COUNT_BY_ENTITY", {
+      const response = await axios.get("/api/GET_SERVICES_COUNT_BY_ENTITY", {
         headers: { Authorization: token }, // Send token in header
       });
 

@@ -16,78 +16,6 @@ export default function Home() {
   const [Expense, setExpense] = useState([])
   const [ExpenseEntities, setExpenseEntities] = useState([]);
 
-  // useEffect(() => {
-  //   const incomeSubscriptions = Subscriptions.filter(sub => sub.category === 'income'); // Filter for income
-  //   const expenseSubscriptions = Subscriptions.filter(sub => sub.category === 'expense'); // Filter for income
-
-  //   const sortedIncomeSubscriptions = incomeSubscriptions.sort((a, b) => {
-  //     return parseFloat(a.amount) - parseFloat(b.amount); // Sort by amount (ascending)
-  //   });
-
-  //   const sortedExpesneSubscriptions = expenseSubscriptions.sort((a, b) => {
-  //     return parseFloat(a.amount) - parseFloat(b.amount); // Sort by amount (ascending)
-  //   });
-
-
-  //   // console.log(sortedIncomeSubscriptions);
-  //   // console.log(sortedExpesneSubscriptions);
-
-  //   setIncome(sortedIncomeSubscriptions); // Update the Income state
-  //   setExpense(sortedExpesneSubscriptions); // Update the Income state
-
-  //   // Step 1: Create a map to hold unique entities and their total amounts
-  //   const entityMap = {};
-
-  //   incomeSubscriptions.forEach(sub => {
-  //     const entityName = sub.entity_name;
-  //     const amount = parseFloat(sub.amount);
-
-  //     // If the entity already exists, add the amount to its total
-  //     if (entityMap[entityName]) {
-  //       entityMap[entityName] += amount;
-  //     } else {
-  //       // If it doesn't exist, create a new entry
-  //       entityMap[entityName] = amount;
-  //     }
-  //   });
-
-  //   // Step 2: Convert the entityMap to an array of objects
-  //   const uniqueEntitiesWithAmounts = Object.keys(entityMap).map(entity => ({
-  //     entity_name: entity,
-  //     total_amount: entityMap[entity],
-  //   }));
-
-  //   console.log(uniqueEntitiesWithAmounts)
-
-  //   setIncomeEntities(uniqueEntitiesWithAmounts); // Update the IncomeEntities state with unique entities and their total amounts
-
-  //   // expense
-  //   const expenseEntityMap = {};
-
-  //   expenseSubscriptions.forEach(sub => {
-  //     const expenseEntityMap = sub.entity_name;
-  //     const amount = parseFloat(sub.amount);
-
-  //     // If the entity already exists, add the amount to its total
-  //     if (expenseEntityMap[expenseEntityMap]) {
-  //       expenseEntityMap[expenseEntityMap] += amount;
-  //     } else {
-  //       // If it doesn't exist, create a new entry
-  //       expenseEntityMap[expenseEntityMap] = amount;
-  //     }
-  //   });
-
-  //   // Step 2: Convert the entityMap to an array of objects
-  //   const expenseUniqueEntitiesWithAmounts = Object.keys(expenseEntityMap).map(entity => ({
-  //     entity_name: entity,
-  //     total_amount: entityMap[entity],
-  //   }));
-
-  //   console.log(expenseUniqueEntitiesWithAmounts)
-
-  //   setExpenseEntities(uniqueEntitiesWithAmounts); // Update the IncomeEntities state with unique entities and their total amounts
-  // }, [Subscriptions]);
-
 
   useEffect(() => {
     const incomeSubscriptions = Subscriptions.filter(sub => sub.category === 'income'); // Filter for income
@@ -166,7 +94,7 @@ export default function Home() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Payees", {
+      const response = await axios.get("/api/Payees", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -226,7 +154,7 @@ export default function Home() {
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get('http://localhost:3000/api/EditUser ', {
+      const response = await axios.get('/api/EditUser ', {
         headers: {
           'Authorization': `${token}`,
         },

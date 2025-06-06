@@ -31,7 +31,7 @@ export default function page() {
     try {
       const token = localStorage.getItem("token");
       console.log(token)
-      const response = await axios.get('http://localhost:3000/api/Payees', {
+      const response = await axios.get('/api/Payees', {
         headers: { Authorization: `${token}` },
       });
       console.log(response.data)
@@ -76,7 +76,7 @@ export default function page() {
     try {
       const token = localStorage.getItem("token");
       console.log("Sending Payload:", newPayee);
-      await axios.post('http://localhost:3000/api/Payees', newPayee, {
+      await axios.post('/api/Payees', newPayee, {
         headers: {
           "Authorization": `${token}`, // Add 'Bearer ' prefix
           "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export default function page() {
     try {
       const token = localStorage.getItem("token");
       if (isEditing) {
-        await axios.put('http://localhost:3000/api/Payees', { ...newPayee, payee_id: selectedPayee.id }, {
+        await axios.put('/api/Payees', { ...newPayee, payee_id: selectedPayee.id }, {
           headers: { "Authorization": `${token}`, "Content-Type": "application/json" },
         });
       }
@@ -107,7 +107,7 @@ export default function page() {
   const handleDelete = async (payeeId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:3000/api/Payees?payee_id=${payeeId}`, {
+      await axios.delete(`/api/Payees?payee_id=${payeeId}`, {
         headers: {
           "Authorization": `${token}`,
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Entities", {
+      const response = await axios.get("/api/Entities", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -152,7 +152,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Services", {
+      const response = await axios.get("/api/Services", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 

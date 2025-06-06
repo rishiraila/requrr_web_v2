@@ -24,7 +24,7 @@ export default function AddServiceModal({ show, onClose, onServiceAdded, entitie
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/api/Services', formData, {
+      const response = await axios.post('/api/Services', formData, {
         headers: { 
           "Authorization": token,
           "Content-Type": "application/json",

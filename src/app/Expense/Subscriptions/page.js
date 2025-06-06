@@ -45,7 +45,7 @@ export default function page() {
   const fetchSubscriptions = async () => {
     try {
       const token = localStorage.getItem('token'); // Get token from storage
-      const response = await axios.get(`http://localhost:3000/api/Subscriptions`, {
+      const response = await axios.get(`/api/Subscriptions`, {
         headers: {
           Authorization: ` ${token}`,
           'Content-Type': 'application/json',
@@ -131,7 +131,7 @@ export default function page() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(`http://localhost:3000/api/Subscriptions/`, {
+      const response = await axios.put(`/api/Subscriptions/`, {
         id: updateFormData.id,
         entity_name: updateFormData.entity_name,
         service_name: updateFormData.service_name,
@@ -187,7 +187,7 @@ export default function page() {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.post(`http://localhost:3000/api/Subscriptions`, {
+      const response = await axios.post(`/api/Subscriptions`, {
         entity_name: formData.entity_name,
         service_name: formData.service_name,
         payee_name: formData.payee_name,
@@ -232,7 +232,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Entities", {
+      const response = await axios.get("/api/Entities", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -254,7 +254,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Services", {
+      const response = await axios.get("/api/Services", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
@@ -277,7 +277,7 @@ export default function page() {
     }
 
     try {
-      const response = await axios.get("http://localhost:3000/api/Payees", {
+      const response = await axios.get("/api/Payees", {
         headers: { Authorization: token }, // Ensure Bearer token format
       });
 
