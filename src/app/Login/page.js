@@ -18,15 +18,15 @@ export default function page() {
     setError(null);
 
     try {
-      const response = await axios.post("/api/Login", {
-        username: email,  // Adjust this if the backend expects `username`
+      const response = await axios.post("/api/auth/login", {
+        email: email,  // Adjust this if the backend expects `username`
         password: password,
       });
 
       console.log("Login Success:", response.data);
 
       // Save token to localStorage
-      localStorage.setItem("token", response.data.token);
+      localStorage.setItem('token', response.data.token);
 
       // Redirect to dashboard or homepage
       window.location.href = "/";

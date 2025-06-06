@@ -82,3 +82,45 @@ a {
 .form-container button:last-child {
   margin-right: 0; /* Remove margin for the last button */
 }
+
+.react-calendar__tile {
+  padding: 8px !important;
+}
+
+.react-calendar__tile--active {
+  background: #007bff !important;
+  color: white !important;
+}
+
+.react-calendar{
+  border: none !important;
+}
+
+/* Selected (clicked) tile */
+.react-calendar__tile--active {
+  background-color: #666CFF !important; /* Primary color */
+  color: #fff !important;
+  border-radius: 10px !important;
+  box-shadow: none;
+}
+
+/* Today's date */
+.react-calendar__tile--now {
+  background: #e7e7ff !important;
+  border-radius: 10px !important;
+  font-weight: 600;
+  color: #666CFF !important;
+}
+
+/* Default tile styling */
+.react-calendar__tile {
+  border-radius: 10px !important;
+  aspect-ratio: 1 / 1; /* Makes tile square */
+  padding: 0.5rem !important;
+  transition: background-color 0.2s;
+}
+
+/* On hover */
+.react-calendar__tile:hover {
+  background: #f0f0ff !important;
+}

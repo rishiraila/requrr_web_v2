@@ -1,18 +1,24 @@
 'use client'
 import React, {useState} from 'react'
 import Link from 'next/link'
-
+import { useRouter } from 'next/navigation';
 
 export default function page() {
 
+    const router = useRouter();
+
   const [formData, setFormData] = useState({
-    name: '',
+    // name: '',
     email: '',
-    phone: '',
+    // phone: '',
     username: '',
     password: '',
     confirmPassword: ''
   });
+
+  
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -26,8 +32,10 @@ export default function page() {
       return;
     }
 
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch('/api/Signup', {
+      const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,15 +44,15 @@ export default function page() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          name: formData.name,
-          phone: formData.phone
+          // name: formData.name,
+          // phone: formData.phone
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
         alert(data.message);
-        // router.push('/Login')
+        router.push('/Login')
       } else {
         alert(data.message);
       }
@@ -136,7 +144,7 @@ export default function page() {
             <p className="mb-5">Make your app management easy and fun!</p>
 
             <form id="formAuthentication" className="mb-5" onSubmit={handleSubmit}>
-                <div className="form-floating form-floating-outline mb-5">
+                {/* <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
                     className="form-control"
@@ -148,7 +156,7 @@ export default function page() {
                     required
                   />
                   <label htmlFor="name">Name</label>
-                </div>
+                </div> */}
                 <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
@@ -162,7 +170,7 @@ export default function page() {
                   />
                   <label htmlFor="email">Email</label>
                 </div>
-                <div className="form-floating form-floating-outline mb-5">
+                {/* <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
                     className="form-control"
@@ -174,7 +182,7 @@ export default function page() {
                     required
                   />
                   <label htmlFor="phone">Phone</label>
-                </div>
+                </div> */}
                 <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"

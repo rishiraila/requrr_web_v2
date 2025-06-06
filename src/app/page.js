@@ -1,8 +1,11 @@
 'use client'
+import 'react-calendar/dist/Calendar.css'; // move to top!
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css'; // default styles
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -10,16 +13,18 @@ export default function Home() {
 
   const [Subscriptions, setSubscriptions] = useState([])
 
-  const [Income, setIncome] = useState([])
-  const [IncomeEntities, setIncomeEntities] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(5); // Default to 5 rows
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const [Expense, setExpense] = useState([])
-  const [ExpenseEntities, setExpenseEntities] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+
+  const [expenseFilter, setExpenseFilter] = useState('6m'); // '6m', '12m', 'all'
 
 
   useEffect(() => {
-    const incomeSubscriptions = Subscriptions.filter(sub => sub.category === 'income'); // Filter for income
-    const expenseSubscriptions = Subscriptions.filter(sub => sub.category === 'expense'); // Filter for expense
+    const incomeSubscriptions = Subscriptions; // Filter for income
+    const expenseSubscriptions = []; // Filter for expense
 
     const sortedIncomeSubscriptions = incomeSubscriptions.sort((a, b) => {
       return parseFloat(a.amount) - parseFloat(b.amount); // Sort by amount (ascending)
@@ -29,14 +34,14 @@ export default function Home() {
       return parseFloat(a.amount) - parseFloat(b.amount); // Sort by amount (ascending)
     });
 
-    setIncome(sortedIncomeSubscriptions); // Update the Income state
-    setExpense(sortedExpenseSubscriptions); // Update the Expense state
+    // setIncome(sortedIncomeSubscriptions); // Update the Income state
+    // setExpense(sortedExpenseSubscriptions); // Update the Expense state
 
     // Step 1: Create a map to hold unique entities and their total amounts for income
     const entityMap = {};
 
     incomeSubscriptions.forEach(sub => {
-      const entityName = sub.entity_name;
+      const entityName = sub.client_name;
       const amount = parseFloat(sub.amount);
 
       // If the entity already exists, add the amount to its total
@@ -56,13 +61,13 @@ export default function Home() {
 
     console.log(uniqueEntitiesWithAmounts)
 
-    setIncomeEntities(uniqueEntitiesWithAmounts); // Update the IncomeEntities state with unique entities and their total amounts
+    // setIncomeEntities(uniqueEntitiesWithAmounts); // Update the IncomeEntities state with unique entities and their total amounts
 
     // expense
     const expenseEntityMap = {}; // Correctly initialize the map for expenses
 
     expenseSubscriptions.forEach(sub => {
-      const entityName = sub.entity_name; // Use a different variable name
+      const entityName = sub.client_name; // Use a different variable name
       const amount = parseFloat(sub.amount);
 
       // If the entity already exists, add the amount to its total
@@ -82,7 +87,7 @@ export default function Home() {
 
     console.log(expenseUniqueEntitiesWithAmounts)
 
-    setExpenseEntities(expenseUniqueEntitiesWithAmounts); // Update the ExpenseEntities state with unique entities and their total amounts
+    // setExpenseEntities(expenseUniqueEntitiesWithAmounts); // Update the ExpenseEntities state with unique entities and their total amounts
   }, [Subscriptions]);
 
   const fetchSubscriptions = async () => {
@@ -94,11 +99,16 @@ export default function Home() {
     }
 
     try {
-      const response = await axios.get("/api/Payees", {
-        headers: { Authorization: token }, // Ensure Bearer token format
+      const response = await axios.get("/api/income_records/upcoming", {
+        headers: { Authorization: `Bearer ${token}` }, // Ensure Bearer token format
       });
 
-      const subscriptions = response.data.data
+      // const subscriptions = response.data.data
+      // const subscriptions = response.data
+      const subscriptions = response.data.map(record => ({
+        ...record,
+        category: 'income' // Add this line
+      }));
 
       console.log("dashborad", subscriptions)
 
@@ -122,7 +132,7 @@ export default function Home() {
 
       return {
         ...sub,
-        remainingPayment: category === 'income' ? remainingAmount : -remainingAmount, // Positive for income, negative for expense
+        remainingPayment: parseFloat(sub.amount), // Positive for income, negative for expense
       };
     });
   };
@@ -132,10 +142,10 @@ export default function Home() {
   // Group subscriptions by entity
   const groupByEntity = (subscriptions) => {
     return subscriptions.reduce((acc, sub) => {
-      if (!acc[sub.entity_name]) {
-        acc[sub.entity_name] = [];
+      if (!acc[sub.client_name]) {
+        acc[sub.client_name] = [];
       }
-      acc[sub.entity_name].push(sub);
+      acc[sub.client_name].push(sub);
       return acc;
     }, {});
   };
@@ -175,395 +185,639 @@ export default function Home() {
     fetchUserData();
   }, []);
 
+  const totalClients = new Set(
+    Subscriptions.map(sub => sub.client_name)
+  ).size;
+
+  const activeServices = new Set(
+    Subscriptions.map(sub => sub.service_id)
+  ).size;
+
+  const pendingRenewals = Subscriptions.filter(sub => {
+    const end = new Date(sub.due_date);
+    const today = new Date();
+    const diffDays = (end - today) / (1000 * 60 * 60 * 24);
+    return diffDays <= 15 && diffDays >= 0;
+  }).length;
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  // const mtdRevenue = Subscriptions.filter(sub => {
+  //   const date = new Date(sub.payment_date);
+  //   return (
+  //     sub.category === 'income' &&
+  //     date.getMonth() === currentMonth &&
+  //     date.getFullYear() === currentYear
+  //   );
+  // }).reduce((total, sub) => total + parseFloat(sub.amount), 0);
+
+  const mtdRevenue = Subscriptions.filter(sub => {
+    const date = new Date(sub.payment_date);
+    return (
+      date.getMonth() === currentMonth &&
+      date.getFullYear() === currentYear
+    );
+  }).reduce((total, sub) => total + parseFloat(sub.amount), 0);
+
+  // const upcomingRenewals = Subscriptions.filter(sub => {
+  //   const end = new Date(sub.due_date);
+  //   const today = new Date();
+  //   const diffDays = (end - today) / (1000 * 60 * 60 * 24);
+  //   return diffDays <= 15 && diffDays >= 0;
+  // });
+
+  const upcomingRenewals = Subscriptions.filter(sub => {
+  if (!sub.due_date) return false;
+  
+  const end = new Date(sub.due_date);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize today's date
+  
+  const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+  return diffDays <= 15 && diffDays >= 0;
+});
+
+  const filteredRenewals = upcomingRenewals.filter(sub =>
+    sub.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sub.service_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = pageSize === 'all' ? 1 : Math.ceil(filteredRenewals.length / pageSize);
+
+  const paginatedRenewals = pageSize === 'all'
+    ? filteredRenewals
+    : filteredRenewals.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
 
+  // Prepare monthly expenses (grouped by month name and year)
+  const monthlyExpenseMap = {};
+
+  const monthlyIncomeMap = {};
+
+  // Subscriptions.forEach(sub => {
+  //   if (sub.category === 'expense') {
+  //     const date = new Date(sub.payment_date);
+  //     const now = new Date();
+
+  //     let include = false;
+  //     if (expenseFilter === '6m') {
+  //       const sixMonthsAgo = new Date();
+  //       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  //       include = date >= sixMonthsAgo && date <= now;
+  //     } else if (expenseFilter === '12m') {
+  //       const twelveMonthsAgo = new Date();
+  //       twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  //       include = date >= twelveMonthsAgo && date <= now;
+  //     } else {
+  //       include = true; // 'all'
+  //     }
+
+  //     if (include) {
+  //       const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+  //       const amount = parseFloat(sub.amount || 0);
+  //       monthlyExpenseMap[yearMonth] = (monthlyExpenseMap[yearMonth] || 0) + amount;
+  //     }
+  //   }
+  // });
+
+  Subscriptions.forEach(sub => {
+    const date = new Date(sub.payment_date);
+    const now = new Date();
+
+    let include = false;
+    if (expenseFilter === '6m') {
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      include = date >= sixMonthsAgo && date <= now;
+    } else if (expenseFilter === '12m') {
+      const twelveMonthsAgo = new Date();
+      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+      include = date >= twelveMonthsAgo && date <= now;
+    } else {
+      include = true; // 'all'
+    }
+
+    if (include) {
+      const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+      const amount = parseFloat(sub.amount || 0);
+      monthlyIncomeMap[yearMonth] = (monthlyIncomeMap[yearMonth] || 0) + amount;
+    }
+  });
+
+  // const sortedExpenseMonths = Object.keys(monthlyExpenseMap).sort((a, b) => new Date(a) - new Date(b));
+
+  const sortedIncomeMonths = Object.keys(monthlyIncomeMap).sort((a, b) => new Date(a) - new Date(b));
+
+  // const monthlyExpenseChartData = {
+  //   labels: sortedExpenseMonths,
+  //   datasets: [
+  //     {
+  //       label: 'Expenses',
+  //       data: sortedExpenseMonths.map(month => monthlyExpenseMap[month]),
+  //       backgroundColor: '#666CFF',
+  //       borderRadius: 8,
+  //     },
+  //   ],
+  // };
+
+  const monthlyIncomeChartData = {
+    labels: sortedIncomeMonths,
+    datasets: [
+      {
+        label: 'Income',
+        data: sortedIncomeMonths.map(month => monthlyIncomeMap[month]),
+        backgroundColor: '#666CFF',
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  const dueDates = Subscriptions
+    .filter(sub => {
+      const end = new Date(sub.due_date);
+      return end >= new Date(); // only future
+    })
+    .map(sub => new Date(sub.due_date).toDateString()); // Normalize
+
+  const groupedRenewals = Subscriptions
+    .filter(sub => new Date(sub.due_date) >= new Date()) // only future
+    .reduce((acc, sub) => {
+      const dateStr = new Date(sub.due_date).toDateString();
+      if (!acc[dateStr]) acc[dateStr] = [];
+      acc[dateStr].push(sub);
+      return acc;
+    }, {});
 
   return (
     <>
       <div className='container'>
 
-        <div className="row g-6">
-          <div className="col-sm-6 col-lg-3">
+        <div className="row">
+
+          {/* new logic starts here */}
+
+          <h5 className='ps-4'>Overview</h5>
+
+          <div className="col-sm-6 col-lg-3 mb-5">
             <div className="card card-border-shadow-primary h-100">
               <div className="card-body">
                 <div className="d-flex align-items-center mb-2">
                   <div className="avatar me-4">
                     <span className="avatar-initial rounded-3 bg-label-primary"
-                    ><i className="ri-line-chart-line ri-24px"></i
+                    ><i className="ri-group-line ri-24px"></i
                     ></span>
                   </div>
-                  <h4 className="mb-0">{(
-                    parseFloat(formData.startAmount || 0) +
-                    Income.reduce((total, income) => total + parseFloat(income.amount || 0), 0) -
-                    Expense.reduce((total, expense) => total + parseFloat(expense.amount || 0), 0)
-                  ).toFixed(2)}</h4>
+                  <h4 className="mb-0">{totalClients}</h4>
                 </div>
-                <h6 className="mb-0 fw-normal">Amount To Start With</h6>
-                <p className="mb-0">
-                  <span className="me-1 fw-medium">Note : </span>
-                  <small className="text-muted">Amount after adding or substracting income and expenses</small>
+                <h6 className="mb-0 fw-normal">Total Clients </h6>
+                <p className="mb-0 text-success">
+                  <span className="me-1 fw-medium text-success">+18.2%</span>
+                  <small className="">than last week</small>
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="col-sm-6 col-lg-3">
-            <div className="card card-border-shadow-info h-100">
-              <div className="card-body">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="avatar me-4">
-                    <span className="avatar-initial rounded-3 bg-label-info"
-                    ><i className="ri-money-dollar-circle-line ri-24px"></i
-                    ></span>
-                  </div>
-                  <h4 className="mb-0">{Income.reduce((total, income) => total + parseFloat(income.amount) || 0, 0).toFixed(2)}</h4>
-                </div>
-                <h6 className="mb-0 fw-normal">Total Income</h6>
-                <p className="mb-0">
-                  <span className="me-1 fw-medium">+4.3%</span>
-                  <small className="text-muted">than last week</small>
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-sm-6 col-lg-3">
-            <div className="card card-border-shadow-danger h-100">
-              <div className="card-body">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="avatar me-4">
-                    <span className="avatar-initial rounded-3 bg-label-danger"
-                    ><i className="ri-wallet-line ri-24px"></i
-                    ></span>
-                  </div>
-                  <h4 className="mb-0">{Expense.reduce((total, expense) => total + parseFloat(expense.amount) || 0, 0).toFixed(2)}</h4>
-                </div>
-                <h6 className="mb-0 fw-normal">Total Expense</h6>
-                <p className="mb-0">
-                  <span className="me-1 fw-medium">-2.5%</span>
-                  <small className="text-muted">than last week</small>
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="col-sm-6 col-lg-3">
+          <div className="col-sm-6 col-lg-3 mb-5">
             <div className="card card-border-shadow-warning h-100">
               <div className="card-body">
                 <div className="d-flex align-items-center mb-2">
                   <div className="avatar me-4">
                     <span className="avatar-initial rounded-3 bg-label-warning"
-                    ><i className="ri-bar-chart-line ri-24px"></i
+                    ><i className="ri-suitcase-line ri-24px"></i
                     ></span>
                   </div>
-                  <h4 className="mb-0">{Income.reduce((total, income) => total + parseFloat(income.amount) || 0, 0).toFixed(2) - Expense.reduce((total, expense) => total + parseFloat(expense.amount) || 0, 0).toFixed(2)}</h4>
+                  <h4 className="mb-0">{activeServices}</h4>
                 </div>
-                <h6 className="mb-0 fw-normal">Operating Difference</h6>
-                <p className="mb-0">
+                <h6 className="mb-0 fw-normal">Active Services</h6>
+                <p className="mb-0 text-danger">
                   <span className="me-1 fw-medium">-8.7%</span>
-                  <small className="text-muted">than last week</small>
+                  <small className="">than last week</small>
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="col-xxl-6 order-5 order-xxl-0">
-            <div className="card h-100">
-              <div className="card-header d-flex align-items-center justify-content-between">
-                <div className="card-title mb-0">
-                  <h5 className="m-0 me-2">Income overview</h5>
-                </div>
-                <div className="dropdown">
-                  <button
-                    className="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
-                    type="button"
-                    id="deliveryExceptions"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false">
-                    <i className="ri-more-2-line ri-20px"></i>
-                  </button>
-                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="deliveryExceptions">
-                    <a className="dropdown-item" href="javascript:void(0);">Select All</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Refresh</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Share</a>
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-danger h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-danger"
+                    ><i className="ri-time-line ri-24px"></i
+                    ></span>
                   </div>
+                  <h4 className="mb-0">{pendingRenewals}</h4>
                 </div>
-              </div>
-              <div className="card-body pb-2">
-                <div className="d-none d-lg-flex vehicles-progress-labels mb-5">
-                  {IncomeEntities.map((income) => {
-                    return <>
-
-                      <div className="vehicles-progress-label on-the-way-text" style={{ width: "100%" }}>{income.entity_name}</div>
-                    </>
-                  })}
-
-                </div>
-                <div
-                  className="vehicles-overview-progress progress rounded-4 bg-transparent mb-2"
-                  style={{ height: "46px" }}>
-
-                  {IncomeEntities.map((income) => {
-
-                    const maxAmount = Math.max(...IncomeEntities.map(income => income.total_amount));
-
-                    const getClassByIncome = (amount) => {
-                      if (amount < 5000) {
-                        return 'bg-light';
-                      } else if (amount < 10000) {
-                        return 'bg-info';
-                      } else if (amount < 600000) {
-                        return 'bg-primary';
-                      } else if (amount < 800000) {
-                        return 'bg-warning';
-                      } else {
-                        return 'bg-danger';
-                      }
-                    };
-
-                    const widthPercentage = maxAmount > 0 ? (income.total_amount / maxAmount) * 100 : 0;
-
-                    return <div
-                      className={`progress-bar small fw-medium text-start text-heading  ${getClassByIncome(income.total_amount)}  px-1 px-lg-4`}
-                      role="progressbar"
-                      // style={{ width: `${widthPercentage}` }}
-                      style={{ width: `100%` }}
-                      aria-valuenow={income.total_amount}
-                      aria-valuemin="0"
-                      aria-valuemax="1000000">
-                      {income.total_amount}
-                    </div>
-                  })}
-
-
-                </div>
-
-                <div className='d-flex justify-content-between align-items-center py-3'>
-                  <div className=' text-dark'><b>Amount : <span className='text-primary'>{Income.reduce((total, income) => total + parseFloat(income.amount) || 0, 0).toFixed(2)}</span></b></div>
-                  <div className=' text-dark'><b>Paid : <span className='text-success'>{Income.reduce((total, income) => total + parseFloat(income.paidAmount) || 0, 0).toFixed(2)}</span></b></div>
-                  <div className=' text-dark'><b>Pending Income : <span className='text-danger'>{Income.reduce((total, income) => total + parseFloat(income.remainingAmount) || 0, 0).toFixed(2)}</span></b>
-                  </div>
-                </div>
-
-                <div className="table-responsive">
-                  <table className="table card-table">
-                    <tbody className="table-border-bottom-0">
-                      {Income.map((income) => {
-                        return (<>
-                          <tr  >
-                            <td className="w-75 ps-0">
-                              <div className="d-flex justify-content-start align-items-center">
-                                <div className="me-2">
-                                  <i className="text-heading ri-building-line ri-24px"></i>
-                                </div>
-                                <div>
-                                  <h6 className="mb-0 fw-normal">{income.payee_name}</h6>
-                                  <p className="mb-0 fw-normal">{income.entity_name}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end pe-0 text-nowrap">
-                              <h6 className="mb-0 text-primary">{income.amount}</h6>
-                            </td>
-                            <td className="text-end pe-0 ps-6">
-                              <span className='text-success'>{income.paidAmount}</span>
-                            </td>
-                            <td className="text-end pe-0 ps-6">
-                              <span className='text-danger'>{income.remainingAmount}</span>
-                            </td>
-                          </tr>
-                        </>)
-                      })}
-
-
-
-
-
-                    </tbody>
-                  </table>
-
-
-
-                </div>
+                <h6 className="mb-0 fw-normal">Pending Renewals</h6>
+                <p className="mb-0 text-success">
+                  <span className="me-1 fw-medium">+4.3%</span>
+                  <small className="">than last week</small>
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="col-xxl-6 order-5 order-xxl-0">
-            <div className="card h-100">
-              <div className="card-header d-flex align-items-center justify-content-between">
-                <div className="card-title mb-0">
-                  <h5 className="m-0 me-2">Expense overview</h5>
-                </div>
-                <div className="dropdown">
-                  <button
-                    className="btn btn-text-secondary rounded-pill text-muted border-0 p-1"
-                    type="button"
-                    id="deliveryExceptions"
-                    data-bs-toggle="dropdown"
-                    aria-haspopup="true"
-                    aria-expanded="false">
-                    <i className="ri-more-2-line ri-20px"></i>
-                  </button>
-                  <div className="dropdown-menu dropdown-menu-end" aria-labelledby="deliveryExceptions">
-                    <a className="dropdown-item" href="javascript:void(0);">Select All</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Refresh</a>
-                    <a className="dropdown-item" href="javascript:void(0);">Share</a>
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-info h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-info"
+                    ><i className="ri-money-rupee-circle-line ri-24px"></i
+                    ></span>
+
                   </div>
+                  <h4 className="mb-0">{mtdRevenue.toFixed(2)}</h4>
                 </div>
-              </div>
-              <div className="card-body pb-2">
-                <div className="d-none d-lg-flex vehicles-progress-labels mb-5">
-                  {ExpenseEntities.map((expense) => {
-                    return <>
-
-                      <div className="vehicles-progress-label on-the-way-text" style={{ width: "100%" }}>{expense.entity_name}</div>
-                    </>
-                  })}
-
-                </div>
-                <div
-                  className="vehicles-overview-progress progress rounded-4 bg-transparent mb-2"
-                  style={{ height: "46px" }}>
-
-                  {ExpenseEntities.map((expense) => {
-
-                    const maxAmount = Math.max(...IncomeEntities.map(expense => expense.total_amount));
-
-                    const getClassByExpense = (amount) => {
-                      if (amount < 5000) {
-                        return 'bg-light';
-                      } else if (amount < 10000) {
-                        return 'bg-info';
-                      } else if (amount < 100000) {
-                        return 'bg-primary';
-                      } else if (amount < 800000) {
-                        return 'bg-warning';
-                      } else {
-                        return 'bg-danger';
-                      }
-                    };
-
-                    const widthPercentage = maxAmount > 0 ? (expense.total_amount / maxAmount) * 100 : 0;
-
-                    return <div
-                      className={`progress-bar small fw-medium text-start text-heading  ${getClassByExpense(expense.total_amount)}  px-1 px-lg-4`}
-                      role="progressbar"
-                      // style={{ width: `${widthPercentage}` }}
-                      style={{ width: `100%` }}
-                      aria-valuenow={expense.total_amount}
-                      aria-valuemin="0"
-                      aria-valuemax="1000000">
-                      {expense.total_amount}
-                    </div>
-                  })}
-
-
-                </div>
-                <div className='d-flex justify-content-between align-items-center py-3'>
-                  <div className=' text-dark'><b>Amount : <span className='text-primary'>{Expense.reduce((total, income) => total + parseFloat(income.amount) || 0, 0).toFixed(2)}</span></b></div>
-                  <div className=' text-dark'><b>Paid : <span className='text-success'>{Expense.reduce((total, income) => total + parseFloat(income.paidAmount) || 0, 0).toFixed(2)}</span></b></div>
-                  <div className=' text-dark'><b>Pending Expense : <span className='text-danger'>{Expense.reduce((total, income) => total + parseFloat(income.remainingAmount) || 0, 0).toFixed(2)}</span></b>
-                  </div>
-                </div>
-                <div className="table-responsive">
-                  <table className="table card-table">
-                    <tbody className="table-border-bottom-0">
-                      {Expense.map((expense) => {
-                        return (<>
-                          <tr  >
-                            <td className="w-75 ps-0">
-                              <div className="d-flex justify-content-start align-items-center">
-                                <div className="me-2">
-                                  <i className="text-heading ri-building-line ri-24px"></i>
-                                </div>
-                                <div>
-                                  <h6 className="mb-0 fw-normal">{expense.payee_name}</h6>
-                                  <p className="mb-0 fw-normal">{expense.entity_name}</p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="text-end pe-0 text-nowrap">
-                              <h6 className="mb-0 text-primary">{expense.amount}</h6>
-                            </td>
-                            <td className="text-end pe-0 ps-6">
-                              <span className='text-success'>{expense.paidAmount}</span>
-                            </td>
-                            <td className="text-end pe-0 ps-6">
-                              <span className='text-danger'>{expense.remainingAmount}</span>
-                            </td>
-                          </tr>
-                        </>)
-                      })}
-
-                    </tbody>
-                  </table>
-
-
-                </div>
+                <h6 className="mb-0 fw-normal">Revenue (MTD)</h6>
+                <p className="mb-0 text-danger">
+                  <span className="me-1 fw-medium">-2.5%</span>
+                  <small className="">than last week</small>
+                </p>
               </div>
             </div>
           </div>
 
+          {/* new logic ends here */}
 
         </div>
 
         <div className="card-body my-5">
-          <div className='row'>
+          {/* <div className='row'>
 
-            {Object.keys(groupedSubscriptions).map(entity => {
-              const entitySubscriptions = groupedSubscriptions[entity];
+          </div> */}
+          <div className='card'>
 
-              // Update the chart data construction for each entity
-              const data = {
-                labels: entitySubscriptions.map(sub => sub.payee_name), // Payee names as labels
-                datasets: [
-                  {
-                    label: 'Remaining Payments',
-                    data: entitySubscriptions.map(sub => sub.remainingPayment), // Remaining payments
-                    backgroundColor: entitySubscriptions.map(sub => sub.category === 'income' ? 'rgba(75, 192, 192, 0.6)' : 'rgba(255, 99, 132, 0.6)'),
-                    borderColor: entitySubscriptions.map(sub => sub.category === 'income' ? 'rgba(75, 192, 192, 1)' : 'rgba(255, 99, 132, 1)'),
-                    borderWidth: 1,
-                  },
-                ],
-              };
+            <div className="col-12 p-4">
+              {/* <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="mb-0">Upcoming Renewals</h5>
+                <div style={{ maxWidth: "250px" }}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div> */}
 
-              return (
-                <div className='container'>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
+                <h5 className="mb-0">Upcoming Renewals</h5>
+                <div className="d-flex gap-3 align-items-center">
+                  <div className="d-flex align-items-center">
+                    <label className="me-2 mb-0 fw-medium">Show</label>
+                    <select
+                      className="form-select form-select-sm"
+                      value={pageSize}
+                      onChange={(e) => {
+                        const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                        setPageSize(value);
+                        setCurrentPage(1); // Reset to first page
+                      }}
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={50}>50</option>
+                      <option value="all">All</option>
+                    </select>
+                  </div>
 
-                  <div key={entity} className="card p-5 mb-3">
-                    <h5>{entity} Entity Overview</h5>
-                    <Bar data={data} options={{ responsive: true }} />
-                    <div className="row row-cols-1 row-cols-md-3 g-4 mt-4">
-                      {entitySubscriptions.map((subscription) => (
-                        <div className="col" key={subscription.id}>
-                          <div className="card shadow-sm border-0 h-100">
-                            <div className="card-body d-flex flex-column">
-                              <h5 className="card-title mb-1">{subscription.payee_name}</h5>
-                              <span className="badge bg-label-primary me-1">Entity: {subscription.entity_name}</span>
-                              <span className="badge bg-label-info">Service: {subscription.service_name}</span>
-                              <p className="mt-2 mb-1 text-muted">Phone: {subscription.phone}</p>
-                              <p className="text-muted">Email: {subscription.email}</p>
-                              <div className="d-flex justify-content-between align-items-center mt-3">
-                                <span className={`fw-bold ${subscription.category === 'income' ? 'text-success' : 'text-danger'}`}>
-                                  Amt: ${Math.abs(subscription.remainingPayment)}
-                                </span>
-                                <small className="text-muted">Start: {new Date(subscription.startDate).toLocaleDateString()}</small>
-                                <small className="text-muted">End: {new Date(subscription.endDate).toLocaleDateString()}</small>
-                              </div>
-                              <p className="text-muted mt-3 mb-0">Payment Date: {new Date(subscription.paymentDate).toLocaleDateString()}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div style={{ maxWidth: "250px" }}>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1); // Reset to first page
+                      }}
+                    />
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+
+              <div className="table-responsive">
+                <table className="table table-striped table-hover">
+                  <thead className="table-light">
+                    <tr>
+                      <th>Client</th>
+                      <th>Service</th>
+                      <th>Due Date</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRenewals.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="text-center">No upcoming renewals found.</td>
+                      </tr>
+                    ) : (
+                      paginatedRenewals.map((sub) => {
+                        const dueDate = new Date(sub.due_date);
+                        const today = new Date();
+                        const diffDays = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                        const badgeClass = diffDays <= 5 ? 'bg-danger' : diffDays <= 10 ? 'bg-warning' : 'bg-primary';
+
+                        return (
+                          <tr key={sub.id}>
+                            <td>{sub.client_name}</td>
+                            <td>{sub.service_name}</td>
+                            <td>{new Date(sub.due_date).toLocaleDateString()}</td>
+                            <td>₹{parseFloat(sub.amount).toFixed(2)}</td>
+                            <td>
+                              <span className={`badge ${badgeClass}`}>
+                                Due in {diffDays} days
+                              </span>
+                            </td>
+                            <td>
+                              <button className="btn btn-sm btn-outline-primary me-2">
+                                <i className="ri-edit-line"></i>
+                              </button>
+                              <button className="btn btn-sm btn-outline-danger">
+                                <i className="ri-delete-bin-line"></i>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+                {pageSize !== 'all' && totalPages > 1 && (
+                  <div className="d-flex justify-content-end align-items-center mt-3 gap-2">
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => prev - 1)}
+                    >
+                      Previous
+                    </button>
+
+                    <span className="fw-medium">Page {currentPage} of {totalPages}</span>
+
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => prev + 1)}
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div className="row mt-5">
+          <div className="col-md-8 mb-4">
+            <div className="card p-4 shadow-sm h-100">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0">Monthly Expenses</h6>
+                <select
+                  className="form-select form-select-sm w-auto"
+                  value={expenseFilter}
+                  onChange={(e) => setExpenseFilter(e.target.value)}
+                >
+                  <option value="6m">Last 6 months</option>
+                  <option value="12m">Last 12 months</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+
+              <Bar
+                // data={monthlyExpenseChartData}
+                data={monthlyIncomeChartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: { display: false },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      ticks: {
+                        callback: (value) => '₹' + value.toLocaleString(),
+                      },
+                      grid: {
+                        color: '#d6d6d6',
+                        borderDash: [4, 4], // Dashed grid lines
+                      },
+                    },
+                    x: {
+                      grid: {
+                        display: false, // Hide vertical grid lines
+                      },
+                    },
+                  },
+                  elements: {
+                    bar: {
+                      borderRadius: 6,
+                      barThickness: 20,
+                      categoryPercentage: 0.6,
+                      barPercentage: 0.8,
+                    },
+                  },
+                  layout: {
+                    padding: 10,
+                  }
+                }}
+              />
+
+
+              <hr className="my-4" />
+              <div className="d-flex justify-content-around text-center">
+                <div>
+                  <div className="fw-medium text-muted">Total Expense</div>
+                  <div className="fs-5 fw-bold">
+                    ₹{Subscriptions.filter(sub => sub.category === 'expense').reduce((sum, sub) => sum + parseFloat(sub.amount || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="fw-medium text-muted">Expense (YTD)</div>
+                  <div className="fs-5 fw-bold">
+                    ₹{Subscriptions.filter(sub => {
+                      const date = new Date(sub.payment_date);
+                      return sub.category === 'expense' && date.getFullYear() === new Date().getFullYear();
+                    }).reduce((sum, sub) => sum + parseFloat(sub.amount || 0), 0).toLocaleString()}
+                  </div>
+                </div>
+                <div>
+                  <div className="fw-medium text-muted">Projected (EOY)</div>
+                  <div className="fs-5 fw-bold">
+                    ₹{(
+                      Subscriptions.filter(sub => sub.category === 'expense')
+                        .reduce((sum, sub) => sum + parseFloat(sub.amount || 0), 0) *
+                      (12 / (new Date().getMonth() + 1))
+                    ).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="col-md-4 mb-4">
+            <div className="card p-3 shadow-sm h-100">
+              <h6 className="fw-bold mb-3">Upcoming Due Dates</h6>
+              {/* <Calendar
+                tileContent={({ date, view }) =>
+                  view === 'month' && dueDates.includes(date.toDateString()) ? (
+                    <div className="text-center mt-1">
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          height: 6,
+                          width: 6,
+                          backgroundColor: '#f44336',
+                          borderRadius: '50%',
+                        }}
+                      ></span>
+                    </div>
+                  ) : null
+                }
+              /> */}
+
+              <Calendar
+                next2Label={null}   // removes ">>"
+                prev2Label={null}   // removes "<<"
+                onClickDay={(value) => setSelectedDate(value)}
+                tileContent={({ date, view }) =>
+                  view === 'month' && dueDates.includes(date.toDateString()) ? (
+                    <div className="text-center mt-1">
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          height: 6,
+                          width: 6,
+                          backgroundColor: '#f44336',
+                          borderRadius: '50%',
+                        }}
+                      ></span>
+                    </div>
+                  ) : null
+                }
+              />
+
+              {/* {selectedDate && (
+                <div className="mt-3">
+                  <div className="fw-semibold mb-2">
+                    {selectedDate.toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })} Renewals
+                  </div>
+
+                  {Subscriptions.filter(
+                    sub => new Date(sub.due_date).toDateString() === selectedDate.toDateString()
+                  ).map((sub, index) => {
+                    const today = new Date();
+                    const dueDate = new Date(sub.due_date);
+                    const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+
+                    const badgeClass =
+                      daysLeft <= 5 ? 'bg-danger' : daysLeft <= 10 ? 'bg-warning' : 'bg-primary';
+
+                    return (
+                      <div
+                        key={index}
+                        className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
+                      >
+                        <div>
+                          <span className="badge bg-secondary mb-1">{sub.client_name}</span>
+                          <div className="fw-medium">{sub.service_name}</div>
+                        </div>
+                        <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )} */}
+
+              <div className="mt-3" style={{ maxHeight: "350px", overflowY: "auto" }}>
+                {selectedDate ? (
+                  <>
+                    <div className="fw-semibold mb-2">
+                      {selectedDate.toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })} Renewals
+                    </div>
+
+                    {groupedRenewals[selectedDate.toDateString()]?.map((sub, index) => {
+                      const today = new Date();
+                      const dueDate = new Date(sub.due_date);
+                      const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                      const badgeClass =
+                        daysLeft <= 5 ? 'bg-danger' : daysLeft <= 10 ? 'bg-warning' : 'bg-primary';
+
+                      return (
+                        <div
+                          key={index}
+                          className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <span className="badge bg-secondary mb-1">{sub.client_name}</span>
+                            <div className="fw-medium">{sub.service_name}</div>
+                          </div>
+                          <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  Object.keys(groupedRenewals).map(date => (
+                    <div key={date} className="mb-3">
+                      <div className="fw-semibold mb-2">{new Date(date).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })} Renewals</div>
+
+                      {groupedRenewals[date].map((sub, index) => {
+                        const today = new Date();
+                        const dueDate = new Date(sub.due_date);
+                        const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                        const badgeClass =
+                          daysLeft <= 5 ? 'bg-danger' : daysLeft <= 10 ? 'bg-warning' : 'bg-primary';
+
+                        return (
+                          <div
+                            key={index}
+                            className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
+                          >
+                            <div>
+                              <span className="badge bg-secondary mb-1">{sub.client_name}</span>
+                              <div className="fw-medium">{sub.service_name}</div>
+                            </div>
+                            <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))
+                )}
+              </div>
+
+            </div>
+
 
           </div>
 
+
         </div>
+
+
+
       </div>
     </>
   );
