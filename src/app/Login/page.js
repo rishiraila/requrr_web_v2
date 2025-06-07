@@ -160,9 +160,9 @@ export default function page() {
                   <input className="form-check-input" type="checkbox" id="remember-me" />
                   <label className="form-check-label" htmlFor="remember-me"> Remember Me </label>
                 </div>
-                <a href="auth-forgot-password-cover.html" className="float-end mb-1 mt-2">
+                <Link href="/Forgot" className="float-end mb-1 mt-2">
                   <span>Forgot Password?</span>
-                </a>
+                </Link>
               </div>
               {/* Error Message */}
               {error && <p className="text-danger">{error}</p>}

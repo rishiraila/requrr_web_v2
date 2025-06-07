@@ -52,9 +52,10 @@ export default function ServicePage() {
   };
 
   return (
-    <div className='card pb-5'>
+    <div className="container ">
 
-      <div className="container mt-5">
+      <div className='card p-5'>
+
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4>All Services</h4>
           <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Add Service</button>
@@ -137,6 +138,7 @@ export default function ServicePage() {
 
         {showAddModal && <AddService onClose={() => setShowAddModal(false)} onSuccess={() => { setShowAddModal(false); fetchServices(); }} />}
         {editingService && <UpdateService service={editingService} onClose={() => setEditingService(null)} onSuccess={() => { setEditingService(null); fetchServices(); }} />}
+
       </div>
     </div>
   );

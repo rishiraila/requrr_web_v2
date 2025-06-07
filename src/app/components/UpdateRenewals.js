@@ -10,7 +10,7 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
     const token = localStorage.getItem('token');
     axios.get('/api/clients', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setClients(res.data));
-    axios.get('/api/services', { headers: { Authorization: `Bearer ${token}` } })
+    axios.get('/api/Services', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setServices(res.data));
   }, []);
 
@@ -43,9 +43,9 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
             <option value="">Select Client</option>
             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select name="service_id" value={form.service_id} onChange={handleChange} style={styles.input}>
+          <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
             <option value="">Select Service</option>
-            {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
           </select>
           <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
           <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />

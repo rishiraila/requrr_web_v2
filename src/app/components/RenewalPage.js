@@ -69,108 +69,112 @@ export default function RenewalPage() {
   };
 
   return (
-    <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4>All Renewals</h4>
-        <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Add Renewal</button>
-      </div>
 
-      <div className="d-flex justify-content-between mb-3">
-        <input
-          type="text"
-          className="form-control me-2"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-        />
-        <select
-          className="form-select w-auto"
-          value={pageSize}
-          onChange={(e) => {
-            const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
-            setPageSize(value);
-            setCurrentPage(1);
-          }}
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={25}>25</option>
-          <option value="all">All</option>
-        </select>
-      </div>
+    <div className="container">
+      <div className='card p-5'>
 
-      <table className="table table-striped table-bordered">
-        <thead className="table-light">
-          <tr>
-            <th>Client</th>
-            <th>Service</th>
-            <th>Start Date</th>
-            <th>End Date</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginated.length === 0 ? (
-            <tr><td colSpan="7" className="text-center">No records found.</td></tr>
-          ) : (
-            paginated.map(record => (
-              <tr key={record.id}>
-                <td>{record.client_name}</td>
-                <td>{record.service_name}</td>
-                <td>{new Date(record.payment_date).toLocaleDateString()}</td>
-                <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
-                <td>₹{parseFloat(record.amount).toFixed(2)}</td>
-                <td>{record.status}</td>
-                <td>
-                  <button
-                    className="btn btn-sm btn-outline-primary me-2"
-                    onClick={() => setEditingRecord(record)}
-                  >
-                    <i className="ri-edit-line"></i>
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-danger"
-                    onClick={() => handleDelete(record.id)}
-                  >
-                    <i className="ri-delete-bin-line"></i>
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
-      {pageSize !== 'all' && totalPages > 1 && (
-        <div className="d-flex justify-content-end align-items-center gap-2">
-          <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
-          <span>Page {currentPage} of {totalPages}</span>
-          <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4>All Renewals</h4>
+          <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>+ Add Renewal</button>
         </div>
-      )}
 
-      {showAddModal && (
-        <AddRenewals
-          onClose={() => setShowAddModal(false)}
-          onSuccess={() => {
-            setShowAddModal(false);
-            fetchAll();
-          }}
-        />
-      )}
+        <div className="d-flex justify-content-between mb-3">
+          <input
+            type="text"
+            className="form-control me-2"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+          />
+          <select
+            className="form-select w-auto"
+            value={pageSize}
+            onChange={(e) => {
+              const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+              setPageSize(value);
+              setCurrentPage(1);
+            }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+            <option value="all">All</option>
+          </select>
+        </div>
 
-      {editingRecord && (
-        <UpdateRenewals
-          record={editingRecord}
-          onClose={() => setEditingRecord(null)}
-          onSuccess={() => {
-            setEditingRecord(null);
-            fetchAll();
-          }}
-        />
-      )}
+        <table className="table table-striped">
+          <thead className="table-light">
+            <tr>
+              <th>Client</th>
+              <th>Service</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginated.length === 0 ? (
+              <tr><td colSpan="7" className="text-center">No records found.</td></tr>
+            ) : (
+              paginated.map(record => (
+                <tr key={record.id}>
+                  <td>{record.client_name}</td>
+                  <td>{record.service_name}</td>
+                  <td>{new Date(record.payment_date).toLocaleDateString()}</td>
+                  <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
+                  <td>₹{parseFloat(record.amount).toFixed(2)}</td>
+                  <td>{record.status}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-outline-primary me-2"
+                      onClick={() => setEditingRecord(record)}
+                    >
+                      <i className="ri-edit-line"></i>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(record.id)}
+                    >
+                      <i className="ri-delete-bin-line"></i>
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+
+        {pageSize !== 'all' && totalPages > 1 && (
+          <div className="d-flex justify-content-end align-items-center gap-2">
+            <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>
+          </div>
+        )}
+
+        {showAddModal && (
+          <AddRenewals
+            onClose={() => setShowAddModal(false)}
+            onSuccess={() => {
+              setShowAddModal(false);
+              fetchAll();
+            }}
+          />
+        )}
+
+        {editingRecord && (
+          <UpdateRenewals
+            record={editingRecord}
+            onClose={() => setEditingRecord(null)}
+            onSuccess={() => {
+              setEditingRecord(null);
+              fetchAll();
+            }}
+          />
+        )}
+      </div>
     </div>
   );
 }
