@@ -150,10 +150,17 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li className={`menu-item ${pathname == '/Expense/Entities' ? 'active' : ''}`}>
+          {/* <li className={`menu-item ${pathname == '/Expense/Entities' ? 'active' : ''}`}>
             <Link href="/Expense/Entities" className="menu-link ">
               <i className="menu-icon tf-icons ri-stack-line"></i>
               <div >Entities</div>
+            </Link>
+          </li> */}
+
+          <li className={`menu-item ${pathname == '/Expense/Clients' ? 'active' : ''}`}>
+            <Link href="/Expense/Clients" className="menu-link ">
+              <i className="menu-icon tf-icons ri-group-line"></i>
+              <div >Clients</div>
             </Link>
           </li>
 
@@ -164,6 +171,13 @@ export default function Sidebar() {
             </Link>
           </li>
 
+          <li className={`menu-item ${pathname == '/Expense/Renewals' ? 'active' : ''}`}>
+            <Link href="/Expense/Renewals" className="menu-link ">
+              <i className="menu-icon tf-icons ri-time-line"></i>
+              <div >Renewals</div>
+            </Link>
+          </li>
+
           {/* <li className="menu-item">
             <Link href="/Expense/Payees" className="menu-link ">
               <i className="menu-icon tf-icons ri-bank-line"></i>
@@ -171,12 +185,12 @@ export default function Sidebar() {
             </Link>
           </li> */}
 
-          <li className={`menu-item ${pathname == '/Expense/Payees' ? 'active' : ''}`}>
+          {/* <li className={`menu-item ${pathname == '/Expense/Payees' ? 'active' : ''}`}>
             <Link href="/Expense/Payees" className="menu-link ">
               <i className="menu-icon tf-icons ri-loop-left-line"></i>
               <div >Payees & Subscriptions</div>
             </Link>
-          </li>
+          </li> */}
 
           {/* <li className="menu-item">
             <Link href="/Expense/Subscriptions" className="menu-link ">

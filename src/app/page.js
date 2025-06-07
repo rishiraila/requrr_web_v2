@@ -234,7 +234,8 @@ export default function Home() {
   today.setHours(0, 0, 0, 0); // Normalize today's date
   
   const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  return diffDays <= 15 && diffDays >= 0;
+  // return diffDays <= 15 && diffDays >= 0;
+  return diffDays >= 0;
 });
 
   const filteredRenewals = upcomingRenewals.filter(sub =>

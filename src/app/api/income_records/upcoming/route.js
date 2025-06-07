@@ -4,14 +4,7 @@ import { authenticate } from '../../../../middleware/auth';
 export async function GET(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // const [records] = await db.query(
-  //   `SELECT * FROM income_records 
-  //    WHERE user_id = ? AND due_date >= CURDATE()
-  //    ORDER BY due_date ASC`,
-  //   [user.id]
-  // );
-
+  
   const [records] = await db.query(`
   SELECT 
     ir.*, 
