@@ -244,3 +244,24 @@ a {
 .save-button:hover {
   background-color: #1e4bb8;
 }
+
+/* .hideOnPc{
+  visibility: none !important;
+}
+
+@media only screen and (max-width: 600px) {
+  .hideOnPc{
+  visibility: visible !important;
+}
+} */
+
+.app-brand .layout-menu-toggle{
+  display: none !important;
+}
+
+@media only screen and (max-width: 600px) {
+  .app-brand .layout-menu-toggle{
+  display: block !important;
+}
+
+}
