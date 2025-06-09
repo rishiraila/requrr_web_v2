@@ -202,14 +202,6 @@ export default function Home() {
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
-  // const mtdRevenue = Subscriptions.filter(sub => {
-  //   const date = new Date(sub.payment_date);
-  //   return (
-  //     sub.category === 'income' &&
-  //     date.getMonth() === currentMonth &&
-  //     date.getFullYear() === currentYear
-  //   );
-  // }).reduce((total, sub) => total + parseFloat(sub.amount), 0);
 
   const mtdRevenue = Subscriptions.filter(sub => {
     const date = new Date(sub.payment_date);
@@ -219,12 +211,6 @@ export default function Home() {
     );
   }).reduce((total, sub) => total + parseFloat(sub.amount), 0);
 
-  // const upcomingRenewals = Subscriptions.filter(sub => {
-  //   const end = new Date(sub.due_date);
-  //   const today = new Date();
-  //   const diffDays = (end - today) / (1000 * 60 * 60 * 24);
-  //   return diffDays <= 15 && diffDays >= 0;
-  // });
 
   const upcomingRenewals = Subscriptions.filter(sub => {
   if (!sub.due_date) return false;
@@ -255,32 +241,6 @@ export default function Home() {
 
   const monthlyIncomeMap = {};
 
-  // Subscriptions.forEach(sub => {
-  //   if (sub.category === 'expense') {
-  //     const date = new Date(sub.payment_date);
-  //     const now = new Date();
-
-  //     let include = false;
-  //     if (expenseFilter === '6m') {
-  //       const sixMonthsAgo = new Date();
-  //       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  //       include = date >= sixMonthsAgo && date <= now;
-  //     } else if (expenseFilter === '12m') {
-  //       const twelveMonthsAgo = new Date();
-  //       twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-  //       include = date >= twelveMonthsAgo && date <= now;
-  //     } else {
-  //       include = true; // 'all'
-  //     }
-
-  //     if (include) {
-  //       const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-  //       const amount = parseFloat(sub.amount || 0);
-  //       monthlyExpenseMap[yearMonth] = (monthlyExpenseMap[yearMonth] || 0) + amount;
-  //     }
-  //   }
-  // });
-
   Subscriptions.forEach(sub => {
     const date = new Date(sub.payment_date);
     const now = new Date();
@@ -309,17 +269,6 @@ export default function Home() {
 
   const sortedIncomeMonths = Object.keys(monthlyIncomeMap).sort((a, b) => new Date(a) - new Date(b));
 
-  // const monthlyExpenseChartData = {
-  //   labels: sortedExpenseMonths,
-  //   datasets: [
-  //     {
-  //       label: 'Expenses',
-  //       data: sortedExpenseMonths.map(month => monthlyExpenseMap[month]),
-  //       backgroundColor: '#666CFF',
-  //       borderRadius: 8,
-  //     },
-  //   ],
-  // };
 
   const monthlyIncomeChartData = {
     labels: sortedIncomeMonths,
@@ -451,18 +400,6 @@ export default function Home() {
           <div className='card'>
 
             <div className="col-12 p-4">
-              {/* <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="mb-0">Upcoming Renewals</h5>
-                <div style={{ maxWidth: "250px" }}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-              </div> */}
 
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
                 <h5 className="mb-0">Upcoming Renewals</h5>

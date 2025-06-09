@@ -102,49 +102,51 @@ export default function RenewalPage() {
           </select>
         </div>
 
-        <table className="table table-striped">
-          <thead className="table-light">
-            <tr>
-              <th>Client</th>
-              <th>Service</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length === 0 ? (
-              <tr><td colSpan="7" className="text-center">No records found.</td></tr>
-            ) : (
-              paginated.map(record => (
-                <tr key={record.id}>
-                  <td>{record.client_name}</td>
-                  <td>{record.service_name}</td>
-                  <td>{new Date(record.payment_date).toLocaleDateString()}</td>
-                  <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
-                  <td>₹{parseFloat(record.amount).toFixed(2)}</td>
-                  <td>{record.status}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-outline-primary me-2"
-                      onClick={() => setEditingRecord(record)}
-                    >
-                      <i className="ri-edit-line"></i>
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDelete(record.id)}
-                    >
-                      <i className="ri-delete-bin-line"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className='table-responsive'>
+          <table className="table table-striped">
+            <thead className="table-light">
+              <tr>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.length === 0 ? (
+                <tr><td colSpan="7" className="text-center">No records found.</td></tr>
+              ) : (
+                paginated.map(record => (
+                  <tr key={record.id}>
+                    <td>{record.client_name}</td>
+                    <td>{record.service_name}</td>
+                    <td>{new Date(record.payment_date).toLocaleDateString()}</td>
+                    <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
+                    <td>₹{parseFloat(record.amount).toFixed(2)}</td>
+                    <td>{record.status}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary me-2"
+                        onClick={() => setEditingRecord(record)}
+                      >
+                        <i className="ri-edit-line"></i>
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(record.id)}
+                      >
+                        <i className="ri-delete-bin-line"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {pageSize !== 'all' && totalPages > 1 && (
           <div className="d-flex justify-content-end align-items-center gap-2">

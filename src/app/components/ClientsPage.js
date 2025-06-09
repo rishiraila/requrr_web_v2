@@ -57,7 +57,6 @@ export default function ClientsPage() {
 
       <div className='card p-5'>
 
-
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4>All Clients</h4>
           <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
@@ -92,6 +91,7 @@ export default function ClientsPage() {
           </select>
         </div>
 
+      <div className='table-responsive'>
         <table className="table table-striped ">
           <thead className="table-light">
             <tr>
@@ -133,6 +133,7 @@ export default function ClientsPage() {
             )}
           </tbody>
         </table>
+      </div>
 
         {pageSize !== 'all' && totalPages > 1 && (
           <div className="d-flex justify-content-end align-items-center gap-2">

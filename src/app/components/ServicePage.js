@@ -88,45 +88,48 @@ export default function ServicePage() {
           </select>
         </div>
 
-        <table className="table table-striped">
-          <thead className="table-light">
-            <tr>
-              <th>Service Name</th>
-              <th>Description</th>
-              <th>Default Duration</th>
-              <th>Default Price</th>
-              <th>Added On</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedServices.length === 0 ? (
-              <tr><td colSpan="6" className="text-center">No services found.</td></tr>
-            ) : (
-              paginatedServices.map(service => (
-                <tr key={service.id}>
-                  <td>{service.name}</td>
-                  <td>{service.description}</td>
-                  <td>
-                    {service.billing_type === 'recurring' && service.billing_interval
-                      ? `${service.billing_interval} months`
-                      : 'One-time'}
-                  </td>
-                  <td>₹{parseFloat(service.base_price).toFixed(2)}</td>
-                  <td>{new Date(service.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-primary me-2" onClick={() => setEditingService(service)}>
-                      <i className="ri-edit-line"></i>
-                    </button>
-                    <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(service.id)}>
-                      <i className="ri-delete-bin-line"></i>
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className='table-responsive'>
+          <table className="table table-striped">
+            <thead className="table-light">
+              <tr>
+                <th>Service Name</th>
+                <th>Description</th>
+                <th>Default Duration</th>
+                <th>Default Price</th>
+                <th>Added On</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedServices.length === 0 ? (
+                <tr><td colSpan="6" className="text-center">No services found.</td></tr>
+              ) : (
+                paginatedServices.map(service => (
+                  <tr key={service.id}>
+                    <td>{service.name}</td>
+                    <td>{service.description}</td>
+                    <td>
+                      {service.billing_type === 'recurring' && service.billing_interval
+                        ? `${service.billing_interval} months`
+                        : 'One-time'}
+                    </td>
+                    <td>₹{parseFloat(service.base_price).toFixed(2)}</td>
+                    <td>{new Date(service.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => setEditingService(service)}>
+                        <i className="ri-edit-line"></i>
+                      </button>
+                      <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(service.id)}>
+                        <i className="ri-delete-bin-line"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
 
         {pageSize !== 'all' && totalPages > 1 && (
           <div className="d-flex justify-content-end align-items-center gap-2">
