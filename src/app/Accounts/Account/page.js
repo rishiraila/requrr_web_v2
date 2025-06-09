@@ -62,6 +62,10 @@ export default function AccountSettingsPage() {
           {/* Tabs (you can leave this static for now) */}
           <ul className="nav nav-pills flex-column flex-md-row mb-4">
             <li className="nav-item me-2">
+              <Link className="nav-link " href="/notification-preferences"
+              ><i className="ri-notification-2-line me-2"></i> Notification</Link>
+            </li>
+            <li className="nav-item me-2">
               <Link className="nav-link active" href="javascript:void(0);"
               ><i className="ri-user-3-line me-2"></i> Account</Link>
             </li>

@@ -1,5 +1,6 @@
 import { db } from '../../../db';
 import { authenticate } from '../../../middleware/auth';
+import {sendEmail} from '../../utils/mailer'
 
 export async function GET(req) {
   const user = authenticate(req);

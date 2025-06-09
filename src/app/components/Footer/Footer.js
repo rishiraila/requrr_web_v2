@@ -82,7 +82,7 @@ export default function Footer() {
                       document.write(new Date().getFullYear());
                     </script>
                     , made with <span className="text-danger"><i className="tf-icons ri-heart-fill"></i></span> by
-                     <a href="https://coinage.in" target="_blank" className="footer-link">&nbsp;Coinage Software Pvt.Ltd</a>
+                     <a href="https://coinagesoft.com" target="_blank" className="footer-link">&nbsp;Coinage Software Pvt.Ltd</a>
                   </div>
                   
                 </div>

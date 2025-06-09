@@ -46,7 +46,11 @@ export default function SecurityPage() {
           <div className="nav-align-top">
             <ul className="nav nav-pills flex-column flex-md-row mb-4 gap-2 gap-lg-0">
               <li className="nav-item me-2">
-                <Link className="nav-link" href="#"><i className="ri-user-3-line me-2"></i> Account</Link>
+                <Link className="nav-link " href="/notification-preferences"
+                ><i className="ri-notification-2-line me-2"></i> Notification</Link>
+              </li>
+              <li className="nav-item me-2">
+                <Link className="nav-link" href="/Accounts/Account"><i className="ri-user-3-line me-2"></i> Account</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link active" href="/Accounts/Security"><i className="ri-lock-line me-2"></i> Security</Link>
