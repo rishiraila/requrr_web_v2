@@ -6,5 +6,6 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   // await runDailyCronJob();
+  
   return NextResponse.json({ status: 'Notifications checked and sent.' });
 }
