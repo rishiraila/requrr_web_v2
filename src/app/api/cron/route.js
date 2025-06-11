@@ -1,12 +1,14 @@
-import { NextResponse } from 'next/server';
+export const config = {
+  schedule: '@daily', // Run daily – you can also use cron syntax like '0 7 * * *'
+};
 
-import { sendEmail } from '../../utils/mailer'
+import { NextResponse } from 'next/server';
+import { sendEmail } from '../../utils/mailer';
 import { db } from '../../../db';
 
 export async function GET() {
   try {
     const [users] = await db.query('SELECT * FROM users');
-
     const today = new Date();
 
     for (const user of users) {
@@ -42,7 +44,7 @@ export async function GET() {
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${days} days`,
-            message: `Your payment for service ID ${record.service_id} is due on ${record.due_date}`,
+            message: `Your payment for service ID ${record.service_id} is due on ${record.due_date}.`,
           });
         }
       }
@@ -61,20 +63,25 @@ export async function GET() {
           notifications.push({
             to: user.email,
             subject: `Reminder: Overdue Payment`,
-            message: `Your payment for service ID ${record.service_id} was due on ${record.due_date}`,
+            message: `Your payment for service ID ${record.service_id} was due on ${record.due_date}.`,
           });
         }
       }
 
-      // Send all emails if email_notifications is on
-      if (prefs.email_notifications) {
+      // Send emails if user allows
+      if (prefs.email_notifications && notifications.length > 0) {
         for (const email of notifications) {
-          await sendEmail(email.to, email.subject, email.message);
+          try {
+            await sendEmail(email.to, email.subject, email.message);
+            console.log(`Email sent to ${email.to}: ${email.subject}`);
+          } catch (emailErr) {
+            console.error(`Failed to send email to ${email.to}:`, emailErr);
+          }
         }
       }
     }
 
-    return NextResponse.json({ message: 'Notification cron executed' });
+    return NextResponse.json({ message: 'Notification cron executed successfully' });
   } catch (err) {
     console.error('Cron error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
