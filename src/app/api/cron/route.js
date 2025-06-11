@@ -1,6 +1,7 @@
-import { db } from '../../db';
-import { sendEmail } from '../utils/mailer'; // Make sure this works
 import { NextResponse } from 'next/server';
+
+import { sendEmail } from '../../utils/mailer'
+import { db } from '../../../db';
 
 export async function GET() {
   try {
