@@ -4,6 +4,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 
 export default function SecurityPage() {
+
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+
   const [form, setForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -67,7 +74,7 @@ export default function SecurityPage() {
                   <div className="mb-4 col-md-6 form-password-toggle">
                     <div className="input-group input-group-merge">
                       <input
-                        type="password"
+                        type={showPassword.current ? 'text' : 'password'}
                         className="form-control"
                         name="currentPassword"
                         value={form.currentPassword}
@@ -75,16 +82,22 @@ export default function SecurityPage() {
                         placeholder="Current Password"
                         required
                       />
-                      <span className="input-group-text cursor-pointer"><i className="ri-eye-off-line"></i></span>
+                      <span
+                        className="input-group-text cursor-pointer"
+                        onClick={() => setShowPassword(prev => ({ ...prev, current: !prev.current }))}
+                      >
+                        <i className={`ri-${showPassword.current ? 'eye-line' : 'eye-off-line'}`}></i>
+                      </span>
                     </div>
                   </div>
+
                 </div>
 
                 <div className="row g-4 mb-4">
                   <div className="col-md-6 form-password-toggle">
                     <div className="input-group input-group-merge">
                       <input
-                        type="password"
+                        type={showPassword.new ? 'text' : 'password'}
                         className="form-control"
                         name="newPassword"
                         value={form.newPassword}
@@ -92,13 +105,19 @@ export default function SecurityPage() {
                         placeholder="New Password"
                         required
                       />
-                      <span className="input-group-text cursor-pointer"><i className="ri-eye-off-line"></i></span>
+                      <span
+                        className="input-group-text cursor-pointer"
+                        onClick={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
+                      >
+                        <i className={`ri-${showPassword.new ? 'eye-line' : 'eye-off-line'}`}></i>
+                      </span>
                     </div>
                   </div>
+
                   <div className="col-md-6 form-password-toggle">
                     <div className="input-group input-group-merge">
                       <input
-                        type="password"
+                        type={showPassword.confirm ? 'text' : 'password'}
                         className="form-control"
                         name="confirmPassword"
                         value={form.confirmPassword}
@@ -106,9 +125,15 @@ export default function SecurityPage() {
                         placeholder="Confirm Password"
                         required
                       />
-                      <span className="input-group-text cursor-pointer"><i className="ri-eye-off-line"></i></span>
+                      <span
+                        className="input-group-text cursor-pointer"
+                        onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
+                      >
+                        <i className={`ri-${showPassword.confirm ? 'eye-line' : 'eye-off-line'}`}></i>
+                      </span>
                     </div>
                   </div>
+
                 </div>
 
                 <h6 className="text-body">Password Requirements:</h6>
