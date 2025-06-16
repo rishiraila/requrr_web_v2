@@ -3,7 +3,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import Sidebar from "./components/Sidebar/Sidebar";
 import Navbar from "./components/Navbar/Navbar";
@@ -26,14 +26,33 @@ export default function RootLayout({ children }) {
   const router = useRouter();
   const isAuthPage = ["/login", "/signup", "/forgot"].includes(pathname.toLowerCase());
 
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     // If no token and not already on login/signup, redirect to /login
     if (!token && !isAuthPage) {
       router.push("/Login");
+    } else {
+      setIsAuthenticated(!!token);
     }
+    // Either way, auth check is done
+    setLoading(false);
   }, [pathname]); // Runs when pathname changes
+
+  if (loading && !isAuthPage) {
+    return (
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable}`}>
+          <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <span>Checking authentication... Please wait.</span>
+          </div>
+        </body>
+      </html>
+    );
+  }
   return (
     <html lang="en">
       <head>
@@ -49,19 +68,27 @@ export default function RootLayout({ children }) {
           <div className="layout-container">
 
             {/* <Sidebar /> */}
-            {!isAuthPage && <Sidebar />}
+            {!isAuthPage && isAuthenticated && <Sidebar />}
 
             <div className="layout-page">
 
               {/* <Navbar /> */}
-              {!isAuthPage && <Navbar />}
+              {!isAuthPage && isAuthenticated && <Navbar />}
 
               <div className="content-wrapper">
-
+                {/* 
                 {children}
 
-                {/* <Footer /> */}
-                {!isAuthPage && <Footer />}
+                {!isAuthPage && isAuthenticated && <Footer />} */}
+
+                {!isAuthPage && isAuthenticated && (
+                  <>
+                    {children}
+                    <Footer />
+                  </>
+                )}
+
+                {isAuthPage && children}
 
               </div>
 
