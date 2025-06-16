@@ -39,55 +39,55 @@ export default function Footer() {
     <>
 
 
-<Script src="/assets/vendor/js/helpers.js" strategy="beforeInteractive" />
+      <Script src="/assets/vendor/js/helpers.js" strategy="beforeInteractive" />
 
-            <Script src="/assets/vendor/js/template-customizer.js" strategy="beforeInteractive" />
+      <Script src="/assets/vendor/js/template-customizer.js" strategy="beforeInteractive" />
 
-            <Script src="/assets/js/config.js" strategy="beforeInteractive" />
-
-
-            <Script src="/assets/vendor/libs/jquery/jquery.js" />
-            <Script src="/assets/vendor/libs/popper/popper.js" />
-            <Script src="/assets/vendor/js/bootstrap.js" />
-            <Script src="/assets/vendor/libs/node-waves/node-waves.js" />
-            <Script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js" />
-            <Script src="/assets/vendor/libs/hammer/hammer.js" />
-            <Script src="/assets/vendor/libs/i18n/i18n.js" />
-            <Script src="/assets/vendor/libs/typeahead-js/typeahead.js" />
-            <Script src="/assets/vendor/js/menu.js" />
+      <Script src="/assets/js/config.js" strategy="beforeInteractive" />
 
 
-            <Script src="/assets/vendor/libs/apex-charts/apexcharts.js" />
-            <Script src="/assets/vendor/libs/swiper/swiper.js" />
+      <Script src="/assets/vendor/libs/jquery/jquery.js" />
+      <Script src="/assets/vendor/libs/popper/popper.js" />
+      <Script src="/assets/vendor/js/bootstrap.js" />
+      <Script src="/assets/vendor/libs/node-waves/node-waves.js" />
+      <Script src="/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js" />
+      <Script src="/assets/vendor/libs/hammer/hammer.js" />
+      <Script src="/assets/vendor/libs/i18n/i18n.js" />
+      <Script src="/assets/vendor/libs/typeahead-js/typeahead.js" />
+      <Script src="/assets/vendor/js/menu.js" />
 
 
-            <Script src="/assets/js/main.js" />
+      <Script src="/assets/vendor/libs/apex-charts/apexcharts.js" />
+      <Script src="/assets/vendor/libs/swiper/swiper.js" />
 
 
-            <Script src="/assets/js/dashboards-analytics.js" />
+      <Script src="/assets/js/main.js" />
+
+
+      <Script src="/assets/js/dashboards-analytics.js" />
 
 
 
-           
-            
 
-    
-    <footer className="content-footer footer bg-footer-theme">
-              <div className="container-xxl">
-                <div
-                  className="footer-container d-flex align-items-center justify-content-center py-4 flex-md-row flex-column">
-                  <div className="text-body mb-2 mb-md-0">
-                    ©
-                    <script>
-                      document.write(new Date().getFullYear());
-                    </script>
-                    , made with <span className="text-danger"><i className="tf-icons ri-heart-fill"></i></span> by
-                     <a href="https://coinagesoft.com" target="_blank" className="footer-link">&nbsp;Coinage Software Pvt.Ltd</a>
-                  </div>
-                  
-                </div>
-              </div>
-            </footer>
+
+
+
+      <footer className="content-footer footer bg-footer-theme">
+        <div className="container-xxl">
+          <div
+            className="footer-container d-flex align-items-center justify-content-center py-4 flex-md-row flex-column">
+            <div className="text-body mb-2 mb-md-0">
+              ©
+              <script>
+                document.write(new Date().getFullYear());
+              </script>
+              , made with <span className="text-danger"><i className="tf-icons ri-heart-fill"></i></span> by
+              <a href="https://coinagesoft.com" target="_blank" className="footer-link">&nbsp;Coinage Soft</a>
+            </div>
+
+          </div>
+        </div>
+      </footer>
 
     </>
   )
