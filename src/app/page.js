@@ -6,10 +6,20 @@ import { Bar } from 'react-chartjs-2'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // default styles
+import UpdateRenewals from './components/UpdateRenewals'; // adjust the path if needed
+
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Home() {
+
+  const [clientCount, setClientCount] = useState(0);
+  const [serviceCount, setServiceCount] = useState(0);
+  const [pendingRevenue, setPendingRevenue] = useState(0);
+
+  const [totalIncomeAmount, setTotalIncomeAmount] = useState(0);
+
+  const [editingRecord, setEditingRecord] = useState(null);
 
   const [Subscriptions, setSubscriptions] = useState([])
 
@@ -119,9 +129,74 @@ export default function Home() {
     }
   };
 
+
+  const fetchTotalIncomeAmount = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await axios.get("/api/income_records", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const allRecords = response.data;
+      const total = allRecords.reduce((sum, record) => sum + parseFloat(record.amount || 0), 0);
+      setTotalIncomeAmount(total);
+    } catch (error) {
+      console.error("Error fetching total income amount:", error);
+    }
+  };
+
+  const fetchClientCount = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("/api/clients", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setClientCount(res.data.length);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    }
+  };
+
+  const fetchServiceCount = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("/api/Services", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setServiceCount(res.data.length);
+    } catch (err) {
+      console.error("Error fetching services:", err);
+    }
+  };
+
+  const fetchPendingRevenue = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const res = await axios.get("/api/income_records", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const pendingTotal = res.data
+        .filter(rec => rec.status === 'pending')
+        .reduce((sum, rec) => sum + parseFloat(rec.amount || 0), 0);
+
+      setPendingRevenue(pendingTotal);
+    } catch (err) {
+      console.error("Error fetching pending revenue:", err);
+    }
+  };
+
+
+
   // Fetch entities on mount
   useEffect(() => {
     fetchSubscriptions();
+    fetchTotalIncomeAmount();
+    fetchClientCount();
+    fetchServiceCount();
+    fetchPendingRevenue();
   }, []);
 
   // Calculate remaining payments
@@ -213,16 +288,16 @@ export default function Home() {
 
 
   const upcomingRenewals = Subscriptions.filter(sub => {
-  if (!sub.due_date) return false;
-  
-  const end = new Date(sub.due_date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // Normalize today's date
-  
-  const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
-  // return diffDays <= 15 && diffDays >= 0;
-  return diffDays >= 0;
-});
+    if (!sub.due_date) return false;
+
+    const end = new Date(sub.due_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize today's date
+
+    const diffDays = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    // return diffDays <= 15 && diffDays >= 0;
+    return diffDays >= 0;
+  });
 
   const filteredRenewals = upcomingRenewals.filter(sub =>
     sub.client_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -239,48 +314,79 @@ export default function Home() {
   // Prepare monthly expenses (grouped by month name and year)
   const monthlyExpenseMap = {};
 
+  const now = new Date();
+  const months = [];
+
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = `${d.toLocaleString('default', { month: 'short' })} ${d.getFullYear()}`;
+    months.push(label);
+  }
+
   const monthlyIncomeMap = {};
+  months.forEach(m => monthlyIncomeMap[m] = 0);
 
   Subscriptions.forEach(sub => {
-    const date = new Date(sub.payment_date);
-    const now = new Date();
+  const date = new Date(sub.payment_date);
+  const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+  const amount = parseFloat(sub.amount);
+  if (!isNaN(amount)) {
+    monthlyIncomeMap[label] += amount;
+  }
+});
 
-    let include = false;
-    if (expenseFilter === '6m') {
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      include = date >= sixMonthsAgo && date <= now;
-    } else if (expenseFilter === '12m') {
-      const twelveMonthsAgo = new Date();
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-      include = date >= twelveMonthsAgo && date <= now;
-    } else {
-      include = true; // 'all'
-    }
 
-    if (include) {
-      const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-      const amount = parseFloat(sub.amount || 0);
-      monthlyIncomeMap[yearMonth] = (monthlyIncomeMap[yearMonth] || 0) + amount;
-    }
-  });
+  // Subscriptions.forEach(sub => {
+  //   const date = new Date(sub.payment_date);
+  //   const now = new Date();
+
+  //   let include = false;
+  //   if (expenseFilter === '6m') {
+  //     const sixMonthsAgo = new Date();
+  //     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  //     include = date >= sixMonthsAgo && date <= now;
+  //   } else if (expenseFilter === '12m') {
+  //     const twelveMonthsAgo = new Date();
+  //     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  //     include = date >= twelveMonthsAgo && date <= now;
+  //   } else {
+  //     include = true; // 'all'
+  //   }
+
+  //   if (include) {
+  //     const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+  //     const amount = parseFloat(sub.amount || 0);
+  //     monthlyIncomeMap[yearMonth] = (monthlyIncomeMap[yearMonth] || 0) + amount;
+  //   }
+  // });
 
   // const sortedExpenseMonths = Object.keys(monthlyExpenseMap).sort((a, b) => new Date(a) - new Date(b));
 
   const sortedIncomeMonths = Object.keys(monthlyIncomeMap).sort((a, b) => new Date(a) - new Date(b));
 
-
   const monthlyIncomeChartData = {
-    labels: sortedIncomeMonths,
+    labels: months,
     datasets: [
       {
         label: 'Income',
-        data: sortedIncomeMonths.map(month => monthlyIncomeMap[month]),
+        data: months.map(m => monthlyIncomeMap[m]),
         backgroundColor: '#666CFF',
         borderRadius: 8,
       },
     ],
   };
+
+  // const monthlyIncomeChartData = {
+  //   labels: sortedIncomeMonths,
+  //   datasets: [
+  //     {
+  //       label: 'Income',
+  //       data: sortedIncomeMonths.map(month => monthlyIncomeMap[month]),
+  //       backgroundColor: '#666CFF',
+  //       borderRadius: 8,
+  //     },
+  //   ],
+  // };
 
   const dueDates = Subscriptions
     .filter(sub => {
@@ -297,6 +403,25 @@ export default function Home() {
       acc[dateStr].push(sub);
       return acc;
     }, {});
+
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this record?");
+    if (!confirmDelete) return;
+
+    const token = localStorage.getItem("token");
+    try {
+      await axios.delete(`/api/income_records/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      fetchSubscriptions(); // Refresh list after deletion
+    } catch (error) {
+      console.error("Failed to delete record:", error);
+      alert("Failed to delete the record. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -317,7 +442,7 @@ export default function Home() {
                     ><i className="ri-group-line ri-24px"></i
                     ></span>
                   </div>
-                  <h4 className="mb-0">{totalClients}</h4>
+                  <h4 className="mb-0">{clientCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Total Clients </h6>
                 <p className="mb-0 text-success">
@@ -337,7 +462,7 @@ export default function Home() {
                     ><i className="ri-suitcase-line ri-24px"></i
                     ></span>
                   </div>
-                  <h4 className="mb-0">{activeServices}</h4>
+                  <h4 className="mb-0">{serviceCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Active Services</h6>
                 <p className="mb-0 text-danger">
@@ -357,9 +482,9 @@ export default function Home() {
                     ><i className="ri-time-line ri-24px"></i
                     ></span>
                   </div>
-                  <h4 className="mb-0">{pendingRenewals}</h4>
+                  <h4 className="mb-0">{pendingRevenue.toFixed(2)}</h4>
                 </div>
-                <h6 className="mb-0 fw-normal">Pending Renewals</h6>
+                <h6 className="mb-0 fw-normal">Pending Revenue</h6>
                 <p className="mb-0 text-success">
                   <span className="me-1 fw-medium">+4.3%</span>
                   <small className="">than last week</small>
@@ -378,9 +503,9 @@ export default function Home() {
                     ></span>
 
                   </div>
-                  <h4 className="mb-0">{mtdRevenue.toFixed(2)}</h4>
+                  <h4 className="mb-0">{totalIncomeAmount.toFixed(2)}</h4>
                 </div>
-                <h6 className="mb-0 fw-normal">Revenue (MTD)</h6>
+                <h6 className="mb-0 fw-normal">Projected Revenue (MTD)</h6>
                 <p className="mb-0 text-danger">
                   <span className="me-1 fw-medium">-2.5%</span>
                   <small className="">than last week</small>
@@ -437,7 +562,6 @@ export default function Home() {
                 </div>
               </div>
 
-
               <div className="table-responsive">
                 <table className="table table-striped table-hover">
                   <thead className="table-light">
@@ -447,6 +571,7 @@ export default function Home() {
                       <th>Due Date</th>
                       <th>Amount</th>
                       <th>Status</th>
+                      <th>Description</th> {/* 👈 Add this */}
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -473,11 +598,12 @@ export default function Home() {
                                 Due in {diffDays} days
                               </span>
                             </td>
+                            <td>{sub.notes || '-'}</td> {/* 👈 Add this */}
                             <td>
-                              <button className="btn btn-sm btn-outline-primary me-2">
+                              <button className="btn btn-sm btn-outline-primary me-2" onClick={() => setEditingRecord(sub)}>
                                 <i className="ri-edit-line"></i>
                               </button>
-                              <button className="btn btn-sm btn-outline-danger">
+                              <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(sub.id)}>
                                 <i className="ri-delete-bin-line"></i>
                               </button>
                             </td>
@@ -512,7 +638,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
 
         </div>
 
@@ -571,7 +696,6 @@ export default function Home() {
                 }}
               />
 
-
               <hr className="my-4" />
               <div className="d-flex justify-content-around text-center">
                 <div>
@@ -605,23 +729,6 @@ export default function Home() {
           <div className="col-md-4 mb-4">
             <div className="card p-3 shadow-sm h-100">
               <h6 className="fw-bold mb-3">Upcoming Due Dates</h6>
-              {/* <Calendar
-                tileContent={({ date, view }) =>
-                  view === 'month' && dueDates.includes(date.toDateString()) ? (
-                    <div className="text-center mt-1">
-                      <span
-                        style={{
-                          display: 'inline-block',
-                          height: 6,
-                          width: 6,
-                          backgroundColor: '#f44336',
-                          borderRadius: '50%',
-                        }}
-                      ></span>
-                    </div>
-                  ) : null
-                }
-              /> */}
 
               <Calendar
                 next2Label={null}   // removes ">>"
@@ -643,42 +750,6 @@ export default function Home() {
                   ) : null
                 }
               />
-
-              {/* {selectedDate && (
-                <div className="mt-3">
-                  <div className="fw-semibold mb-2">
-                    {selectedDate.toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })} Renewals
-                  </div>
-
-                  {Subscriptions.filter(
-                    sub => new Date(sub.due_date).toDateString() === selectedDate.toDateString()
-                  ).map((sub, index) => {
-                    const today = new Date();
-                    const dueDate = new Date(sub.due_date);
-                    const daysLeft = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
-
-                    const badgeClass =
-                      daysLeft <= 5 ? 'bg-danger' : daysLeft <= 10 ? 'bg-warning' : 'bg-primary';
-
-                    return (
-                      <div
-                        key={index}
-                        className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
-                      >
-                        <div>
-                          <span className="badge bg-secondary mb-1">{sub.client_name}</span>
-                          <div className="fw-medium">{sub.service_name}</div>
-                        </div>
-                        <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              )} */}
 
               <div className="mt-3" style={{ maxHeight: "350px", overflowY: "auto" }}>
                 {selectedDate ? (
@@ -748,13 +819,19 @@ export default function Home() {
 
             </div>
 
-
           </div>
 
-
         </div>
-
-
+        {editingRecord && (
+          <UpdateRenewals
+            record={editingRecord}
+            onClose={() => setEditingRecord(null)}
+            onSuccess={() => {
+              setEditingRecord(null);
+              fetchSubscriptions(); // re-fetch to reflect updates
+            }}
+          />
+        )}
 
       </div>
     </>

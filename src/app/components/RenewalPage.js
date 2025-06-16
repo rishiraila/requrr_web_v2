@@ -112,6 +112,7 @@ export default function RenewalPage() {
                 <th>End Date</th>
                 <th>Amount</th>
                 <th>Status</th>
+                <th>Description</th> {/* ✅ Add this */}
                 <th>Actions</th>
               </tr>
             </thead>
@@ -127,6 +128,7 @@ export default function RenewalPage() {
                     <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
                     <td>₹{parseFloat(record.amount).toFixed(2)}</td>
                     <td>{record.status}</td>
+                     <td>{record.notes || '-'}</td> {/* ✅ Show description */}
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"
