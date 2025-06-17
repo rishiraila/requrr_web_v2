@@ -8,10 +8,8 @@ export default function page() {
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    // name: '',
     email: '',
-    // phone: '',
-    username: '',
+    // username: '',
     password: '',
     confirmPassword: ''
   });
@@ -44,8 +42,6 @@ export default function page() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          // name: formData.name,
-          // phone: formData.phone
         }),
       });
 
@@ -68,10 +64,11 @@ export default function page() {
       <div className="authentication-wrapper authentication-cover">
 
         <Link href="/" className="auth-cover-brand d-flex align-items-center gap-2">
-          <div style={{ backgroundColor: "#666CFF", borderRadius: "10px" }} className='p-2'>
+          {/* <div style={{ backgroundColor: "#666CFF", borderRadius: "10px" }} className='p-2'>
             < i className="ri-time-line" style={{ fontSize: "25px", color: "#ffffff" }}></i>
           </div>
-          <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span>
+          <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span> */}
+          <img src='/images/logo.png' style={{width:"30%"}}/>
         </Link>
 
         <div className="authentication-inner row m-0">
@@ -95,23 +92,10 @@ export default function page() {
           <div
             className="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-12 py-6">
             <div className="w-px-400 mx-auto pt-5 pt-lg-0">
-              <h4 className="mb-1">Adventure starts here 🚀</h4>
-              <p className="mb-5">Make your app management easy and fun!</p>
+              <h4 className="mb-1">Empower Your Finances 🚀</h4>
+              <p className="mb-5">Sign up now to take charge of your income—effortless tracking, smarter management!</p>
 
               <form id="formAuthentication" className="mb-5" onSubmit={handleSubmit}>
-                {/* <div className="form-floating form-floating-outline mb-5">
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="name"
-                    name="name"
-                    placeholder="Enter your name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                  />
-                  <label htmlFor="name">Name</label>
-                </div> */}
                 <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
@@ -129,19 +113,6 @@ export default function page() {
                   <input
                     type="text"
                     className="form-control"
-                    id="phone"
-                    name="phone"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                  />
-                  <label htmlFor="phone">Phone</label>
-                </div> */}
-                <div className="form-floating form-floating-outline mb-5">
-                  <input
-                    type="text"
-                    className="form-control"
                     id="username"
                     name="username"
                     placeholder="Enter your username"
@@ -150,7 +121,7 @@ export default function page() {
                     required
                   />
                   <label htmlFor="username">Username</label>
-                </div>
+                </div> */}
                 <div className="mb-5 form-password-toggle">
                   <div className="input-group input-group-merge">
                     <div className="form-floating form-floating-outline">
@@ -195,27 +166,6 @@ export default function page() {
                 </Link>
               </p>
 
-              <div className="divider my-5">
-                <div className="divider-text">or</div>
-              </div>
-
-              <div className="d-flex justify-content-center gap-2">
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-facebook">
-                  <i className="tf-icons ri-facebook-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-twitter">
-                  <i className="tf-icons ri-twitter-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-github">
-                  <i className="tf-icons ri-github-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-google-plus">
-                  <i className="tf-icons ri-google-fill"></i>
-                </a>
-              </div>
             </div>
           </div>
 

@@ -71,13 +71,10 @@ export default function Sidebar() {
       <Script src="/assets/js/dashboards-analytics.js" />
 
 
-      <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme" style={{ backgroundColor: "#FFFFFF !important" }}>
-        <div className="app-brand demo py-4">
+      <aside id="layout-menu" className="layout-menu menu-vertical menu bg-menu-theme">
+        <div className="app-brand demo ">
           <Link href="/" className="app-brand-link">
-            <div style={{ backgroundColor: "#666CFF", borderRadius: "10px" }} className='p-2'>
-              < i className="ri-time-line" style={{ fontSize: "25px", color: "#ffffff" }}></i>
-            </div>
-            <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span>
+            <img src='/images/logo.png' style={{ width: "70%" }} />
           </Link>
 
           <Link href="javascript:void(0);" className="layout-menu-toggle menu-link text-large ms-auto hideOnPc ">

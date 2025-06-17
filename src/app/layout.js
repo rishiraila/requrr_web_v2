@@ -54,7 +54,7 @@ export default function RootLayout({ children }) {
     );
   }
   return (
-    <html lang="en">
+    <html lang="en" className="light-style layout-wide customizer-hide">
       <head>
         <link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css" />
         <link rel="stylesheet" href="/assets/vendor/css/pages/app-logistics-dashboard.css" />
@@ -75,7 +75,7 @@ export default function RootLayout({ children }) {
               {/* <Navbar /> */}
               {!isAuthPage && isAuthenticated && <Navbar />}
 
-              <div className="content-wrapper">
+              <div className="content-wrapper pt-2">
                 {/* 
                 {children}
 

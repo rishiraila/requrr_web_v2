@@ -46,10 +46,11 @@ export default function page() {
       <div className="authentication-wrapper authentication-cover">
 
         <Link href="/" className="auth-cover-brand d-flex align-items-center gap-2">
-          <div style={{ backgroundColor: "#666CFF", borderRadius: "10px" }} className='p-2'>
+          {/* <div style={{ backgroundColor: "#666CFF", borderRadius: "10px" }} className='p-2'>
             < i className="ri-time-line" style={{ fontSize: "25px", color: "#ffffff" }}></i>
           </div>
-          <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span>
+          <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span> */}
+          <img src='/images/logo.png' style={{width:"30%"}}/>
         </Link>
 
         <div className="authentication-inner row m-0">
@@ -75,7 +76,7 @@ export default function page() {
             className="d-flex col-12 col-lg-5 col-xl-4 align-items-center authentication-bg position-relative py-sm-12 px-12 py-6">
             <div className="w-px-400 mx-auto pt-5 pt-lg-0">
               <h4 className="mb-1">Welcome to Requrr! 👋</h4>
-              <p className="mb-5">Please sign-in to your account and start the adventure</p>
+              <p className="mb-5">Take control of your finances—track your income now</p>
 
               <form id="formAuthentication" className="mb-5" onSubmit={handleLogin}>
                 <div className="form-floating form-floating-outline mb-5">
@@ -139,27 +140,6 @@ export default function page() {
                 </Link>
               </p>
 
-              <div className="divider my-5">
-                <div className="divider-text">or</div>
-              </div>
-
-              <div className="d-flex justify-content-center gap-2">
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-facebook">
-                  <i className="tf-icons ri-facebook-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-twitter">
-                  <i className="tf-icons ri-twitter-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-github">
-                  <i className="tf-icons ri-github-fill"></i>
-                </a>
-
-                <a href="javascript:;" className="btn btn-icon rounded-circle btn-text-google-plus">
-                  <i className="tf-icons ri-google-fill"></i>
-                </a>
-              </div>
             </div>
           </div>
 

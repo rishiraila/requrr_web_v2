@@ -13,7 +13,7 @@ export default function Page() {
         setMessage('');
 
         try {
-            await axios.post('/api/users/forgot-password', { email, newPassword });
+            await axios.post('/api/users/forgot-password', { email });
             setMessage('✅ Password reset successfully! You can now log in.');
             setEmail('');
             setNewPassword('');
@@ -24,17 +24,10 @@ export default function Page() {
 
     return (
         <div className="authentication-wrapper authentication-cover">
-            <a href="/" className="auth-cover-brand d-flex align-items-center gap-2">
-                <span className="app-brand-logo demo">
-                    <span style={{ color: "var(--bs-primary)" }}>
-                        <svg width="268" height="150" viewBox="0 0 38 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M30.0944 2.22569C29.0511 0.444187 26.7508 -0.172113 24.9566 0.849138..." fill="currentColor" />
-                            {/* <!-- SVG content truncated for brevity --> */}
-                        </svg>
-                    </span>
-                </span>
-                <span className="app-brand-text demo text-heading fw-semibold">Materialize</span>
-            </a>
+            <Link href="/" className="auth-cover-brand d-flex align-items-center gap-2">
+                <img src='/images/logo.png' style={{ width: "30%" }} />
+            </Link>
+
 
             <div className="authentication-inner row m-0">
                 <div className="d-none d-lg-flex col-lg-7 col-xl-8 align-items-center justify-content-center p-12 pb-2">
@@ -70,7 +63,7 @@ export default function Page() {
                                 <label htmlFor="email">Email</label>
                             </div>
 
-                            <div className="form-floating form-floating-outline mb-4">
+                            {/* <div className="form-floating form-floating-outline mb-4">
                                 <input
                                     type="password"
                                     className="form-control"
@@ -82,7 +75,7 @@ export default function Page() {
                                     required
                                 />
                                 <label htmlFor="newPassword">New Password</label>
-                            </div>
+                            </div> */}
 
                             <button className="btn btn-primary d-grid w-100" type="submit">Reset Password</button>
                         </form>
