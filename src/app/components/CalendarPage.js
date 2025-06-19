@@ -4,8 +4,12 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import axios from 'axios';
+import Preloader from './Preloader';
 
 export default function CalendarPage() {
+
+    const [loading, setLoading] = useState(true);
+
     const [events, setEvents] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
     const [records, setRecords] = useState([]);
@@ -16,6 +20,7 @@ export default function CalendarPage() {
 
         const fetchAll = async () => {
             try {
+                setLoading(true); // Show loader
                 const [clientsRes, servicesRes, incomeRes] = await Promise.all([
                     axios.get('/api/clients', { headers }),
                     axios.get('/api/Services', { headers }),
@@ -45,6 +50,8 @@ export default function CalendarPage() {
                 setSelectedDate(null); // show all by default
             } catch (err) {
                 console.error('Failed to fetch data:', err);
+            } finally {
+                setLoading(false); // Hide loader
             }
         };
 
@@ -85,6 +92,10 @@ export default function CalendarPage() {
         background: status === 'paid' ? '#e2fbe4' : '#fdecea',
         marginBottom: '1rem'
     });
+
+    if (loading) {
+        return <Preloader />;
+    }
 
     return (
         <div className='container pt-5'>

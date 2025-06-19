@@ -3,8 +3,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddService from './AddService';
 import UpdateService from './UpdateService';
+import Preloader from './Preloader';
 
 export default function ServicePage() {
+
+  const [loading, setLoading] = useState(true);
+
   const [services, setServices] = useState([]);
   const [search, setSearch] = useState('');
   const [pageSize, setPageSize] = useState(5);
@@ -14,6 +18,7 @@ export default function ServicePage() {
 
   const fetchServices = async () => {
     try {
+      setLoading(true); // Show preloader
       const token = localStorage.getItem('token');
       const res = await axios.get('/api/Services', {
         headers: { Authorization: `Bearer ${token}` }
@@ -21,6 +26,8 @@ export default function ServicePage() {
       setServices(res.data);
     } catch (err) {
       console.error('Error fetching services', err);
+    } finally {
+      setLoading(false); // Hide preloader
     }
   };
 
@@ -50,6 +57,10 @@ export default function ServicePage() {
       console.error('Delete failed', err);
     }
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
 
   return (
     <div className="container ">

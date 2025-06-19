@@ -2,8 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
+import Preloader from '@/app/components/Preloader';
 
 export default function AccountSettingsPage() {
+
+  const [loading, setLoading] = useState(true);
+
   const [form, setForm] = useState({
     username: '',
     email: '',
@@ -19,6 +23,8 @@ export default function AccountSettingsPage() {
       setForm({ username: res.data.username, email: res.data.email });
     }).catch(err => {
       console.error('Failed to load profile', err);
+    }).finally(() => {
+      setLoading(false);
     });
   }, []);
 
@@ -54,6 +60,8 @@ export default function AccountSettingsPage() {
       console.error(err);
     }
   };
+
+  if (loading) return <Preloader />;
 
   return (
     <div className="container-xxl flex-grow-1 container-p-y">

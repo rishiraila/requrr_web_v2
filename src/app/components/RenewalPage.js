@@ -3,8 +3,12 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import AddRenewals from './AddRenewals';
 import UpdateRenewals from './UpdateRenewals';
+import Preloader from './Preloader';
 
 export default function RenewalPage() {
+
+  const [loading, setLoading] = useState(true);
+
   const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(5);
@@ -16,6 +20,7 @@ export default function RenewalPage() {
   const fetchAll = async () => {
     const token = localStorage.getItem('token');
     try {
+      setLoading(true); // Start loading
       const [clientsRes, servicesRes, recordsRes] = await Promise.all([
         axios.get('/api/clients', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('/api/Services', { headers: { Authorization: `Bearer ${token}` } }),
@@ -38,6 +43,8 @@ export default function RenewalPage() {
       setRecords(enriched);
     } catch (err) {
       console.error('Failed to fetch data', err);
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -67,6 +74,10 @@ export default function RenewalPage() {
       console.error('Delete failed', err);
     }
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
 
   return (
 
@@ -128,7 +139,7 @@ export default function RenewalPage() {
                     <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
                     <td>₹{parseFloat(record.amount).toFixed(2)}</td>
                     <td>{record.status}</td>
-                     <td>{record.notes || '-'}</td> {/* ✅ Show description */}
+                    <td>{record.notes || '-'}</td> {/* ✅ Show description */}
                     <td>
                       <button
                         className="btn btn-sm btn-outline-primary me-2"

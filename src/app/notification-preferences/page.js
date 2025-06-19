@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Preloader from "../components/Preloader"
 
 export default function NotificationPreferences() {
     const [loading, setLoading] = useState(true);
@@ -69,7 +70,7 @@ export default function NotificationPreferences() {
         }
     };
 
-    if (loading) return <p>Loading preferences...</p>;
+    if (loading) return <Preloader />;
 
     return (
         <>

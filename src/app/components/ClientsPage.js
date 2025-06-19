@@ -3,8 +3,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import AddClient from './AddClient';
 import EditClient from './EditClient';
+import Preloader from '../components/Preloader'
 
 export default function ClientsPage() {
+
+  const [loading, setLoading] = useState(true);
+
   const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(5);
@@ -14,6 +18,7 @@ export default function ClientsPage() {
 
   const fetchClients = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       const res = await axios.get('/api/clients', {
         headers: { Authorization: `Bearer ${token}` }
@@ -21,6 +26,8 @@ export default function ClientsPage() {
       setClients(res.data);
     } catch (err) {
       console.error("Error fetching clients", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +58,10 @@ export default function ClientsPage() {
       console.error("Delete failed", err);
     }
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
 
   return (
     <div className="container">
@@ -91,49 +102,49 @@ export default function ClientsPage() {
           </select>
         </div>
 
-      <div className='table-responsive'>
-        <table className="table table-striped ">
-          <thead className="table-light">
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Added On</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedClients.length === 0 ? (
+        <div className='table-responsive'>
+          <table className="table table-striped ">
+            <thead className="table-light">
               <tr>
-                <td colSpan="5" className="text-center">No clients found.</td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Added On</th>
+                <th>Action</th>
               </tr>
-            ) : (
-              paginatedClients.map(client => (
-                <tr key={client.id}>
-                  <td>{client.name}</td>
-                  <td>{client.email}</td>
-                  <td>{client.phone}</td>
-                  <td>{new Date(client.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-outline-primary me-2"
-                      onClick={() => setEditingClient(client)}
-                    >
-                      <i className="ri-edit-line"></i>
-                    </button>
-                    <button
-                      className="btn btn-sm btn-outline-danger"
-                      onClick={() => handleDelete(client.id)}
-                    >
-                      <i className="ri-delete-bin-line"></i>
-                    </button>
-                  </td>
+            </thead>
+            <tbody>
+              {paginatedClients.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center">No clients found.</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                paginatedClients.map(client => (
+                  <tr key={client.id}>
+                    <td>{client.name}</td>
+                    <td>{client.email}</td>
+                    <td>{client.phone}</td>
+                    <td>{new Date(client.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary me-2"
+                        onClick={() => setEditingClient(client)}
+                      >
+                        <i className="ri-edit-line"></i>
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() => handleDelete(client.id)}
+                      >
+                        <i className="ri-delete-bin-line"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {pageSize !== 'all' && totalPages > 1 && (
           <div className="d-flex justify-content-end align-items-center gap-2">

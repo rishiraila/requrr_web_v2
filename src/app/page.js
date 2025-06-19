@@ -8,10 +8,13 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css'; // default styles
 import UpdateRenewals from './components/UpdateRenewals'; // adjust the path if needed
 
+import Preloader from './components/Preloader';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 export default function Home() {
+
+  const [loading, setLoading] = useState(true);
 
   const [clientCount, setClientCount] = useState(0);
   const [serviceCount, setServiceCount] = useState(0);
@@ -191,13 +194,30 @@ export default function Home() {
 
 
   // Fetch entities on mount
+  // useEffect(() => {
+  //   fetchSubscriptions();
+  //   fetchTotalIncomeAmount();
+  //   fetchClientCount();
+  //   fetchServiceCount();
+  //   fetchPendingRevenue();
+  // }, []);
+
   useEffect(() => {
-    fetchSubscriptions();
-    fetchTotalIncomeAmount();
-    fetchClientCount();
-    fetchServiceCount();
-    fetchPendingRevenue();
+    const loadData = async () => {
+      await Promise.all([
+        fetchSubscriptions(),
+        fetchTotalIncomeAmount(),
+        fetchClientCount(),
+        fetchServiceCount(),
+        fetchPendingRevenue(),
+        fetchUserData()
+      ]);
+      setLoading(false); // Hide preloader after all API calls are done
+    };
+
+    loadData();
   }, []);
+
 
   // Calculate remaining payments
   const calculateRemainingPayments = () => {
@@ -327,13 +347,13 @@ export default function Home() {
   months.forEach(m => monthlyIncomeMap[m] = 0);
 
   Subscriptions.forEach(sub => {
-  const date = new Date(sub.payment_date);
-  const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-  const amount = parseFloat(sub.amount);
-  if (!isNaN(amount)) {
-    monthlyIncomeMap[label] += amount;
-  }
-});
+    const date = new Date(sub.payment_date);
+    const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+    const amount = parseFloat(sub.amount);
+    if (!isNaN(amount)) {
+      monthlyIncomeMap[label] += amount;
+    }
+  });
 
 
   // Subscriptions.forEach(sub => {
@@ -422,6 +442,11 @@ export default function Home() {
       alert("Failed to delete the record. Please try again.");
     }
   };
+
+  if (loading) {
+    return <Preloader />;
+  }
+
 
   return (
     <>

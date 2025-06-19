@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Preloader from './Preloader';
 
 export default function AddClient({ onClose, onSuccess }) {
+
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({
     name: '', email: '', phone: '', address: '', notes: ''
   });
@@ -10,6 +14,7 @@ export default function AddClient({ onClose, onSuccess }) {
 
   const handleSubmit = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       await axios.post('/api/clients', form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -17,36 +22,55 @@ export default function AddClient({ onClose, onSuccess }) {
       onSuccess();
     } catch (err) {
       console.error("Add failed", err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <div style={styles.header}>
-          <h5 style={{ margin: 0 }}>Add Client</h5>
-          <button onClick={onClose} style={styles.closeBtn}>×</button>
-        </div>
 
-        <div style={styles.body}>
-          {["name", "email", "phone", "address", "notes"].map(field => (
-            <div key={field} style={{ marginBottom: '12px' }}>
-              <input
-                type="text"
-                name={field}
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={form[field]}
-                onChange={handleChange}
-                style={styles.input}
-              />
+        {loading ? (
+          <div style={{ padding: '50px 0' }}>
+            <Preloader />
+          </div>
+        ) : (
+
+          <>
+
+            <div style={styles.header}>
+              <h5 style={{ margin: 0 }}>Add Client</h5>
+              <button onClick={onClose} style={styles.closeBtn}>×</button>
             </div>
-          ))}
-        </div>
+            <div style={styles.body}>
+              {["name", "email", "phone", "address", "notes"].map(field => (
+                <div key={field} style={{ marginBottom: '12px' }}>
+                  <label htmlFor={field} style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                    value={form[field]}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
+                </div>
+              ))}
+            </div>
+            <div style={styles.footer}>
+              <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
+              <button onClick={handleSubmit} style={styles.primaryBtn}>Add</button>
+            </div>
 
-        <div style={styles.footer}>
-          <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
-          <button onClick={handleSubmit} style={styles.primaryBtn}>Add</button>
-        </div>
+          </>
+
+        )}
+
+
+
       </div>
     </div>
   );

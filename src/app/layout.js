@@ -9,6 +9,8 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer"
 
+import Preloader from './components/Preloader';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -44,13 +46,7 @@ export default function RootLayout({ children }) {
 
   if (loading && !isAuthPage) {
     return (
-      <html lang="en">
-        <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <span>Checking authentication... Please wait.</span>
-          </div>
-        </body>
-      </html>
+      <Preloader />
     );
   }
   return (
