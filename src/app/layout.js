@@ -46,7 +46,13 @@ export default function RootLayout({ children }) {
 
   if (loading && !isAuthPage) {
     return (
-      <Preloader />
+      <html lang="en">
+        <body className={`${geistSans.variable} ${geistMono.variable}`}>
+          <div style={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            <span>Checking authentication... Please wait.</span>
+          </div>
+        </body>
+      </html>
     );
   }
   return (
