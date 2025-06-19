@@ -451,6 +451,39 @@ export default function Home() {
   const revenueChange = getPercentChange(thisMonthRevenue, lastMonthRevenue);
   const pendingChange = getPercentChange(thisMonthPending, lastMonthPending);
 
+  const getMostUsedService = () => {
+    const countMap = {};
+    Subscriptions.forEach(sub => {
+      if (sub.service_name) {
+        countMap[sub.service_name] = (countMap[sub.service_name] || 0) + 1;
+      }
+    });
+    return Object.entries(countMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
+  };
+
+  const getServiceWithHighestPending = () => {
+    const pendingMap = {};
+    Subscriptions.filter(sub => sub.status === 'pending').forEach(sub => {
+      if (sub.service_name) {
+        pendingMap[sub.service_name] = (pendingMap[sub.service_name] || 0) + parseFloat(sub.amount || 0);
+      }
+    });
+    const entry = Object.entries(pendingMap).sort((a, b) => b[1] - a[1])[0];
+    return entry ? `${entry[0]} (₹${entry[1].toFixed(2)})` : '-';
+  };
+
+  const getTopEarningService = () => {
+    const incomeMap = {};
+    Subscriptions.forEach(sub => {
+      if (sub.service_name) {
+        incomeMap[sub.service_name] = (incomeMap[sub.service_name] || 0) + parseFloat(sub.amount || 0);
+      }
+    });
+    const entry = Object.entries(incomeMap).sort((a, b) => b[1] - a[1])[0];
+    return entry ? `${entry[0]} (₹${entry[1].toFixed(2)})` : '-';
+  };
+
+
   if (loading) {
     return <Preloader />;
   }
@@ -478,16 +511,11 @@ export default function Home() {
                   <h4 className="mb-0">{clientCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Total Clients </h6>
-                {/* <p className="mb-0 text-success">
-                  <span className="me-1 fw-medium text-success">+18.2%</span>
-                  <small className="">than last week</small>
-                </p> */}
-                <p className={`mb-0 ${clientChange >= 0 ? 'text-success' : 'text-danger'}`}>
-                  <span className="me-1 fw-medium">
-                    {clientChange >= 0 ? '+' : ''}{clientChange}%
-                  </span>
-                  <small>than last month</small>
+                <p className="mb-0 text-primary">
+                  {thisMonthClients.size} clients joined this month
                 </p>
+
+
 
               </div>
             </div>
@@ -505,15 +533,8 @@ export default function Home() {
                   <h4 className="mb-0">{serviceCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Active Services</h6>
-                {/* <p className="mb-0 text-danger">
-                  <span className="me-1 fw-medium">-8.7%</span>
-                  <small className="">than last week</small>
-                </p> */}
-                <p className={`mb-0 ${serviceChange >= 0 ? 'text-success' : 'text-danger'}`}>
-                  <span className="me-1 fw-medium">
-                    {serviceChange >= 0 ? '+' : ''}{serviceChange}%
-                  </span>
-                  <small>than last month</small>
+                <p className="mb-0 text-warning">
+                  Most used service: {getMostUsedService()}
                 </p>
               </div>
             </div>
@@ -531,15 +552,8 @@ export default function Home() {
                   <h4 className="mb-0">{pendingRevenue.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Pending Revenue</h6>
-                {/* <p className="mb-0 text-success">
-                  <span className="me-1 fw-medium">+4.3%</span>
-                  <small className="">than last week</small>
-                </p> */}
-                <p className={`mb-0 ${pendingChange >= 0 ? 'text-success' : 'text-danger'}`}>
-                  <span className="me-1 fw-medium">
-                    {pendingChange >= 0 ? '+' : ''}{pendingChange}%
-                  </span>
-                  <small>than last month</small>
+                <p className="mb-0 text-danger">
+                  Highest pending: {getServiceWithHighestPending()}
                 </p>
               </div>
             </div>
@@ -558,15 +572,8 @@ export default function Home() {
                   <h4 className="mb-0">{totalIncomeAmount.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Projected Revenue (MTD)</h6>
-                {/* <p className="mb-0 text-danger">
-                  <span className="me-1 fw-medium">-2.5%</span>
-                  <small className="">than last week</small>
-                </p> */}
-                <p className={`mb-0 ${revenueChange >= 0 ? 'text-success' : 'text-danger'}`}>
-                  <span className="me-1 fw-medium">
-                    {revenueChange >= 0 ? '+' : ''}{revenueChange}%
-                  </span>
-                  <small>than last month</small>
+                <p className="mb-0 text-success">
+                  Top earning: {getTopEarningService()}
                 </p>
               </div>
             </div>
