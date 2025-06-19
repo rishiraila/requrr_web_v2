@@ -29,7 +29,21 @@ export default function AddRenewals({ onClose, onSuccess }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === 'checkbox' ? (checked ? 1 : 0) : value });
+    // setForm({ ...form, [name]: type === 'checkbox' ? (checked ? 1 : 0) : value });
+    // If the selected service_id changes, update amount from that service
+    if (name === 'service_id') {
+      const selectedService = services.find(s => String(s.id) === value);
+      setForm(prev => ({
+        ...prev,
+        [name]: value,
+        amount: selectedService ? selectedService.base_price : ''
+      }));
+    } else {
+      setForm(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? (checked ? 1 : 0) : value
+      }));
+    }
   };
 
   const handleSubmit = async () => {
@@ -75,7 +89,7 @@ export default function AddRenewals({ onClose, onSuccess }) {
                 <option value="">Select Service</option>
                 {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
               </select>
-              
+
               <label htmlFor="amount">Amount</label>
               <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
 

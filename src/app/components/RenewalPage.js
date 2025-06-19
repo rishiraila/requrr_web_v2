@@ -36,7 +36,8 @@ export default function RenewalPage() {
         return {
           ...record,
           client_name: client?.name || '—',
-          service_name: service?.name || '—'
+          service_name: service?.name || '—',
+          duration: service?.billing_interval || 'N/A'
         };
       });
 
@@ -119,6 +120,7 @@ export default function RenewalPage() {
               <tr>
                 <th>Client</th>
                 <th>Service</th>
+                <th>Duration</th> {/* ✅ Add this */}
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Amount</th>
@@ -135,10 +137,24 @@ export default function RenewalPage() {
                   <tr key={record.id}>
                     <td>{record.client_name}</td>
                     <td>{record.service_name}</td>
+                    <td>
+                      {record.duration !== 'N/A' ? `${record.duration} month(s)` : '—'}
+                    </td>
                     <td>{new Date(record.payment_date).toLocaleDateString()}</td>
                     <td>{record.due_date ? new Date(record.due_date).toLocaleDateString() : '-'}</td>
                     <td>₹{parseFloat(record.amount).toFixed(2)}</td>
-                    <td>{record.status}</td>
+                    {/* <td>{record.status}</td> */}
+                    <td>
+                      <span className={`badge ${record.status === 'paid' ? 'bg-primary' :
+                          record.status === 'pending' ? 'bg-warning text-white' :
+                            record.status === 'overdue' ? 'bg-danger' :
+                              record.status === 'cancelled' ? 'bg-dark' :
+                                'bg-secondary'
+                        }`}>
+                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                      </span>
+                    </td>
+
                     <td>{record.notes || '-'}</td> {/* ✅ Show description */}
                     <td>
                       <button

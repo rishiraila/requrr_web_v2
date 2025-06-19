@@ -355,33 +355,6 @@ export default function Home() {
     }
   });
 
-
-  // Subscriptions.forEach(sub => {
-  //   const date = new Date(sub.payment_date);
-  //   const now = new Date();
-
-  //   let include = false;
-  //   if (expenseFilter === '6m') {
-  //     const sixMonthsAgo = new Date();
-  //     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-  //     include = date >= sixMonthsAgo && date <= now;
-  //   } else if (expenseFilter === '12m') {
-  //     const twelveMonthsAgo = new Date();
-  //     twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-  //     include = date >= twelveMonthsAgo && date <= now;
-  //   } else {
-  //     include = true; // 'all'
-  //   }
-
-  //   if (include) {
-  //     const yearMonth = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-  //     const amount = parseFloat(sub.amount || 0);
-  //     monthlyIncomeMap[yearMonth] = (monthlyIncomeMap[yearMonth] || 0) + amount;
-  //   }
-  // });
-
-  // const sortedExpenseMonths = Object.keys(monthlyExpenseMap).sort((a, b) => new Date(a) - new Date(b));
-
   const sortedIncomeMonths = Object.keys(monthlyIncomeMap).sort((a, b) => new Date(a) - new Date(b));
 
   const monthlyIncomeChartData = {
@@ -395,18 +368,6 @@ export default function Home() {
       },
     ],
   };
-
-  // const monthlyIncomeChartData = {
-  //   labels: sortedIncomeMonths,
-  //   datasets: [
-  //     {
-  //       label: 'Income',
-  //       data: sortedIncomeMonths.map(month => monthlyIncomeMap[month]),
-  //       backgroundColor: '#666CFF',
-  //       borderRadius: 8,
-  //     },
-  //   ],
-  // };
 
   const dueDates = Subscriptions
     .filter(sub => {
@@ -443,6 +404,53 @@ export default function Home() {
     }
   };
 
+  // Subscriptions already includes payment_date and due_date
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+  // Helpers
+  const isCurrentMonth = (date) =>
+    new Date(date).getMonth() === currentMonth && new Date(date).getFullYear() === currentYear;
+
+  const isLastMonth = (date) =>
+    new Date(date).getMonth() === lastMonth && new Date(date).getFullYear() === lastMonthYear;
+
+  // Total Clients
+  const thisMonthClients = new Set(Subscriptions.filter(s => isCurrentMonth(s.payment_date)).map(s => s.client_id));
+  const lastMonthClients = new Set(Subscriptions.filter(s => isLastMonth(s.payment_date)).map(s => s.client_id));
+
+  // Services
+  const thisMonthServices = new Set(Subscriptions.filter(s => isCurrentMonth(s.payment_date)).map(s => s.service_id));
+  const lastMonthServices = new Set(Subscriptions.filter(s => isLastMonth(s.payment_date)).map(s => s.service_id));
+
+  // Revenue
+  const thisMonthRevenue = Subscriptions.filter(s => isCurrentMonth(s.payment_date))
+    .reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+
+  const lastMonthRevenue = Subscriptions.filter(s => isLastMonth(s.payment_date))
+    .reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+
+  // Pending Revenue
+  const thisMonthPending = Subscriptions.filter(s =>
+    isCurrentMonth(s.payment_date) && s.status === 'pending'
+  ).reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+
+  const lastMonthPending = Subscriptions.filter(s =>
+    isLastMonth(s.payment_date) && s.status === 'pending'
+  ).reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+
+
+  const getPercentChange = (current, previous) => {
+    if (previous === 0) return current > 0 ? 100 : 0;
+    return (((current - previous) / previous) * 100).toFixed(1);
+  };
+
+
+  const clientChange = getPercentChange(thisMonthClients.size, lastMonthClients.size);
+  const serviceChange = getPercentChange(thisMonthServices.size, lastMonthServices.size);
+  const revenueChange = getPercentChange(thisMonthRevenue, lastMonthRevenue);
+  const pendingChange = getPercentChange(thisMonthPending, lastMonthPending);
+
   if (loading) {
     return <Preloader />;
   }
@@ -470,10 +478,17 @@ export default function Home() {
                   <h4 className="mb-0">{clientCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Total Clients </h6>
-                <p className="mb-0 text-success">
+                {/* <p className="mb-0 text-success">
                   <span className="me-1 fw-medium text-success">+18.2%</span>
                   <small className="">than last week</small>
+                </p> */}
+                <p className={`mb-0 ${clientChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                  <span className="me-1 fw-medium">
+                    {clientChange >= 0 ? '+' : ''}{clientChange}%
+                  </span>
+                  <small>than last month</small>
                 </p>
+
               </div>
             </div>
           </div>
@@ -490,9 +505,15 @@ export default function Home() {
                   <h4 className="mb-0">{serviceCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Active Services</h6>
-                <p className="mb-0 text-danger">
+                {/* <p className="mb-0 text-danger">
                   <span className="me-1 fw-medium">-8.7%</span>
                   <small className="">than last week</small>
+                </p> */}
+                <p className={`mb-0 ${serviceChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                  <span className="me-1 fw-medium">
+                    {serviceChange >= 0 ? '+' : ''}{serviceChange}%
+                  </span>
+                  <small>than last month</small>
                 </p>
               </div>
             </div>
@@ -510,9 +531,15 @@ export default function Home() {
                   <h4 className="mb-0">{pendingRevenue.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Pending Revenue</h6>
-                <p className="mb-0 text-success">
+                {/* <p className="mb-0 text-success">
                   <span className="me-1 fw-medium">+4.3%</span>
                   <small className="">than last week</small>
+                </p> */}
+                <p className={`mb-0 ${pendingChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                  <span className="me-1 fw-medium">
+                    {pendingChange >= 0 ? '+' : ''}{pendingChange}%
+                  </span>
+                  <small>than last month</small>
                 </p>
               </div>
             </div>
@@ -531,9 +558,15 @@ export default function Home() {
                   <h4 className="mb-0">{totalIncomeAmount.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Projected Revenue (MTD)</h6>
-                <p className="mb-0 text-danger">
+                {/* <p className="mb-0 text-danger">
                   <span className="me-1 fw-medium">-2.5%</span>
                   <small className="">than last week</small>
+                </p> */}
+                <p className={`mb-0 ${revenueChange >= 0 ? 'text-success' : 'text-danger'}`}>
+                  <span className="me-1 fw-medium">
+                    {revenueChange >= 0 ? '+' : ''}{revenueChange}%
+                  </span>
+                  <small>than last month</small>
                 </p>
               </div>
             </div>
