@@ -39,6 +39,24 @@ import Link from 'next/link';
 
 
 export default function Navbar() {
+
+    function decodeJWT(token) {
+        if (!token) return null;
+        const payload = token.split('.')[1];
+        try {
+            return JSON.parse(atob(payload)); // atob decodes Base64
+        } catch (e) {
+            console.error('Invalid token', e);
+            return null;
+        }
+    }
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const userData = decodeJWT(token);
+
+    // For debugging
+    console.log("Decoded token:", userData);
+
     return (
         <>
 
@@ -90,7 +108,7 @@ export default function Navbar() {
                             </a>
                             <ul className="dropdown-menu dropdown-menu-end">
                                 <li>
-                                    <a className="dropdown-item" href="/Accounts/Account">
+                                    <Link className="dropdown-item" href="/Accounts/Account">
                                         <div className="d-flex">
                                             <div className="flex-shrink-0 me-2">
                                                 <div className="avatar avatar-online">
@@ -98,48 +116,36 @@ export default function Navbar() {
                                                 </div>
                                             </div>
                                             <div className="flex-grow-1">
-                                                <span className="fw-medium d-block small">John Doe</span>
-                                                <small className="text-muted">Admin</small>
+                                                <span className="fw-medium d-block small">{userData?.email || "No email"}</span>
+                                                <small className="text-muted">User</small>
                                             </div>
                                         </div>
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
                                     <div className="dropdown-divider"></div>
                                 </li>
                                 <li>
-                                    <a className="dropdown-item" href="/Profile/User">
+                                    <Link className="dropdown-item" href="/Accounts/Account">
                                         <i className="ri-user-3-line ri-22px me-3"></i><span className="align-middle">My Profile</span>
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a className="dropdown-item" href="/Accounts/Account">
-                                        <i className="ri-settings-4-line ri-22px me-3"></i><span className="align-middle">Settings</span>
-                                    </a>
+                                    <Link className="dropdown-item" href="/Accounts/Security">
+                                        <i className="ri-lock-line ri-22px me-3"></i><span className="align-middle">Security</span>
+                                    </Link>
                                 </li>
+
                                 <li>
-                                    <a className="dropdown-item" href="/Accounts/Billing">
-                                        <span className="d-flex align-items-center align-middle">
-                                            <i className="flex-shrink-0 ri-file-text-line ri-22px me-3"></i>
-                                            <span className="flex-grow-1 align-middle">Billing</span>
-                                            <span className="flex-shrink-0 badge badge-center rounded-pill bg-danger">4</span>
-                                        </span>
-                                    </a>
+                                    <Link className="dropdown-item" href="/notification-preferences">
+                                        <i className="ri-notification-2-line ri-22px me-3"></i><span className="align-middle">Notification</span>
+                                    </Link>
+                                    
                                 </li>
                                 <li>
                                     <div className="dropdown-divider"></div>
                                 </li>
-                                <li>
-                                    <a className="dropdown-item" href="/Pricing">
-                                        <i className="ri-money-dollar-circle-line ri-22px me-3"></i
-                                        ><span className="align-middle">Pricing</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a className="dropdown-item" href="/Faq">
-                                        <i className="ri-question-line ri-22px me-3"></i><span className="align-middle">FAQ</span>
-                                    </a>
-                                </li>
+                                
                                 <li>
                                     <div className="d-grid px-4 pt-2 pb-1">
                                         <button className="btn btn-sm btn-danger d-flex" onClick={() => {
