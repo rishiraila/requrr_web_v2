@@ -70,21 +70,15 @@ export default function AddRenewals({ onClose, onSuccess }) {
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
 
-               <label htmlFor="service_id">Service</label>
+              <label htmlFor="service_id">Service</label>
               <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
                 <option value="">Select Service</option>
                 {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
               </select>
-
+              
               <label htmlFor="amount">Amount</label>
               <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
-             
-              <label htmlFor="payment_date">Payment Date</label>
-              <input type="date" name="payment_date" value={form.payment_date} onChange={handleChange} style={styles.input} />
-              
-              <label htmlFor="due_date">Due Date</label>
-              <input type="date" name="due_date" value={form.due_date} onChange={handleChange} style={styles.input} />
-              
+
               <label htmlFor="status">Status</label>
               <select name="status" value={form.status} onChange={handleChange} style={styles.input}>
                 <option value="pending">Pending</option>
@@ -92,7 +86,21 @@ export default function AddRenewals({ onClose, onSuccess }) {
                 <option value="overdue">Overdue</option>
                 <option value="cancelled">Cancelled</option>
               </select>
-             
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <label htmlFor="payment_date">Payment Date</label>
+                  <input type="date" name="payment_date" value={form.payment_date} onChange={handleChange} style={styles.input} />
+                </div>
+
+
+                <div>
+                  <label htmlFor="due_date">Due Date</label>
+                  <input type="date" name="due_date" value={form.due_date} onChange={handleChange} style={styles.input} />
+                </div>
+
+              </div>
+
               <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
               <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
             </div>

@@ -851,9 +851,17 @@ export default function Home() {
           <UpdateRenewals
             record={editingRecord}
             onClose={() => setEditingRecord(null)}
-            onSuccess={() => {
+            onSuccess={async () => {
+              // setEditingRecord(null);
+              // fetchSubscriptions(); // re-fetch to reflect updates
               setEditingRecord(null);
-              fetchSubscriptions(); // re-fetch to reflect updates
+              await Promise.all([
+                fetchSubscriptions(),
+                fetchTotalIncomeAmount(),
+                fetchPendingRevenue(),
+                fetchClientCount(),
+                fetchServiceCount()
+              ]);
             }}
           />
         )}

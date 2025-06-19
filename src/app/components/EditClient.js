@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Preloader from './Preloader'
 
 export default function EditClient({ client, onClose, onSuccess }) {
+
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({ ...client });
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleUpdate = async () => {
     try {
+      setLoading(true); // Show loader
       const token = localStorage.getItem("token");
       await axios.put(`/api/clients/${client.id}`, form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -15,6 +20,8 @@ export default function EditClient({ client, onClose, onSuccess }) {
       onSuccess(); // Refresh list and close
     } catch (err) {
       console.error("Update failed", err);
+    } finally {
+      setLoading(false); // Hide loader
     }
   };
 
@@ -26,25 +33,39 @@ export default function EditClient({ client, onClose, onSuccess }) {
           <button onClick={onClose} style={styles.closeBtn}>×</button>
         </div>
 
-        <div style={styles.body}>
-          {["name", "email", "phone", "address", "notes"].map(field => (
-            <div key={field} style={{ marginBottom: '12px' }}>
-              <input
-                type="text"
-                name={field}
-                placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                value={form[field]}
-                onChange={handleChange}
-                style={styles.input}
-              />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div style={{ padding: '40px' }}>
+            <Preloader />
+          </div>
+        ) : (
 
-        <div style={styles.footer}>
-          <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
-          <button onClick={handleUpdate} style={styles.primaryBtn}>Update</button>
-        </div>
+          <>
+
+            <div style={styles.body}>
+              {["name", "email", "phone", "address", "notes"].map(field => (
+                <div key={field} style={{ marginBottom: '12px' }}>
+                  <label htmlFor={field} style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <input
+                    type="text"
+                    name={field}
+                    placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                    value={form[field]}
+                    onChange={handleChange}
+                    style={styles.input}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.footer}>
+              <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
+              <button onClick={handleUpdate} style={styles.primaryBtn}>Update</button>
+            </div>
+          </>
+        )}
+
       </div>
     </div>
   );

@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import Preloader from './Preloader';
 
 export default function UpdateService({ service, onClose, onSuccess }) {
+
+  const [loading, setLoading] = useState(false);
+
   const [form, setForm] = useState({ ...service });
 
   const handleChange = e => {
@@ -12,6 +16,7 @@ export default function UpdateService({ service, onClose, onSuccess }) {
 
   const handleUpdate = async () => {
     try {
+      setLoading(true); // show loader
       const token = localStorage.getItem('token');
       await axios.put(`/api/Services/${service.id}`, form, {
         headers: { Authorization: `Bearer ${token}` }
@@ -19,20 +24,31 @@ export default function UpdateService({ service, onClose, onSuccess }) {
       onSuccess();
     } catch (err) {
       console.error("Update failed", err);
+    } finally {
+      setLoading(false); // hide loader
     }
   };
 
   return (
     <ModalLayout title="Edit Service" onClose={onClose} onSubmit={handleUpdate} submitLabel="Update">
+
+      <label htmlFor="name">name</label>
       <input type="text" name="name" placeholder="Name" value={form.name} onChange={handleChange} style={styles.input} />
+      
+      <label htmlFor="description">description</label>
       <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} style={styles.input} />
+      
+      <label htmlFor="billing_type">Billing Type</label>
       <select name="billing_type" value={form.billing_type} onChange={handleChange} style={styles.input}>
         <option value="one-time">One-time</option>
         <option value="recurring">Recurring</option>
       </select>
-      {form.billing_type === 'recurring' && (
+      {form.billing_type === 'recurring' && (<>
+        <label htmlFor="billing_interval">Billing Interval</label>
         <input type="number" name="billing_interval" placeholder="Interval in months" value={form.billing_interval} onChange={handleChange} style={styles.input} />
+      </>
       )}
+      <label htmlFor="base_price">Base Price</label>
       <input type="number" name="base_price" placeholder="Price" value={form.base_price} onChange={handleChange} style={styles.input} />
       <label><input type="checkbox" name="is_active" checked={!!form.is_active} onChange={handleChange} /> Active</label>
     </ModalLayout>
@@ -40,7 +56,7 @@ export default function UpdateService({ service, onClose, onSuccess }) {
 }
 
 // Reuse ModalLayout here:
-function ModalLayout({ title, onClose, onSubmit, submitLabel, children }) {
+function ModalLayout({ title, onClose, onSubmit, submitLabel, children, loading }) {
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -48,7 +64,7 @@ function ModalLayout({ title, onClose, onSubmit, submitLabel, children }) {
           <h5 style={{ margin: 0 }}>{title}</h5>
           <button onClick={onClose} style={styles.closeBtn}>×</button>
         </div>
-        <div style={styles.body}>{children}</div>
+        <div style={styles.body}>{loading ? <Preloader /> : children}</div>
         <div style={styles.footer}>
           <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
           <button onClick={onSubmit} style={styles.primaryBtn}>{submitLabel}</button>

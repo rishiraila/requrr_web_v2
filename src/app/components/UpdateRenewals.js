@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Preloader from './Preloader'; // adjust the path if needed
 
 export default function UpdateRenewals({ record, onClose, onSuccess }) {
+
+  const [loading, setLoading] = useState(false);
+
   const [clients, setClients] = useState([]);
   const [services, setServices] = useState([]);
   const [form, setForm] = useState({ ...record });
@@ -22,12 +26,15 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
     try {
+      setLoading(true); // Show preloader
       await axios.put(`/api/income_records/${record.id}`, form, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onSuccess();
     } catch (err) {
       console.error('Failed to update renewal', err);
+    } finally {
+      setLoading(false); // Hide preloader
     }
   };
 
@@ -38,31 +45,60 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
           <h5>Edit Renewal</h5>
           <button onClick={onClose} style={styles.closeBtn}>×</button>
         </div>
-        <div style={styles.body}>
-          <select name="client_id" value={form.client_id} onChange={handleChange} style={styles.input}>
-            <option value="">Select Client</option>
-            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
-            <option value="">Select Service</option>
-            {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
-          </select>
-          <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
-          <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
-          <input type="date" name="due_date" value={form.due_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
-          <select name="status" value={form.status} onChange={handleChange} style={styles.input}>
-            <option value="pending">Pending</option>
-            <option value="paid">Paid</option>
-            <option value="overdue">Overdue</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-          <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
-          <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
-        </div>
-        <div style={styles.footer}>
-          <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
-          <button onClick={handleSubmit} style={styles.primaryBtn}>Update</button>
-        </div>
+
+        {loading ? (
+          <div style={{ padding: '50px' }}>
+            <Preloader />
+          </div>
+        ) : (
+
+          <>
+
+            <div style={styles.body}>
+              <label htmlFor="client_id">Client</label>
+              <select name="client_id" value={form.client_id} onChange={handleChange} style={styles.input}>
+                <option value="">Select Client</option>
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+
+              <label htmlFor="service_id">Service</label>
+              <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
+                <option value="">Select Service</option>
+                {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
+              </select>
+
+              <label htmlFor="amount">Amount</label>
+              <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
+
+              <label htmlFor="status">Status</label>
+              <select name="status" value={form.status} onChange={handleChange} style={styles.input}>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="overdue">Overdue</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <label htmlFor="payment_date">Payment Date</label>
+                  <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
+                </div>
+
+                <div>
+                  <label htmlFor="due_date">Due Date</label>
+                  <input type="date" name="due_date" value={form.due_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
+                </div>
+              </div>
+
+              <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
+              <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
+            </div>
+            <div style={styles.footer}>
+              <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
+              <button onClick={handleSubmit} style={styles.primaryBtn}>Update</button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
