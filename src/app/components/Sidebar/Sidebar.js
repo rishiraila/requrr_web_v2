@@ -130,6 +130,13 @@ export default function Sidebar() {
             </Link>
           </li>
 
+          <li className={`menu-item ${pathname == '/Subscriptions' ? 'active' : ''}`}>
+            <Link href="/Subscriptions" className="menu-link ">
+              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
+              <div >Subscriptions</div>
+            </Link>
+          </li>
+
           <li className={`menu-item ${pathname == '/Accounts/Account' || pathname == '/notification-preferences' || pathname == '/Accounts/Security' ? 'active' : ''}`}>
             <Link href="/notification-preferences" className="menu-link ">
               <i className="menu-icon tf-icons ri-settings-2-line"></i>

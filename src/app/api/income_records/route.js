@@ -1,6 +1,6 @@
 import { db } from '../../../db';
 import { authenticate } from '../../../middleware/auth';
-import {sendEmail} from '../../utils/mailer'
+import { sendEmail } from '../../utils/mailer';
 
 export async function GET(req) {
   const user = authenticate(req);
@@ -30,6 +30,40 @@ export async function POST(req) {
     notes,
   } = await req.json();
 
+  // Step 1: Get current active subscription and plan
+  const [subscriptions] = await db.query(
+    `SELECT s.start_date, s.end_date, p.max_renewals, p.name AS plan_name
+     FROM subscriptions s
+     JOIN plans p ON s.plan_id = p.id
+     WHERE s.user_id = ? AND s.end_date >= CURDATE()`,
+    [user.id]
+  );
+
+  if (subscriptions.length === 0) {
+    return Response.json({ error: 'No active subscription found' }, { status: 403 });
+  }
+
+  const { start_date, end_date, max_renewals, plan_name } = subscriptions[0];
+
+  // Step 2: If recurring and plan has a limit, count renewals
+  if (is_recurring && max_renewals !== null) {
+    const [countResult] = await db.query(
+      `SELECT COUNT(*) AS total FROM income_records 
+       WHERE user_id = ? AND is_recurring = 1 
+         AND created_at BETWEEN ? AND ?`,
+      [user.id, start_date, end_date]
+    );
+
+    const renewalCount = countResult[0].total;
+
+    if (renewalCount >= max_renewals) {
+      return Response.json({
+        error: `You have reached the renewal limit (${max_renewals}) for your "${plan_name}" plan.`,
+      }, { status: 403 });
+    }
+  }
+
+  // Step 3: Allow record creation
   await db.query(
     `INSERT INTO income_records 
      (user_id, client_id, service_id, amount, payment_date, due_date, status, is_recurring, recurrence_id, notes) 

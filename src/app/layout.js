@@ -11,6 +11,8 @@ import Footer from "./components/Footer/Footer"
 
 import Preloader from './components/Preloader';
 
+import Script from 'next/script';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -99,6 +101,9 @@ export default function RootLayout({ children }) {
           </div>
 
         </div>
+
+        <Script src="https://checkout.razorpay.com/v1/checkout.js"/>
+
 
       </body>
 
