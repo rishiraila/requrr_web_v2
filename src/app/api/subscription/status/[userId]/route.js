@@ -1,5 +1,5 @@
 // src/app/api/subscription/status/[userId]/route.js
-import db from '@/lib/db';
+import { db } from '../../../../../db';
 
 import { authenticate } from '../../../../../middleware/auth'
 

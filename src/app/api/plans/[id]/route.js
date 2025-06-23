@@ -1,6 +1,6 @@
 // src/app/api/plans/[id]/route.js
-import { db } from '../../../../../db';
-import { authenticate } from '../../../../../middleware/auth';
+import { db } from '../../../../db';
+import { authenticate } from '../../../../middleware/auth';
 
 export async function GET(req, { params }) {
   const planId = params.id;
