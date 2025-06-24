@@ -1,32 +1,3 @@
-// import { db } from '../../../../db';
-// import { authenticate } from '../../../../middleware/auth';
-
-// export async function GET(req) {
-//   const user = authenticate(req);
-//   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-//   const [result] = await db.query(
-//     `SELECT s.end_date, p.name AS plan_name, p.max_renewals
-//      FROM subscriptions s
-//      JOIN plans p ON s.plan_id = p.id
-//      WHERE s.user_id = ? AND s.end_date >= CURDATE()`,
-//     [user.id]
-//   );
-
-//   if (result.length === 0) {
-//     return Response.json({ subscribed: false });
-//   }
-
-//   return Response.json({
-//     subscribed: true,
-//     plan: result[0].plan_name,
-//     max_renewals: result[0].max_renewals,
-//     end_date: result[0].end_date,
-//   });
-// }
-
-
-
 // src/app/api/subscription/status/route.js
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';

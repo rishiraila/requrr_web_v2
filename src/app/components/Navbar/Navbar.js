@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 import Script from "next/script";
 
@@ -98,6 +98,12 @@ export default function Navbar() {
 
                 <div className="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
 
+                    <div class="navbar-nav align-items-center">
+                        <div class="nav-item navbar-search-wrapper mb-0">
+                            {/* <h5>Bagde be here</h5> */}
+                        </div>
+                    </div>
+
                     <ul className="navbar-nav flex-row align-items-center ms-auto">
 
                         <li className="nav-item navbar-dropdown dropdown-user dropdown">
@@ -140,12 +146,12 @@ export default function Navbar() {
                                     <Link className="dropdown-item" href="/notification-preferences">
                                         <i className="ri-notification-2-line ri-22px me-3"></i><span className="align-middle">Notification</span>
                                     </Link>
-                                    
+
                                 </li>
                                 <li>
                                     <div className="dropdown-divider"></div>
                                 </li>
-                                
+
                                 <li>
                                     <div className="d-grid px-4 pt-2 pb-1">
                                         <button className="btn btn-sm btn-danger d-flex" onClick={() => {

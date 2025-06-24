@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Preloader from './Preloader';
+import Link from 'next/link';
 
 export default function AddRenewals({ onClose, onSuccess }) {
+
+  const [limitError, setLimitError] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState([]);
@@ -53,9 +56,16 @@ export default function AddRenewals({ onClose, onSuccess }) {
       await axios.post('/api/income_records', form, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      setLimitError('');
       onSuccess();
     } catch (err) {
-      console.error('Failed to add renewal', err);
+      // console.error('Failed to add renewal', err);
+      if (err.response && err.response.status === 403) {
+        setLimitError(err.response.data.error || 'You have reached your plan limit.');
+      } else {
+        console.error('Failed to add renewal', err);
+        setLimitError('Something went wrong.');
+      }
     } finally {
       setLoading(false); // 👈 Hide loader after response
     }
@@ -118,6 +128,12 @@ export default function AddRenewals({ onClose, onSuccess }) {
               <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
               <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
             </div>
+
+            {limitError && (
+              <div style={{ color: 'red', marginBottom: '12px', fontSize: '14px' }} className='ps-4'>
+                {limitError} - <Link href="/Subscriptions">Subscribe now</Link>
+              </div>
+            )}
             <div style={styles.footer}>
               <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
               <button onClick={handleSubmit} style={styles.primaryBtn}>Add</button>

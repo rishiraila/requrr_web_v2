@@ -191,17 +191,6 @@ export default function Home() {
     }
   };
 
-
-
-  // Fetch entities on mount
-  // useEffect(() => {
-  //   fetchSubscriptions();
-  //   fetchTotalIncomeAmount();
-  //   fetchClientCount();
-  //   fetchServiceCount();
-  //   fetchPendingRevenue();
-  // }, []);
-
   useEffect(() => {
     const loadData = async () => {
       await Promise.all([
@@ -511,11 +500,9 @@ export default function Home() {
                   <h4 className="mb-0">{clientCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Total Clients </h6>
-                <p className="mb-0 text-primary">
+                {/* <p className="mb-0 text-primary">
                   {thisMonthClients.size} clients joined this month
-                </p>
-
-
+                </p> */}
 
               </div>
             </div>
@@ -533,9 +520,9 @@ export default function Home() {
                   <h4 className="mb-0">{serviceCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Active Services</h6>
-                <p className="mb-0 text-warning">
+                {/* <p className="mb-0 text-warning">
                   Most used service: {getMostUsedService()}
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
@@ -552,9 +539,9 @@ export default function Home() {
                   <h4 className="mb-0">{pendingRevenue.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Pending Revenue</h6>
-                <p className="mb-0 text-danger">
+                {/* <p className="mb-0 text-danger">
                   Highest pending: {getServiceWithHighestPending()}
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
@@ -572,9 +559,9 @@ export default function Home() {
                   <h4 className="mb-0">{totalIncomeAmount.toFixed(2)}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Projected Revenue (MTD)</h6>
-                <p className="mb-0 text-success">
+                {/* <p className="mb-0 text-success">
                   Top earning: {getTopEarningService()}
-                </p>
+                </p> */}
               </div>
             </div>
           </div>
