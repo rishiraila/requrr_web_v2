@@ -30,17 +30,70 @@ export default function AddRenewals({ onClose, onSuccess }) {
       .then(res => setServices(res.data));
   }, []);
 
+  // const handleChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   if (name === 'service_id') {
+  //     const selectedService = services.find(s => String(s.id) === value);
+  //     setForm(prev => ({
+  //       ...prev,
+  //       [name]: value,
+  //       amount: selectedService ? selectedService.base_price : ''
+  //     }));
+  //   } else {
+  //     setForm(prev => ({
+  //       ...prev,
+  //       [name]: type === 'checkbox' ? (checked ? 1 : 0) : value
+  //     }));
+  //   }
+  // };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    // setForm({ ...form, [name]: type === 'checkbox' ? (checked ? 1 : 0) : value });
-    // If the selected service_id changes, update amount from that service
+
     if (name === 'service_id') {
       const selectedService = services.find(s => String(s.id) === value);
       setForm(prev => ({
         ...prev,
         [name]: value,
-        amount: selectedService ? selectedService.base_price : ''
+        amount: selectedService ? selectedService.base_price : '',
       }));
+    } else if (name === 'payment_date') {
+      const selectedService = services.find(s => String(s.id) === String(form.service_id));
+
+      let newForm = {
+        ...form,
+        [name]: value
+      };
+
+      if (
+        form.is_recurring &&
+        selectedService &&
+        selectedService.billing_interval
+      ) {
+        const startDate = new Date(value);
+        let endDate = new Date(startDate);
+
+        switch (selectedService.billing_interval) {
+          case 'weekly':
+            endDate.setDate(endDate.getDate() + 7);
+            break;
+          case 'monthly':
+            endDate.setMonth(endDate.getMonth() + 1);
+            break;
+          case 'quarterly':
+            endDate.setMonth(endDate.getMonth() + 3);
+            break;
+          case 'yearly':
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            break;
+          default:
+            break;
+        }
+
+        newForm.due_date = endDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      }
+
+      setForm(newForm);
     } else {
       setForm(prev => ({
         ...prev,
@@ -48,6 +101,7 @@ export default function AddRenewals({ onClose, onSuccess }) {
       }));
     }
   };
+
 
   const handleSubmit = async () => {
     const token = localStorage.getItem('token');
@@ -113,13 +167,13 @@ export default function AddRenewals({ onClose, onSuccess }) {
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <label htmlFor="payment_date">Payment Date</label>
+                  <label htmlFor="payment_date">Start Date</label>
                   <input type="date" name="payment_date" value={form.payment_date} onChange={handleChange} style={styles.input} />
                 </div>
 
 
                 <div>
-                  <label htmlFor="due_date">Due Date</label>
+                  <label htmlFor="due_date">End Date</label>
                   <input type="date" name="due_date" value={form.due_date} onChange={handleChange} style={styles.input} />
                 </div>
 
