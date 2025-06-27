@@ -35,6 +35,7 @@ export default function CalendarPage() {
                     return {
                         ...r,
                         client_name: client?.name || 'Unknown Client',
+                        company_name: client?.company_name || '',
                         service_name: service?.name || 'Unknown Service',
                     };
                 });
@@ -116,7 +117,10 @@ export default function CalendarPage() {
                         />
                     </div>
 
-                    <div className='col-md-4'>
+                    <div className='col-md-4' style={{
+                        overflowY: "scroll",
+                        height: "80vh"
+                    }}>
                         {/* Right: Daily or Full Renewal List */}
                         <div>
                             {selectedDate ? (
@@ -127,7 +131,7 @@ export default function CalendarPage() {
                                     ) : (
                                         recordsForSelectedDate.map((r) => (
                                             <div key={r.id} style={recordCardStyle(r.status)}>
-                                                <strong>{r.client_name}</strong>
+                                                <strong>{r.client_name} - <small>{r.company_name}</small></strong>
                                                 <div>{r.service_name}</div>
                                                 <div>₹{parseFloat(r.amount).toFixed(2)}</div>
                                                 <div>Status: {r.status}</div>
@@ -144,7 +148,7 @@ export default function CalendarPage() {
                                     ) : (
                                         records.map((r) => (
                                             <div key={r.id} style={recordCardStyle(r.status)}>
-                                                <strong>{r.client_name}</strong>
+                                                <strong>{r.client_name} - <small>{r.company_name}</small></strong>
                                                 <div>{r.service_name}</div>
                                                 <div>₹{parseFloat(r.amount).toFixed(2)}</div>
                                                 <div>Status: {r.status}</div>

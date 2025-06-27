@@ -14,10 +14,10 @@ export async function POST(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { name, email, phone, address, notes } = await req.json();
+  const { name, email, phone, address, notes, company_name } = await req.json();
   await db.query(
-    'INSERT INTO clients (user_id, name, email, phone, address, notes) VALUES (?, ?, ?, ?, ?, ?)',
-    [user.id, name, email, phone, address, notes]
+    'INSERT INTO clients (user_id, name, email, phone, address, notes, company_name) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [user.id, name, email, phone, address, notes, company_name]
   );
   return Response.json({ message: 'Client created' });
 }

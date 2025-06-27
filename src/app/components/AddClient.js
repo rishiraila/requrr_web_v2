@@ -7,7 +7,7 @@ export default function AddClient({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: '', email: '', phone: '', address: '', notes: ''
+    name: '', email: '', phone: '', address: '', notes: '', company_name: ''
   });
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
@@ -44,7 +44,7 @@ export default function AddClient({ onClose, onSuccess }) {
               <button onClick={onClose} style={styles.closeBtn}>×</button>
             </div>
             <div style={styles.body}>
-              {["name", "email", "phone", "address", "notes"].map(field => (
+              {["name", "email", "phone", "address", "notes", "company_name"].map(field => (
                 <div key={field} style={{ marginBottom: '12px' }}>
                   <label htmlFor={field} style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
                     {field.charAt(0).toUpperCase() + field.slice(1)}

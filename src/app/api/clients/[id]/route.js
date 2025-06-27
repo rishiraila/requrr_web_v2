@@ -14,10 +14,10 @@ export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { name, email, phone, address, notes } = await req.json();
+  const { name, email, phone, address, notes, company_name } = await req.json();
   await db.query(
-    'UPDATE clients SET name = ?, email = ?, phone = ?, address = ?, notes = ? WHERE id = ? AND user_id = ?',
-    [name, email, phone, address, notes, params.id, user.id]
+    'UPDATE clients SET name = ?, email = ?, phone = ?, address = ?, notes = ?, company_name = ? WHERE id = ? AND user_id = ?',
+    [name, email, phone, address, notes, company_name, params.id, user.id]
   );
   return Response.json({ message: 'Client updated' });
 }

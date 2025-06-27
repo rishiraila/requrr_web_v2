@@ -36,6 +36,7 @@ export default function RenewalPage() {
         return {
           ...record,
           client_name: client?.name || '—',
+          company_name: client?.company_name || '',
           service_name: service?.name || '—',
           duration: service?.billing_interval || 'N/A'
         };
@@ -135,7 +136,7 @@ export default function RenewalPage() {
               ) : (
                 paginated.map(record => (
                   <tr key={record.id}>
-                    <td>{record.client_name}</td>
+                    <td>{record.client_name}<br/><small className="text-primary">{record.company_name}</small></td>
                     <td>{record.service_name}</td>
                     <td>
                       {record.duration !== 'N/A' ? `${record.duration} month(s)` : '—'}

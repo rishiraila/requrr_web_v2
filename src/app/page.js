@@ -103,6 +103,36 @@ export default function Home() {
     // setExpenseEntities(expenseUniqueEntitiesWithAmounts); // Update the ExpenseEntities state with unique entities and their total amounts
   }, [Subscriptions]);
 
+  // const fetchSubscriptions = async () => {
+  //   const token = localStorage.getItem("token");
+
+  //   if (!token) {
+  //     window.location.href = "/Login";
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await axios.get("/api/income_records/upcoming", {
+  //       headers: { Authorization: `Bearer ${token}` }, // Ensure Bearer token format
+  //     });
+
+  //     // const subscriptions = response.data.data
+  //     // const subscriptions = response.data
+  //     const subscriptions = response.data.map(record => ({
+  //       ...record,
+  //       category: 'income' // Add this line
+  //     }));
+
+  //     console.log("dashborad", subscriptions)
+
+  //     setSubscriptions(subscriptions); // Assuming service has a 'name' property
+
+  //   } catch (err) {
+  //     console.error("Error fetching entities:", err);
+  //   }
+  // };
+
+
   const fetchSubscriptions = async () => {
     const token = localStorage.getItem("token");
 
@@ -112,23 +142,34 @@ export default function Home() {
     }
 
     try {
-      const response = await axios.get("/api/income_records/upcoming", {
-        headers: { Authorization: `Bearer ${token}` }, // Ensure Bearer token format
+      // Fetch both upcoming records and client list
+      const [recordsRes, clientsRes] = await Promise.all([
+        axios.get("/api/income_records/upcoming", {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get("/api/clients", {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+
+      const clients = clientsRes.data;
+      const incomeRecords = recordsRes.data;
+
+      // Add category and company_name without skipping anything
+      const subscriptions = incomeRecords.map(record => {
+        const client = clients.find(c => c.id === record.client_id);
+        return {
+          ...record,
+          category: 'income',
+          client_name: client?.name || '—',
+          company_name: client?.company_name || ''
+        };
       });
 
-      // const subscriptions = response.data.data
-      // const subscriptions = response.data
-      const subscriptions = response.data.map(record => ({
-        ...record,
-        category: 'income' // Add this line
-      }));
-
-      console.log("dashborad", subscriptions)
-
-      setSubscriptions(subscriptions); // Assuming service has a 'name' property
+      setSubscriptions(subscriptions); // ✅ Still uses enriched `/api/income_records/upcoming` response
 
     } catch (err) {
-      console.error("Error fetching entities:", err);
+      console.error("Error fetching subscriptions or clients:", err);
     }
   };
 
@@ -641,7 +682,7 @@ export default function Home() {
 
                         return (
                           <tr key={sub.id}>
-                            <td>{sub.client_name}</td>
+                            <td>{sub.client_name}<br /><small className='text-primary'>{sub.company_name}</small></td>
                             <td>{sub.service_name}</td>
                             <td>{new Date(sub.due_date).toLocaleDateString()}</td>
                             <td>₹{parseFloat(sub.amount).toFixed(2)}</td>
@@ -803,7 +844,7 @@ export default function Home() {
                 }
               />
 
-              <div className="mt-3" style={{ maxHeight: "350px", overflowY: "auto" }}>
+              <div className="mt-3" style={{ maxHeight: "180px", overflowY: "auto" }}>
                 {selectedDate ? (
                   <>
                     <div className="fw-semibold mb-2">
@@ -827,7 +868,7 @@ export default function Home() {
                           className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
                         >
                           <div>
-                            <span className="badge bg-secondary mb-1">{sub.client_name}</span>
+                            <span className="badge bg-secondary mb-1">{sub.client_name} </span> - <span className="badge bg-secondary mb-1"><small>{sub.company_name}</small></span>
                             <div className="fw-medium">{sub.service_name}</div>
                           </div>
                           <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>
@@ -857,7 +898,7 @@ export default function Home() {
                             className="bg-light border rounded p-3 mb-2 d-flex justify-content-between align-items-center"
                           >
                             <div>
-                              <span className="badge bg-secondary mb-1">{sub.client_name}</span>
+                              <span className="badge bg-secondary mb-1">{sub.client_name} </span> - <span><small>{sub.company_name}</small></span>
                               <div className="fw-medium">{sub.service_name}</div>
                             </div>
                             <span className={`badge ${badgeClass}`}>{daysLeft}d left</span>

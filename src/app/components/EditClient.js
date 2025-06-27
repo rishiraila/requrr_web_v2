@@ -42,7 +42,7 @@ export default function EditClient({ client, onClose, onSuccess }) {
           <>
 
             <div style={styles.body}>
-              {["name", "email", "phone", "address", "notes"].map(field => (
+              {["company_name", "name", "email", "phone", "address", "notes"].map(field => (
                 <div key={field} style={{ marginBottom: '12px' }}>
                   <label htmlFor={field} style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
                     {field.charAt(0).toUpperCase() + field.slice(1)}

@@ -106,6 +106,7 @@ export default function ClientsPage() {
           <table className="table table-striped ">
             <thead className="table-light">
               <tr>
+                <th>Company</th>
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
@@ -121,6 +122,7 @@ export default function ClientsPage() {
               ) : (
                 paginatedClients.map(client => (
                   <tr key={client.id}>
+                    <td>{client.company_name || '-'}</td>
                     <td>{client.name}</td>
                     <td>{client.email}</td>
                     <td>{client.phone}</td>
