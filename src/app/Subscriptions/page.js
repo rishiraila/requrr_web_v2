@@ -8,7 +8,7 @@ export default function Page() {
         if (!token) return null;
         const payload = token.split('.')[1];
         try {
-            return JSON.parse(atob(payload)); // atob decodes Base64
+            return JSON.parse(atob(payload));
         } catch (e) {
             console.error('Invalid token', e);
             return null;

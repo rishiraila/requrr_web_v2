@@ -67,4 +67,3 @@ export async function POST(req) {
     return Response.json({ error: 'Order creation failed' }, { status: 500 });
   }
 }
-

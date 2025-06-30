@@ -144,6 +144,31 @@ export default function Sidebar() {
             </Link>
           </li>
 
+          <li className="menu-header mt-5">
+            <span className="menu-header-text">Admin Boards</span>
+          </li>
+
+          <li className={`menu-item`}>
+            <Link href="/Subscriptions" className="menu-link ">
+              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
+              <div >Users</div>
+            </Link>
+          </li>
+
+          <li className={`menu-item`}>
+            <Link href="/Subscriptions" className="menu-link ">
+              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
+              <div >Plans</div>
+            </Link>
+          </li>
+
+          <li className={`menu-item`}>
+            <Link href="/Subscriptions" className="menu-link ">
+              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
+              <div >Transactions </div>
+            </Link>
+          </li>
+
 
         </ul>
       </aside>

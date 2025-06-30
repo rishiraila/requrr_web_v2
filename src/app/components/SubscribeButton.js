@@ -1,12 +1,35 @@
 'use client';
+import EditPlanModal from "./EditPlanModal"
+import AddPlanModal from "./AddPlanModal"
 
 import { useEffect, useState } from 'react';
 
 export default function SubscribeButton() {
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
+  function decodeJWT(token) {
+    if (!token) return null;
+    const payload = token.split('.')[1];
+    try {
+      return JSON.parse(atob(payload));
+    } catch (e) {
+      console.error('Invalid token', e);
+      return null;
+    }
+  }
+
+
   const [plans, setPlans] = useState([]);
   const [currentPlan, setCurrentPlan] = useState(null);
   const [couponInputs, setCouponInputs] = useState({});
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const userData = decodeJWT(token);
+  const isAdmin = userData?.role === 'admin';
 
   useEffect(() => {
     fetch('/api/plans')
@@ -84,6 +107,16 @@ export default function SubscribeButton() {
       <div className="card">
         <div className="pb-sm-12 pb-2 rounded-top">
           <div className="container py-12">
+            {isAdmin && (
+              <div className="d-flex justify-content-end mb-3">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowAddModal(true)}
+                >
+                  + Add Plan
+                </button>
+              </div>
+            )}
             <h4 className="text-center mb-2 mt-0 mt-md-4">Pricing Plans</h4>
             <p className="text-center mb-2">
               All plans include 40+ advanced tools and features to boost your product. Choose the best plan to fit your needs.
@@ -102,6 +135,20 @@ export default function SubscribeButton() {
                           <img src="../../assets/img/illustrations/pricing-basic.png" alt="Plan" height="100" />
                         </div>
                         <h4 className="card-title text-center text-capitalize mb-2">{plan.name}</h4>
+                        {isAdmin && (
+                          <span
+                            className="position-absolute top-0 end-0 p-2"
+                            title="Edit Plan"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => {
+                              setSelectedPlan(plan);
+                              setShowModal(true);
+                            }}
+                          >
+                            <i className="bi bi-pencil-square fs-5 text-primary"></i>
+                          </span>
+                        )}
+
                         <p className="text-center mb-5">{plan.description}</p>
                         <div className="text-center">
                           <div className="d-flex justify-content-center">
@@ -154,6 +201,40 @@ export default function SubscribeButton() {
           </div>
         </div>
       </div>
+
+      {showModal && (
+        <EditPlanModal
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          plan={selectedPlan}
+          token={token}
+          onUpdate={() => {
+            setShowModal(false);
+            setSelectedPlan(null);
+            // reload plans
+            fetch('/api/plans')
+              .then(res => res.json())
+              .then(data => setPlans(data));
+          }}
+        />
+      )}
+
+
+      {showAddModal && (
+        <AddPlanModal
+          show={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          token={token}
+          onAdd={() => {
+            setShowAddModal(false);
+            fetch('/api/plans')
+              .then(res => res.json())
+              .then(data => setPlans(data));
+          }}
+        />
+      )}
+
+
     </div>
   );
 }
