@@ -85,6 +85,7 @@ export default function SubscribeButton() {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
             plan_id: planId,
+            coupon_code: couponCode, // ADD THIS
           }),
         });
 
