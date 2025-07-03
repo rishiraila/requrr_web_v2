@@ -40,6 +40,23 @@ export default function Sidebar() {
 
   const pathname = usePathname()
 
+  function decodeJWT(token) {
+    if (!token) return null;
+    const payload = token.split('.')[1];
+    try {
+      return JSON.parse(atob(payload));
+    } catch (e) {
+      console.error('Invalid token', e);
+      return null;
+    }
+  }
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
+  const userData = decodeJWT(token);
+  const isAdmin = userData?.role === 'admin';
+
+
   return (
     <>
 
@@ -144,30 +161,47 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li className="menu-header mt-5">
-            <span className="menu-header-text">Admin Boards</span>
-          </li>
+          {isAdmin && (
+            <>
 
-          <li className={`menu-item`}>
-            <Link href="/Subscriptions" className="menu-link ">
-              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
-              <div >Users</div>
-            </Link>
-          </li>
 
-          <li className={`menu-item`}>
-            <Link href="/Subscriptions" className="menu-link ">
-              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
-              <div >Plans</div>
-            </Link>
-          </li>
 
-          <li className={`menu-item`}>
-            <Link href="/Subscriptions" className="menu-link ">
-              <i className="menu-icon tf-icons ri-money-dollar-circle-line"></i>
-              <div >Transactions </div>
-            </Link>
-          </li>
+              <li className="menu-header mt-5">
+                <span className="menu-header-text">Admin Boards</span>
+              </li>
+
+              <li className={`menu-item ${pathname == '/Admin/Users' ? 'active' : ''}`}>
+                <Link href="/Admin/Users" className="menu-link ">
+                  <i className="menu-icon tf-icons ri-user-line"></i>
+                  <div >Users</div>
+                </Link>
+              </li>
+
+              <li className={`menu-item ${pathname == '/Admin/Coupons' ? 'active' : ''}`}>
+                <Link href="/Admin/Coupons" className="menu-link ">
+                  <i className="menu-icon tf-icons ri-discount-percent-line"></i>
+                  <div >Coupons</div>
+                </Link>
+              </li>
+
+              <li className={`menu-item ${pathname == '/Admin/Plans' ? 'active' : ''}`}>
+                <Link href="/Admin/Plans" className="menu-link ">
+                  <i className="menu-icon tf-icons ri-box-3-line"></i>
+                  <div >Plans</div>
+                </Link>
+              </li>
+
+              <li className={`menu-item ${pathname == '/Admin/Transactions' ? 'active' : ''}`}>
+                <Link href="/Admin/Transactions" className="menu-link ">
+                  <i className="menu-icon tf-icons ri-bank-card-line"></i>
+                  <div >Transactions </div>
+                </Link>
+              </li>
+
+            </>
+          )}
+
+
 
 
         </ul>
