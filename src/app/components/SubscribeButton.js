@@ -120,6 +120,7 @@ export default function SubscribeButton() {
             razorpay_signature: response.razorpay_signature,
             plan_id: planId,
             coupon_code: couponCode,
+            final_price: order.finalPrice
           }),
         });
 

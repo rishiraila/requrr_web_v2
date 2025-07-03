@@ -12,6 +12,7 @@ export async function POST(req) {
     razorpay_signature,
     plan_id,
     coupon_code,
+    final_price
   } = await req.json();
 
   if (!plan_id) return Response.json({ error: 'Missing plan_id' }, { status: 400 });
@@ -28,10 +29,6 @@ export async function POST(req) {
 
   const [[plan]] = await db.query('SELECT * FROM plans WHERE id = ?', [plan_id]);
   if (!plan) return Response.json({ error: 'Invalid plan ID' }, { status: 400 });
-
-  // const startDate = new Date();
-  // const endDate = new Date();
-  // endDate.setFullYear(endDate.getFullYear() + 1);
 
   const now = new Date();
   const startDate = now.toISOString().slice(0, 19).replace('T', ' ');
@@ -53,6 +50,24 @@ export async function POST(req) {
         [coupon_code]
       );
     }
+    await db.query(
+      `INSERT INTO transactions 
+    (user_id, plan_id, coupon_code, original_price, discount, final_price, razorpay_order_id, razorpay_payment_id, status, message)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user.id,
+        plan.id,
+        coupon_code || null,
+        plan.price,
+        coupon_code ? plan.price - final_price : 0,
+        final_price,
+        razorpay_order_id,
+        razorpay_payment_id,
+        'success',
+        'Subscription payment successful'
+      ]
+    );
+
     return Response.json({ message: 'Subscription activated', plan: plan.name });
   } catch (err) {
     console.error(err);

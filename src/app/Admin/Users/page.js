@@ -151,21 +151,29 @@ export default function UserInsightsPage() {
             <table className="table table-bordered mt-3">
               <thead>
                 <tr>
-                  <th>Transaction ID</th>
-                  <th>Client ID</th>
-                  <th>Amount</th>
-                  <th>Payment Date</th>
-                  <th>Notes</th>
+                  <th>id</th>
+                  <th>Original Price</th>
+                  <th>Coupon Code</th>
+                  <th>Discount Price</th>
+                  <th>Final Price</th>
+                  <th>Status</th>
+                  <th>Message</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedUser.paid_transactions.map(t => (
                   <tr key={t.id}>
                     <td>{t.id}</td>
-                    <td>{t.client_id}</td>
-                    <td>₹{parseFloat(t.amount).toFixed(2)}</td>
-                    <td>{new Date(t.payment_date).toLocaleDateString()}</td>
-                    <td>{t.notes}</td>
+                    <td>₹{parseFloat(t.original_price).toFixed(2)}</td>
+                    <td>{t.coupon_code || '—'}</td>
+                    <td>₹{parseFloat(t.discount).toFixed(2)}</td>
+                    <td>₹{parseFloat(t.final_price).toFixed(2)}</td>
+                    <td className={t.status === 'success' ? 'text-success' : 'text-danger'}>
+                      {t.status}
+                    </td>
+                    <td>{t.message}</td>
+                    <td>{new Date(t.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
               </tbody>
