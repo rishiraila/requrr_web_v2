@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import EditPlanModal from "./EditPlanModal"
 import AddPlanModal from "./AddPlanModal"
 
@@ -9,6 +9,14 @@ export default function SubscribeButton() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+
+  const [plans, setPlans] = useState([]);
+  const [currentPlan, setCurrentPlan] = useState(null);
+
+  const [couponInputs, setCouponInputs] = useState({});
+  const [showCouponPopup, setShowCouponPopup] = useState({});
+  const [couponValidation, setCouponValidation] = useState({});
+  const [discountedPrices, setDiscountedPrices] = useState({});
 
   function decodeJWT(token) {
     if (!token) return null;
@@ -21,13 +29,7 @@ export default function SubscribeButton() {
     }
   }
 
-
-  const [plans, setPlans] = useState([]);
-  const [currentPlan, setCurrentPlan] = useState(null);
-  const [couponInputs, setCouponInputs] = useState({});
-
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-
   const userData = decodeJWT(token);
   const isAdmin = userData?.role === 'admin';
 
@@ -45,15 +47,47 @@ export default function SubscribeButton() {
       })
         .then(res => res.json())
         .then(data => {
-          if (data.subscribed) setCurrentPlan(data.plan);
+          if (data.subscribed) {
+            setCurrentPlan({
+              plan_name: data.plan_name,
+              price: data.price,
+              start_date: data.start_date,
+              end_date: data.end_date,
+              max_renewals: data.max_renewals
+            });
+          }
         })
         .catch(err => console.error('Error loading subscription:', err));
     }
   }, [token]);
 
+  const handleValidateCoupon = async (planId) => {
+    const code = couponInputs[planId];
+    try {
+      const res = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ planId, couponCode: code }),
+      });
+      const data = await res.json();
+      if (data && !data.error) {
+        setCouponValidation(prev => ({ ...prev, [planId]: 'success' }));
+        setDiscountedPrices(prev => ({ ...prev, [planId]: data.finalPrice }));
+      } else {
+        setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
+      }
+      setShowCouponPopup(prev => ({ ...prev, [planId]: false }));
+    } catch (err) {
+      console.error('Coupon validation error:', err);
+      setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
+    }
+  };
+
   const handlePayment = async (planId, price, planName, couponCode = '') => {
     if (!token) return alert('User not authenticated');
-
     const res = await fetch('/api/payment/create-order', {
       method: 'POST',
       headers: {
@@ -85,7 +119,7 @@ export default function SubscribeButton() {
             razorpay_payment_id: response.razorpay_payment_id,
             razorpay_signature: response.razorpay_signature,
             plan_id: planId,
-            coupon_code: couponCode, // ADD THIS
+            coupon_code: couponCode,
           }),
         });
 
@@ -110,14 +144,12 @@ export default function SubscribeButton() {
           <div className="container py-12">
             {isAdmin && (
               <div className="d-flex justify-content-end mb-3">
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowAddModal(true)}
-                >
+                <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>
                   + Add Plan
                 </button>
               </div>
             )}
+
             <h4 className="text-center mb-2 mt-0 mt-md-4">Pricing Plans</h4>
             <p className="text-center mb-2">
               All plans include 40+ advanced tools and features to boost your product. Choose the best plan to fit your needs.
@@ -125,8 +157,14 @@ export default function SubscribeButton() {
 
             <div className="pricing-plans row mx-4 gy-3 px-lg-12">
               {plans.map(plan => {
-                const isCurrentPlan = plan.name === currentPlan;
+                const isCurrentPlan = currentPlan?.plan_name === plan.name;
+                const isSubscribed = !!currentPlan;
+                const isUpgrade = !isSubscribed || plan.price > currentPlan.price;
+                const disableButton = isCurrentPlan || !isUpgrade;
+
                 const couponCode = couponInputs[plan.id] || '';
+                const validated = couponValidation[plan.id];
+                const finalPrice = discountedPrices[plan.id] || plan.price;
 
                 return (
                   <div className="col-lg mb-lg-0 mb-3" key={plan.id}>
@@ -154,7 +192,7 @@ export default function SubscribeButton() {
                         <div className="text-center">
                           <div className="d-flex justify-content-center">
                             <sup className="h6 pricing-currency mt-2 mb-0 me-1 text-body">₹</sup>
-                            <h1 className="mb-0 text-primary">{plan.price}</h1>
+                            <h1 className="mb-0 text-primary">{finalPrice}</h1>
                             <sub className="h6 pricing-duration mt-auto mb-1 text-body">/year</sub>
                           </div>
                         </div>
@@ -168,28 +206,51 @@ export default function SubscribeButton() {
                           <li className="mb-0">Email support</li>
                         </ul>
 
-                        {!isCurrentPlan && (
+                        {!isCurrentPlan && !disableButton && !showCouponPopup[plan.id] && (
+                          <p
+                            className="text-primary text-center mb-2"
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowCouponPopup(prev => ({ ...prev, [plan.id]: true }))}
+                          >
+                            + Add Coupon Code
+                          </p>
+                        )}
+
+
+                        {!isCurrentPlan && showCouponPopup[plan.id] && (
                           <div className="mb-3">
-                            <input
-                              type="text"
-                              placeholder="Enter coupon code"
-                              className="form-control"
-                              value={couponCode}
-                              onChange={e => handleCouponChange(plan.id, e.target.value)}
-                            />
+                            <label>Coupon Code</label>
+                            <div className="d-flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Enter coupon code"
+                                className="form-control"
+                                value={couponCode}
+                                onChange={e => handleCouponChange(plan.id, e.target.value)}
+                              />
+                              <button className="btn btn-outline-primary" onClick={() => handleValidateCoupon(plan.id)}>Apply</button>
+                            </div>
                           </div>
                         )}
 
+                        {validated === 'success' && (
+                          <p className="text-success text-center">Coupon applied successfully! 🎉</p>
+                        )}
+                        {validated === 'error' && (
+                          <p className="text-danger text-center">Invalid or expired coupon 😞</p>
+                        )}
+
                         {isCurrentPlan ? (
-                          <button className="btn btn-outline-success d-grid w-100" disabled>
+                          <button className="btn btn-outline-primary d-grid w-100" disabled>
                             Your Current Plan
                           </button>
                         ) : (
                           <button
                             className="btn btn-primary d-grid w-100"
-                            onClick={() => handlePayment(plan.id, plan.price, plan.name, couponCode)}
+                            disabled={disableButton}
+                            onClick={() => handlePayment(plan.id, finalPrice, plan.name, couponCode)}
                           >
-                            Subscribe ₹{plan.price}
+                            {disableButton ? 'Not Available' : `Subscribe ₹${finalPrice}`}
                           </button>
                         )}
                       </div>
@@ -198,7 +259,6 @@ export default function SubscribeButton() {
                 );
               })}
             </div>
-
           </div>
         </div>
       </div>
@@ -212,14 +272,12 @@ export default function SubscribeButton() {
           onUpdate={() => {
             setShowModal(false);
             setSelectedPlan(null);
-            // reload plans
             fetch('/api/plans')
               .then(res => res.json())
               .then(data => setPlans(data));
           }}
         />
       )}
-
 
       {showAddModal && (
         <AddPlanModal
@@ -234,8 +292,6 @@ export default function SubscribeButton() {
           }}
         />
       )}
-
-
     </div>
   );
 }
