@@ -273,3 +273,16 @@ a {
 .bg-menu-theme{
   background-color: #ffffff !important;
 }
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.date-picker-wrapper {
+  width: 100%;
+}

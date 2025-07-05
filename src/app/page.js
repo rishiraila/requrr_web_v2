@@ -103,35 +103,6 @@ export default function Home() {
     // setExpenseEntities(expenseUniqueEntitiesWithAmounts); // Update the ExpenseEntities state with unique entities and their total amounts
   }, [Subscriptions]);
 
-  // const fetchSubscriptions = async () => {
-  //   const token = localStorage.getItem("token");
-
-  //   if (!token) {
-  //     window.location.href = "/Login";
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await axios.get("/api/income_records/upcoming", {
-  //       headers: { Authorization: `Bearer ${token}` }, // Ensure Bearer token format
-  //     });
-
-  //     // const subscriptions = response.data.data
-  //     // const subscriptions = response.data
-  //     const subscriptions = response.data.map(record => ({
-  //       ...record,
-  //       category: 'income' // Add this line
-  //     }));
-
-  //     console.log("dashborad", subscriptions)
-
-  //     setSubscriptions(subscriptions); // Assuming service has a 'name' property
-
-  //   } catch (err) {
-  //     console.error("Error fetching entities:", err);
-  //   }
-  // };
-
 
   const fetchSubscriptions = async () => {
     const token = localStorage.getItem("token");
@@ -660,6 +631,7 @@ export default function Home() {
                   <thead className="table-light">
                     <tr>
                       <th>Client</th>
+                      <th>Company</th>
                       <th>Service</th>
                       <th>Due Date</th>
                       <th>Amount</th>
@@ -682,7 +654,8 @@ export default function Home() {
 
                         return (
                           <tr key={sub.id}>
-                            <td>{sub.client_name}<br /><small className='text-primary'>{sub.company_name}</small></td>
+                            <td>{sub.client_name}</td>
+                            <td><small className='text-primary'>{sub.company_name}</small></td>
                             <td>{sub.service_name}</td>
                             <td>{new Date(sub.due_date).toLocaleDateString()}</td>
                             <td>₹{parseFloat(sub.amount).toFixed(2)}</td>

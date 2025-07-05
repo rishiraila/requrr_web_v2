@@ -120,6 +120,7 @@ export default function RenewalPage() {
             <thead className="table-light">
               <tr>
                 <th>Client</th>
+                <th>Company</th>
                 <th>Service</th>
                 <th>Duration</th> {/* ✅ Add this */}
                 <th>Start Date</th>
@@ -136,7 +137,8 @@ export default function RenewalPage() {
               ) : (
                 paginated.map(record => (
                   <tr key={record.id}>
-                    <td>{record.client_name}<br/><small className="text-primary">{record.company_name}</small></td>
+                    <td>{record.client_name}</td>
+                    <td><small className="text-primary">{record.company_name}</small></td>
                     <td>{record.service_name}</td>
                     <td>
                       {record.duration !== 'N/A' ? `${record.duration} month(s)` : '—'}

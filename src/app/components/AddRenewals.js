@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Preloader from './Preloader';
 import Link from 'next/link';
+import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from 'react-datepicker';
 
 export default function AddRenewals({ onClose, onSuccess }) {
 
@@ -29,23 +31,6 @@ export default function AddRenewals({ onClose, onSuccess }) {
     axios.get('/api/Services', { headers: { Authorization: `Bearer ${token}` } })
       .then(res => setServices(res.data));
   }, []);
-
-  // const handleChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   if (name === 'service_id') {
-  //     const selectedService = services.find(s => String(s.id) === value);
-  //     setForm(prev => ({
-  //       ...prev,
-  //       [name]: value,
-  //       amount: selectedService ? selectedService.base_price : ''
-  //     }));
-  //   } else {
-  //     setForm(prev => ({
-  //       ...prev,
-  //       [name]: type === 'checkbox' ? (checked ? 1 : 0) : value
-  //     }));
-  //   }
-  // };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -125,6 +110,40 @@ export default function AddRenewals({ onClose, onSuccess }) {
     }
   };
 
+  const handleDateChange = (date, field) => {
+    const isoString = date.toISOString().split('T')[0]; // yyyy-mm-dd
+    let newForm = { ...form, [field]: isoString };
+
+    if (field === 'payment_date') {
+      const selectedService = services.find(s => String(s.id) === String(form.service_id));
+      if (
+        form.is_recurring &&
+        selectedService &&
+        selectedService.billing_interval
+      ) {
+        let endDate = new Date(date);
+        switch (selectedService.billing_interval) {
+          case 'weekly':
+            endDate.setDate(endDate.getDate() + 7);
+            break;
+          case 'monthly':
+            endDate.setMonth(endDate.getMonth() + 1);
+            break;
+          case 'quarterly':
+            endDate.setMonth(endDate.getMonth() + 3);
+            break;
+          case 'yearly':
+            endDate.setFullYear(endDate.getFullYear() + 1);
+            break;
+        }
+        newForm.due_date = endDate.toISOString().split('T')[0];
+      }
+    }
+
+    setForm(newForm);
+  };
+
+
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
@@ -165,19 +184,34 @@ export default function AddRenewals({ onClose, onSuccess }) {
                 <option value="cancelled">Cancelled</option>
               </select>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+                <div style={{ flex: 1 }}>
                   <label htmlFor="payment_date">Start Date</label>
-                  <input type="date" name="payment_date" value={form.payment_date} onChange={handleChange} style={styles.input} />
+                  <DatePicker
+                    selected={form.payment_date ? new Date(form.payment_date) : null}
+                    onChange={(date) => handleDateChange(date, 'payment_date')}
+                    dateFormat="dd-MM-yyyy"
+                    className="form-control"
+                    id="payment_date"
+                    placeholderText="Select start date"
+                    wrapperClassName="date-picker-wrapper"
+                  />
                 </div>
 
-
-                <div>
+                <div style={{ flex: 1 }}>
                   <label htmlFor="due_date">End Date</label>
-                  <input type="date" name="due_date" value={form.due_date} onChange={handleChange} style={styles.input} />
+                  <DatePicker
+                    selected={form.due_date ? new Date(form.due_date) : null}
+                    onChange={(date) => handleDateChange(date, 'due_date')}
+                    dateFormat="dd-MM-yyyy"
+                    className="form-control"
+                    id="due_date"
+                    placeholderText="Select end date"
+                    wrapperClassName="date-picker-wrapper"
+                  />
                 </div>
-
               </div>
+
 
               <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
               <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
