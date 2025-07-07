@@ -30,6 +30,18 @@ export default function RenewalPage() {
       const clients = clientsRes.data;
       const services = servicesRes.data;
 
+      // const enriched = recordsRes.data.map(record => {
+      //   const client = clients.find(c => c.id === record.client_id);
+      //   const service = services.find(s => s.id === record.service_id);
+      //   return {
+      //     ...record,
+      //     client_name: client?.name || '—',
+      //     company_name: client?.company_name || '',
+      //     service_name: service?.name || '—',
+      //     duration: service?.billing_interval || 'N/A'
+      //   };
+      // });
+
       const enriched = recordsRes.data.map(record => {
         const client = clients.find(c => c.id === record.client_id);
         const service = services.find(s => s.id === record.service_id);
@@ -40,7 +52,12 @@ export default function RenewalPage() {
           service_name: service?.name || '—',
           duration: service?.billing_interval || 'N/A'
         };
+      }).sort((a, b) => {
+        const dateA = new Date(a.due_date || a.payment_date);
+        const dateB = new Date(b.due_date || b.payment_date);
+        return dateA - dateB; // Ascending: soonest date first
       });
+
 
       setRecords(enriched);
     } catch (err) {
@@ -149,10 +166,10 @@ export default function RenewalPage() {
                     {/* <td>{record.status}</td> */}
                     <td>
                       <span className={`badge ${record.status === 'paid' ? 'bg-primary' :
-                          record.status === 'pending' ? 'bg-warning text-white' :
-                            record.status === 'overdue' ? 'bg-danger' :
-                              record.status === 'cancelled' ? 'bg-dark' :
-                                'bg-secondary'
+                        record.status === 'pending' ? 'bg-warning text-white' :
+                          record.status === 'overdue' ? 'bg-danger' :
+                            record.status === 'cancelled' ? 'bg-dark' :
+                              'bg-secondary'
                         }`}>
                         {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
                       </span>

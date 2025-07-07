@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Preloader from './Preloader'; // adjust the path if needed
 
+import DatePicker from 'react-datepicker';
+import { format, parseISO } from 'date-fns';
+
+
+import 'react-datepicker/dist/react-datepicker.css';
+
 export default function UpdateRenewals({ record, onClose, onSuccess }) {
 
   const [loading, setLoading] = useState(false);
@@ -81,12 +87,26 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <label htmlFor="payment_date">Payment Date</label>
-                  <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
+                  {/* <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} /> */}
+                  <DatePicker
+                    selected={form.payment_date ? new Date(form.payment_date) : null}
+                    onChange={(date) => setForm({ ...form, payment_date: format(date, 'yyyy-MM-dd') })}
+                    dateFormat="dd-MM-yyyy"
+                    // className="custom-datepicker"
+                    className="form-control"
+                  />
                 </div>
 
                 <div>
                   <label htmlFor="due_date">Due Date</label>
-                  <input type="date" name="due_date" value={form.due_date?.slice(0, 10)} onChange={handleChange} style={styles.input} />
+                  {/* <input type="date" name="due_date" value={form.due_date?.slice(0, 10)} onChange={handleChange} style={styles.input} /> */}
+                  <DatePicker
+                    selected={form.due_date ? new Date(form.due_date) : null}
+                    onChange={(date) => setForm({ ...form, due_date: format(date, 'yyyy-MM-dd') })}
+                    dateFormat="dd-MM-yyyy"
+                    // className="custom-datepicker"
+                    className="form-control"
+                  />
                 </div>
               </div>
 
