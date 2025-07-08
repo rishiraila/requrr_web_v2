@@ -5,6 +5,8 @@ import Link from 'next/link';
 import 'react-datepicker/dist/react-datepicker.css';
 import DatePicker from 'react-datepicker';
 
+import Select from 'react-select';
+
 export default function AddRenewals({ onClose, onSuccess }) {
 
   const [limitError, setLimitError] = useState('');
@@ -27,9 +29,17 @@ export default function AddRenewals({ onClose, onSuccess }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     axios.get('/api/clients', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setClients(res.data));
+      // .then(res => setClients(res.data));
+      .then(res => {
+        const sorted = res.data.sort((a, b) => a.name.localeCompare(b.name));
+        setClients(sorted);
+      })
     axios.get('/api/Services', { headers: { Authorization: `Bearer ${token}` } })
-      .then(res => setServices(res.data));
+      // .then(res => setServices(res.data));
+      .then(res => {
+        const sorted = res.data.sort((a, b) => a.name.localeCompare(b.name));
+        setServices(sorted);
+      });
   }, []);
 
   const handleChange = (e) => {
@@ -111,37 +121,28 @@ export default function AddRenewals({ onClose, onSuccess }) {
   };
 
   const handleDateChange = (date, field) => {
-    const isoString = date.toISOString().split('T')[0]; // yyyy-mm-dd
+
+    const isoString = date.toLocaleDateString('en-CA'); // gives YYYY-MM-DD in local timezone
+
     let newForm = { ...form, [field]: isoString };
 
     if (field === 'payment_date') {
       const selectedService = services.find(s => String(s.id) === String(form.service_id));
+
       if (
-        form.is_recurring &&
         selectedService &&
+        selectedService.billing_type === 'recurring' &&
         selectedService.billing_interval
       ) {
         let endDate = new Date(date);
-        switch (selectedService.billing_interval) {
-          case 'weekly':
-            endDate.setDate(endDate.getDate() + 7);
-            break;
-          case 'monthly':
-            endDate.setMonth(endDate.getMonth() + 1);
-            break;
-          case 'quarterly':
-            endDate.setMonth(endDate.getMonth() + 3);
-            break;
-          case 'yearly':
-            endDate.setFullYear(endDate.getFullYear() + 1);
-            break;
-        }
+        endDate.setMonth(endDate.getMonth() + Number(selectedService.billing_interval));
         newForm.due_date = endDate.toISOString().split('T')[0];
       }
     }
 
     setForm(newForm);
   };
+
 
 
   return (
@@ -162,16 +163,44 @@ export default function AddRenewals({ onClose, onSuccess }) {
 
             <div style={styles.body}>
               <label htmlFor="client_id">Client</label>
-              <select name="client_id" value={form.client_id} onChange={handleChange} style={styles.input}>
+              {/* <select name="client_id" value={form.client_id} onChange={handleChange} style={styles.input}>
                 <option value="">Select Client</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              </select> */}
+
+              <Select
+                options={clients.map(c => ({ label: c.name, value: c.id }))}
+                value={clients.find(c => c.id === form.client_id) ? { label: clients.find(c => c.id === form.client_id).name, value: form.client_id } : null}
+                onChange={(selected) => {
+                  setForm(prev => ({ ...prev, client_id: selected ? selected.value : '' }));
+                }}
+                placeholder="Select Client"
+                styles={{ container: base => ({ ...base, marginBottom: '12px' }) }}
+              />
 
               <label htmlFor="service_id">Service</label>
-              <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
+              {/* <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
                 <option value="">Select Service</option>
                 {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
-              </select>
+              </select> */}
+
+              <Select
+                options={services.map(s => ({ label: s.name, value: s.id }))}
+                value={services.find(s => s.id === form.service_id)
+                  ? { label: services.find(s => s.id === form.service_id).name, value: form.service_id }
+                  : null
+                }
+                onChange={(selected) => {
+                  const service = services.find(s => s.id === selected?.value);
+                  setForm(prev => ({
+                    ...prev,
+                    service_id: selected ? selected.value : '',
+                    amount: service ? service.base_price : '',
+                  }));
+                }}
+                placeholder="Select Service"
+                styles={{ container: base => ({ ...base, marginBottom: '12px' }) }}
+              />
 
               <label htmlFor="amount">Amount</label>
               <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
@@ -213,7 +242,7 @@ export default function AddRenewals({ onClose, onSuccess }) {
               </div>
 
 
-              <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
+              {/* <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label> */}
               <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
             </div>
 
