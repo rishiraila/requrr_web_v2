@@ -2,9 +2,18 @@
 import EditPlanModal from "./EditPlanModal"
 import AddPlanModal from "./AddPlanModal"
 
+import currency from 'currency.js';
+import countryCurrencyMap from 'country-currency-map';
+import currencyCodes from 'currency-codes';
+
 import { useEffect, useState } from 'react';
 
 export default function SubscribeButton() {
+
+  const [userCountry, setUserCountry] = useState('IN');
+  const [userCurrency, setUserCurrency] = useState('INR');
+  const [currencySymbol, setCurrencySymbol] = useState('₹');
+  const [conversionRate, setConversionRate] = useState(1); // INR by default
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -34,31 +43,57 @@ export default function SubscribeButton() {
   const isAdmin = userData?.role === 'admin';
 
   useEffect(() => {
-    fetch('/api/plans')
-      .then(res => res.json())
-      .then(data => setPlans(data))
-      .catch(err => console.error('Error loading plans:', err));
+    const fetchData = async () => {
+      try {
+        // 1. Load all pricing plans
+        const plansRes = await fetch('/api/plans');
+        const plansData = await plansRes.json();
+        setPlans(plansData);
 
-    if (token) {
-      fetch('/api/subscription/status', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.subscribed) {
-            setCurrentPlan({
-              plan_name: data.plan_name,
-              price: data.price,
-              start_date: data.start_date,
-              end_date: data.end_date,
-              max_renewals: data.max_renewals
-            });
-          }
-        })
-        .catch(err => console.error('Error loading subscription:', err));
-    }
+        if (!token) return;
+
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // 2. Load subscription status
+        const subRes = await fetch('/api/subscription/status', { headers });
+        const subData = await subRes.json();
+
+        if (subData.subscribed) {
+          setCurrentPlan({
+            plan_name: subData.plan_name,
+            price: subData.price,
+            start_date: subData.start_date,
+            end_date: subData.end_date,
+            max_renewals: subData.max_renewals
+          });
+        }
+
+        // 3. Load user info to get country
+        const userRes = await fetch('/api/me', { headers });
+        const user = await userRes.json();
+        const country = user.country_code || 'IN';
+        setUserCountry(country);
+
+        // 4. Map country to currency code and symbol
+        const mapped = countryCurrencyMap.getCurrency(country);
+        const currencyCode = mapped?.code || 'INR';
+        setUserCurrency(currencyCode);
+
+        const symbol = currencyCodes.code(currencyCode)?.symbol || '₹';
+        setCurrencySymbol(symbol);
+
+        // 5. Fetch live conversion rate (INR → user currency)
+        if (currencyCode !== 'INR') {
+          const rateRes = await fetch(`https://api.exchangerate.host/convert?from=INR&to=${currencyCode}`);
+          const rateData = await rateRes.json();
+          setConversionRate(rateData.result || 1);
+        }
+      } catch (err) {
+        console.error('Error loading plans, subscription, or user info:', err);
+      }
+    };
+
+    fetchData();
   }, [token]);
 
   const handleValidateCoupon = async (planId) => {
@@ -70,7 +105,7 @@ export default function SubscribeButton() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId, couponCode: code }),
+        body: JSON.stringify({ planId, couponCode: code, userCurrency }),
       });
       const data = await res.json();
       if (data && !data.error) {
@@ -86,53 +121,59 @@ export default function SubscribeButton() {
     }
   };
 
-  const handlePayment = async (planId, price, planName, couponCode = '') => {
-    if (!token) return alert('User not authenticated');
-    const res = await fetch('/api/payment/create-order', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ planId, couponCode }),
-    });
+ const handlePayment = async (planId, price, planName, couponCode = '') => {
+  if (!token) return alert('User not authenticated');
 
-    const order = await res.json();
-    if (!order || order.error) return alert(order.error || 'Order creation failed');
+  const res = await fetch('/api/payment/create-order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ planId, couponCode, userCurrency }),
+  });
 
-    const options = {
-      key: "rzp_test_K2K20arHghyhnD",
-      amount: order.amount,
-      currency: order.currency,
-      name: 'Income Tracker',
-      description: `${planName} Plan - ₹${order.finalPrice}/year`,
-      order_id: order.id,
-      handler: async (response) => {
-        const verifyRes = await fetch('/api/payment/verify', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            plan_id: planId,
-            coupon_code: couponCode,
-            final_price: order.finalPrice
-          }),
-        });
+  const order = await res.json();
+  if (!order || order.error) return alert(order.error || 'Order creation failed');
 
-        const verifyData = await verifyRes.json();
-        alert(verifyData.message || verifyData.error);
-      },
-      theme: { color: '#3399cc' },
-    };
+  const localPrice = order.localPrice;
+  const localCurrency = order.localCurrency || 'INR';
 
-    const razor = new window.Razorpay(options);
-    razor.open();
+  const options = {
+    key: "rzp_test_K2K20arHghyhnD",
+    amount: order.amount, // INR in paise
+    currency: 'INR',      // Razorpay will only accept INR
+    name: 'Income Tracker',
+    description: `${planName} Plan - ${currencySymbol}${localPrice} ${localCurrency}/year`,
+    order_id: order.id,
+    handler: async (response) => {
+      const verifyRes = await fetch('/api/payment/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature: response.razorpay_signature,
+          plan_id: planId,
+          coupon_code: couponCode,
+          final_price: order.finalPrice, // this is in INR
+          currency: 'INR'
+        }),
+      });
+
+      const verifyData = await verifyRes.json();
+      alert(verifyData.message || verifyData.error);
+    },
+    theme: { color: '#3399cc' },
   };
+
+  const razor = new window.Razorpay(options);
+  razor.open();
+};
+
 
   const handleCouponChange = (planId, value) => {
     setCouponInputs(prev => ({ ...prev, [planId]: value }));
@@ -167,6 +208,8 @@ export default function SubscribeButton() {
                 const validated = couponValidation[plan.id];
                 const finalPrice = discountedPrices[plan.id] || plan.price;
 
+                const localPrice = currency(finalPrice).multiply(conversionRate).value;
+
                 return (
                   <div className="col-lg mb-lg-0 mb-3" key={plan.id}>
                     <div className="card border shadow-none">
@@ -192,10 +235,12 @@ export default function SubscribeButton() {
                         <p className="text-center mb-5">{plan.description}</p>
                         <div className="text-center">
                           <div className="d-flex justify-content-center">
-                            <sup className="h6 pricing-currency mt-2 mb-0 me-1 text-body">₹</sup>
-                            <h1 className="mb-0 text-primary">{finalPrice}</h1>
-                            <sub className="h6 pricing-duration mt-auto mb-1 text-body">/year</sub>
+                            <sup className="h6 pricing-currency mt-2 mb-0 me-1 text-body">{currencySymbol}</sup>
+                            {/* <h1 className="mb-0 text-primary">{finalPrice / 12}</h1> */}
+                            <h1 className="mb-0 text-primary">{(localPrice / 12).toFixed(2)}</h1>
+                            <sub className="h6 pricing-duration mt-auto mb-1 text-body">/month</sub>
                           </div>
+                          <p>[ Billed Annually ]</p>
                         </div>
 
                         <ul className="list-group ps-6 my-5 pt-4">
@@ -251,7 +296,7 @@ export default function SubscribeButton() {
                             disabled={disableButton}
                             onClick={() => handlePayment(plan.id, finalPrice, plan.name, couponCode)}
                           >
-                            {disableButton ? 'Not Available' : `Subscribe ₹${finalPrice}`}
+                            {disableButton ? 'Not Available' : `Subscribe ₹${finalPrice / 12} /month`}
                           </button>
                         )}
                       </div>

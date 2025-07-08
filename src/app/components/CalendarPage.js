@@ -7,6 +7,7 @@ import axios from 'axios';
 import Preloader from './Preloader';
 
 export default function CalendarPage() {
+    const [currentMonth, setCurrentMonth] = useState(new Date());
 
     const [loading, setLoading] = useState(true);
 
@@ -59,6 +60,18 @@ export default function CalendarPage() {
         fetchAll();
     }, []);
 
+
+    const recordsForCurrentMonth = records.filter((r) => {
+        const due = new Date(r.due_date);
+        const month = currentMonth.getMonth();
+        const year = currentMonth.getFullYear();
+        return (
+            due.getMonth() === month && due.getFullYear() === year
+        );
+    });
+
+
+
     const handleDateClick = (info) => {
         setSelectedDate(new Date(info.date));
     };
@@ -106,15 +119,27 @@ export default function CalendarPage() {
 
                 <div className='row border border-bottom-0 border-start-0 border-end-0 pt-4'>
                     <div className='col-md-8'>
-                        {/* Left: Full Calendar View */}
+
                         <FullCalendar
                             plugins={[dayGridPlugin, interactionPlugin]}
                             initialView="dayGridMonth"
                             events={events}
                             dateClick={handleDateClick}
+                            eventClick={(info) => {
+                                setSelectedDate(new Date(info.event.start)); // 👈 restores expected behavior
+                            }}
+
+                            datesSet={(arg) => {
+                                const correctMonth = new Date(arg.view.currentStart);
+                                setCurrentMonth(correctMonth);
+                                setSelectedDate(null); // reset selected day
+                            }}
+
                             height="auto"
                             eventContent={renderEventContent}
                         />
+
+
                     </div>
 
                     <div className='col-md-4' style={{
@@ -138,15 +163,15 @@ export default function CalendarPage() {
                                             </div>
                                         ))
                                     )}
-                                    <button className='btn btn-sm btn-outline-secondary mt-2' onClick={() => setSelectedDate(null)}>Show All</button>
+                                    <button className='btn btn-sm btn-outline-secondary mt-2' onClick={() => setSelectedDate(null)}>Show Month</button>
                                 </>
                             ) : (
                                 <>
-                                    <h5>All Renewals</h5>
-                                    {records.length === 0 ? (
-                                        <p>No renewals found.</p>
+                                    <h5>{currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })} Renewals</h5>
+                                    {recordsForCurrentMonth.length === 0 ? (
+                                        <p>No renewals in this month.</p>
                                     ) : (
-                                        records.map((r) => (
+                                        recordsForCurrentMonth.map((r) => (
                                             <div key={r.id} style={recordCardStyle(r.status)}>
                                                 <strong>{r.client_name} - <small>{r.company_name}</small></strong>
                                                 <div>{r.service_name}</div>
@@ -157,6 +182,7 @@ export default function CalendarPage() {
                                     )}
                                 </>
                             )}
+
                         </div>
                     </div>
                 </div>

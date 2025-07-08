@@ -5,7 +5,11 @@ import AddClient from './AddClient';
 import EditClient from './EditClient';
 import Preloader from '../components/Preloader'
 
+import { useAppContext } from '../context/AppContext';
+
 export default function ClientsPage() {
+
+  const { setClientCount, setServiceCount } = useAppContext();
 
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +28,8 @@ export default function ClientsPage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setClients(res.data);
+      setClientCount(res.data.length);
+
     } catch (err) {
       console.error("Error fetching clients", err);
     } finally {

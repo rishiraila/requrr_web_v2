@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AppProvider } from "./context/AppContext"
 
 import Sidebar from "./components/Sidebar/Sidebar";
 import Navbar from "./components/Navbar/Navbar";
@@ -58,41 +59,45 @@ export default function RootLayout({ children }) {
     );
   }
   return (
-    <html lang="en" className="light-style layout-wide customizer-hide">
-      <head>
-        <link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css" />
-        <link rel="stylesheet" href="/assets/vendor/css/pages/app-logistics-dashboard.css" />
-        <link rel="stylesheet" href="/assets/vendor/css/pages/cards-statistics.css" />
-        <link rel="stylesheet" href="/assets/vendor/css/pages/cards-analytics.css" />
+    <AppProvider>
 
-      </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <html lang="en" className="light-style layout-wide customizer-hide">
+        <head>
+          <link rel="stylesheet" href="/assets/vendor/css/pages/page-auth.css" />
+          <link rel="stylesheet" href="/assets/vendor/css/pages/app-logistics-dashboard.css" />
+          <link rel="stylesheet" href="/assets/vendor/css/pages/cards-statistics.css" />
+          <link rel="stylesheet" href="/assets/vendor/css/pages/cards-analytics.css" />
 
-        <div className="layout-wrapper layout-content-navbar">
-          <div className="layout-container">
+        </head>
+        <body className={`${geistSans.variable} ${geistMono.variable}`}>
 
-            {/* <Sidebar /> */}
-            {!isAuthPage && isAuthenticated && <Sidebar />}
+          <div className="layout-wrapper layout-content-navbar">
+            <div className="layout-container">
 
-            <div className="layout-page">
+              {/* <Sidebar /> */}
+              {!isAuthPage && isAuthenticated && <Sidebar />}
 
-              {/* <Navbar /> */}
-              {!isAuthPage && isAuthenticated && <Navbar />}
+              <div className="layout-page">
 
-              <div className="content-wrapper pt-2">
-                {/* 
+                {/* <Navbar /> */}
+                {!isAuthPage && isAuthenticated && <Navbar />}
+
+                <div className="content-wrapper pt-2">
+                  {/* 
                 {children}
 
                 {!isAuthPage && isAuthenticated && <Footer />} */}
 
-                {!isAuthPage && isAuthenticated && (
-                  <>
-                    {children}
-                    <Footer />
-                  </>
-                )}
+                  {!isAuthPage && isAuthenticated && (
+                    <>
+                      {children}
+                      <Footer />
+                    </>
+                  )}
 
-                {isAuthPage && children}
+                  {isAuthPage && children}
+
+                </div>
 
               </div>
 
@@ -100,13 +105,12 @@ export default function RootLayout({ children }) {
 
           </div>
 
-        </div>
-
-        <Script src="https://checkout.razorpay.com/v1/checkout.js"/>
+          <Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
 
-      </body>
+        </body>
 
-    </html>
+      </html>
+    </AppProvider>
   );
 }

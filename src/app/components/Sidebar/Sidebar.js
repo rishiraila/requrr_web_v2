@@ -35,8 +35,11 @@ import "@fontsource/inter/700.css"; // Weight 700
 import Link from 'next/link';
 
 import { usePathname } from 'next/navigation'
+import { useAppContext } from '@/app/context/AppContext';
 
 export default function Sidebar() {
+
+  const { clientCount, serviceCount } = useAppContext();
 
   const pathname = usePathname()
 
@@ -123,6 +126,7 @@ export default function Sidebar() {
             <Link href="/Expense/Clients" className="menu-link ">
               <i className="menu-icon tf-icons ri-group-line"></i>
               <div >Clients</div>
+              <div className="badge bg-danger rounded-pill ms-auto">{clientCount}</div>
             </Link>
           </li>
 
@@ -130,6 +134,7 @@ export default function Sidebar() {
             <Link href="/Expense/Services" className="menu-link ">
               <i className="menu-icon tf-icons ri-cloud-line"></i>
               <div >Services</div>
+              <div className="badge bg-danger rounded-pill ms-auto">{serviceCount}</div>
             </Link>
           </li>
 

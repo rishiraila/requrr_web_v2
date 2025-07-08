@@ -5,7 +5,12 @@ import AddService from './AddService';
 import UpdateService from './UpdateService';
 import Preloader from './Preloader';
 
+import { useAppContext } from '../context/AppContext';
+
 export default function ServicePage() {
+
+    const { setClientCount, setServiceCount } = useAppContext();
+
 
   const [loading, setLoading] = useState(true);
 
@@ -24,6 +29,7 @@ export default function ServicePage() {
         headers: { Authorization: `Bearer ${token}` }
       });
       setServices(res.data);
+      setServiceCount(res.data.length)
     } catch (err) {
       console.error('Error fetching services', err);
     } finally {

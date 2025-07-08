@@ -3,12 +3,31 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Link from 'next/link';
 import Preloader from '@/app/components/Preloader';
+import countries from 'world-countries';
+
 
 export default function AccountSettingsPage() {
+
+  const countryOptions = countries.map(c => ({
+    name: c.name.common,
+    cca2: c.cca2,
+    callingCode: c.idd?.root ? `${c.idd.root}${(c.idd.suffixes?.[0] || '')}` : ''
+  })).sort((a, b) => a.name.localeCompare(b.name));
+
   const [loading, setLoading] = useState(true);
+  // const [form, setForm] = useState({
+  //   username: '',
+  //   email: ''
+  // });
+
   const [form, setForm] = useState({
     username: '',
-    email: ''
+    email: '',
+    first_name: '',
+    last_name: '',
+    country_code: '',
+    phone_code: '',
+    phone: ''
   });
   const [subscription, setSubscription] = useState(null);
   const [confirmedDelete, setConfirmedDelete] = useState(false);
@@ -20,7 +39,16 @@ export default function AccountSettingsPage() {
     axios.get('/api/me', {
       headers: { Authorization: `Bearer ${token}` }
     }).then(res => {
-      setForm({ username: res.data.username, email: res.data.email });
+      setForm({
+        username: res.data.username || '',
+        email: res.data.email || '',
+        first_name: res.data.first_name || '',
+        last_name: res.data.last_name || '',
+        country_code: res.data.country_code || '',
+        phone_code: res.data.phone_code || '',
+        phone: res.data.phone || ''
+      });
+      // setForm({ username: res.data.username, email: res.data.email });
     }).catch(err => {
       console.error('Failed to load profile', err);
     });
@@ -108,6 +136,48 @@ export default function AccountSettingsPage() {
                     <label htmlFor="email" className="form-label">Email</label>
                     <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" />
                   </div>
+                  <div className="col-md-6">
+                    <label htmlFor="first_name" className="form-label">First Name</label>
+                    <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className="form-control" />
+                  </div>
+                  <div className="col-md-6">
+                    <label htmlFor="last_name" className="form-label">Last Name</label>
+                    <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className="form-control" />
+                  </div>
+                  <div className="col-md-4">
+                    <label className="form-label">Country</label>
+                    <select
+                      name="country_code"
+                      value={form.country_code}
+                      onChange={(e) => {
+                        const selected = countryOptions.find(c => c.cca2 === e.target.value);
+                        setForm(prev => ({
+                          ...prev,
+                          country_code: selected.cca2,
+                          phone_code: selected.callingCode
+                        }));
+                      }}
+                      className="form-select"
+                    >
+                      <option value="">Select a country</option>
+                      {countryOptions.map(c => (
+                        <option key={c.cca2} value={c.cca2}>
+                          {c.name} ({c.callingCode})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="col-md-4">
+                    <label className="form-label">Phone Code</label>
+                    <input type="text" name="phone_code" value={form.phone_code} readOnly className="form-control" />
+                  </div>
+
+                  <div className="col-md-4">
+                    <label htmlFor="phone" className="form-label">Phone</label>
+                    <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" />
+                  </div>
+
 
                   {subscription && (
                     <>

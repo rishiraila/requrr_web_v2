@@ -20,6 +20,9 @@
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.8",
+    "country-currency-map": "^2.1.7",
+    "currency-codes": "^2.2.0",
+    "currency.js": "^2.0.4",
     "dotenv": "^16.4.7",
     "jquery": "^3.7.1",
     "jsonwebtoken": "^9.0.2",
@@ -34,6 +37,7 @@
     "react-chartjs-2": "^5.3.0",
     "react-datepicker": "^8.4.0",
     "react-dom": "^19.0.0",
-    "react-select": "^5.10.1"
+    "react-select": "^5.10.1",
+    "world-countries": "^5.1.0"
   }
 }

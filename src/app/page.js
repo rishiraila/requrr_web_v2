@@ -34,6 +34,11 @@ export default function Home() {
 
   const [expenseFilter, setExpenseFilter] = useState('6m'); // '6m', '12m', 'all'
 
+  const totalRenewalsCount = Subscriptions.length;
+
+  const totalRenewalAmountReceived = Subscriptions
+    .filter(sub => sub.status === 'paid')
+    .reduce((sum, sub) => sum + parseFloat(sub.amount || 0), 0);
 
   useEffect(() => {
     const incomeSubscriptions = Subscriptions; // Filter for income
@@ -500,6 +505,41 @@ export default function Home() {
 
           <h5 className='ps-4'>Overview</h5>
 
+          {/* Total Renewals Tile */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-success h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-success">
+                      <i className="ri-refresh-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">{totalRenewalsCount}</h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Total Renewals</h6>
+              </div>
+            </div>
+          </div>
+
+          {/* Total Amount of Renewals Received Tile */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-secondary h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-secondary">
+                      <i className="ri-bank-card-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">₹{totalRenewalAmountReceived.toFixed(2)}</h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Amount Received</h6>
+              </div>
+            </div>
+          </div>
+
+{/*
           <div className="col-sm-6 col-lg-3 mb-5">
             <div className="card card-border-shadow-primary h-100">
               <div className="card-body">
@@ -512,10 +552,6 @@ export default function Home() {
                   <h4 className="mb-0">{clientCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Total Clients </h6>
-                {/* <p className="mb-0 text-primary">
-                  {thisMonthClients.size} clients joined this month
-                </p> */}
-
               </div>
             </div>
           </div>
@@ -532,13 +568,10 @@ export default function Home() {
                   <h4 className="mb-0">{serviceCount}</h4>
                 </div>
                 <h6 className="mb-0 fw-normal">Active Services</h6>
-                {/* <p className="mb-0 text-warning">
-                  Most used service: {getMostUsedService()}
-                </p> */}
               </div>
             </div>
           </div>
-
+*/}
           <div className="col-sm-6 col-lg-3 mb-5">
             <div className="card card-border-shadow-danger h-100">
               <div className="card-body">

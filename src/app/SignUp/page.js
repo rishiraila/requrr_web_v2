@@ -2,17 +2,39 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
+import countries from 'world-countries';
+
 
 export default function page() {
+
+  const allCountries = countries.map(country => ({
+    label: country.name.common,
+    value: country.cca2, // country code (e.g., 'IN')
+    phoneCode: country.idd?.root + (country.idd?.suffixes?.[0] || '') || ''
+  }));
 
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     email: '',
-    // username: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    country_code: '',
+    phone_code: '',
+    phone: '',
+    full_name: ''
   });
+
+
+  const handleCountryChange = (e) => {
+    const selected = allCountries.find(c => c.value === e.target.value);
+    setFormData(prev => ({
+      ...prev,
+      country_code: selected?.value || '',
+      phone_code: selected?.phoneCode || ''
+    }));
+  };
+
 
 
   const [error, setError] = useState(null);
@@ -24,6 +46,22 @@ export default function page() {
   };
 
   const handleSubmit = async (e) => {
+
+    // Parse full name into first and last
+    const nameParts = formData.full_name.trim().split(/\s+/);
+    let first_name = '';
+    let last_name = '';
+
+    if (nameParts.length === 1) {
+      first_name = nameParts[0];
+    } else if (nameParts.length === 2) {
+      [first_name, last_name] = nameParts;
+    } else if (nameParts.length > 2) {
+      first_name = nameParts[0];
+      last_name = nameParts[nameParts.length - 1];
+    }
+
+
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
@@ -40,9 +78,15 @@ export default function page() {
         },
         body: JSON.stringify({
           username: formData.username,
+          first_name,
+          last_name,
           email: formData.email,
           password: formData.password,
+          country_code: formData.country_code,
+          phone_code: formData.phone_code,
+          phone: formData.phone
         }),
+
       });
 
       const data = await response.json();
@@ -68,7 +112,7 @@ export default function page() {
             < i className="ri-time-line" style={{ fontSize: "25px", color: "#ffffff" }}></i>
           </div>
           <span className="app-brand-text demo menu-text fw-semibold ms-2">ReQurr</span> */}
-          <img src='/images/logo.png' style={{width:"30%"}}/>
+          <img src='/images/logo.png' style={{ width: "30%" }} />
         </Link>
 
         <div className="authentication-inner row m-0">
@@ -96,6 +140,21 @@ export default function page() {
               <p className="mb-5">Sign up now to take charge of your income—effortless tracking, smarter management!</p>
 
               <form id="formAuthentication" className="mb-5" onSubmit={handleSubmit}>
+
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="full_name"
+                    placeholder="Full Name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label>Full Name</label>
+                </div>
+
+
                 <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
@@ -109,19 +168,50 @@ export default function page() {
                   />
                   <label htmlFor="email">Email</label>
                 </div>
-                {/* <div className="form-floating form-floating-outline mb-5">
+
+                <div className="form-floating form-floating-outline mb-5">
+                  <select
+                    className="form-select"
+                    name="country_code"
+                    value={formData.country_code}
+                    onChange={handleCountryChange}
+                    required
+                  >
+                    <option value="">Select Country</option>
+                    {allCountries.map(country => (
+                      <option key={country.value} value={country.value}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
+                  <label>Country</label>
+                </div>
+
+                <div className="form-floating form-floating-outline mb-5">
                   <input
                     type="text"
                     className="form-control"
-                    id="username"
-                    name="username"
-                    placeholder="Enter your username"
-                    value={formData.username}
+                    name="phone_code"
+                    placeholder="Phone Code"
+                    value={formData.phone_code}
+                    readOnly
+                  />
+                  <label>Phone Code</label>
+                </div>
+
+                <div className="form-floating form-floating-outline mb-5">
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="phone"
+                    placeholder="Phone Number"
+                    value={formData.phone}
                     onChange={handleChange}
                     required
                   />
-                  <label htmlFor="username">Username</label>
-                </div> */}
+                  <label>Phone</label>
+                </div>
+
                 <div className="mb-5 form-password-toggle">
                   <div className="input-group input-group-merge">
                     <div className="form-floating form-floating-outline">
@@ -139,6 +229,7 @@ export default function page() {
                     </div>
                   </div>
                 </div>
+
                 <div className="mb-5 form-password-toggle">
                   <div className="input-group input-group-merge">
                     <div className="form-floating form-floating-outline">
@@ -156,6 +247,7 @@ export default function page() {
                     </div>
                   </div>
                 </div>
+
                 <button className="btn btn-primary d-grid w-100">Sign up</button>
               </form>
 
