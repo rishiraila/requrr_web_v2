@@ -1,4 +1,10 @@
+// swagger.config.js
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Required to get __dirname in ES module scope
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const swaggerOptions = {
   definition: {
@@ -8,8 +14,7 @@ export const swaggerOptions = {
       version: '1.0.0',
       description: 'Swagger documentation for all API routes',
     },
-    servers: [], // Leave empty so Swagger UI uses the current domain automatically
+    servers: [], // Use empty array so Swagger picks up current domain
   },
-  // Use absolute path resolution — important for Vercel and some bundlers
-  apis: [path.resolve(process.cwd(), 'src/app/api/**/*.js')],
+  apis: [path.resolve(__dirname, 'src/app/api/**/*.js')], // 👈 FIXED: absolute path
 };
