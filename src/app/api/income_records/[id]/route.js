@@ -1,3 +1,98 @@
+/**
+ * @swagger
+ * /api/income_records/{id}:
+ *   get:
+ *     summary: Get a specific income record by ID
+ *     tags: [Income Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Income record ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Income record object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id: { type: integer }
+ *                 client_id: { type: integer }
+ *                 service_id: { type: integer }
+ *                 amount: { type: number }
+ *                 payment_date: { type: string, format: date }
+ *                 due_date: { type: string, format: date, nullable: true }
+ *                 status: { type: string }
+ *                 is_recurring: { type: boolean }
+ *                 recurrence_id: { type: integer, nullable: true }
+ *                 notes: { type: string }
+ *       401:
+ *         description: Unauthorized
+ *
+ *   put:
+ *     summary: Update an income record by ID
+ *     tags: [Income Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Income record ID
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - client_id
+ *               - service_id
+ *               - amount
+ *               - payment_date
+ *             properties:
+ *               client_id: { type: integer, example: 1 }
+ *               service_id: { type: integer, example: 2 }
+ *               amount: { type: number, example: 2000 }
+ *               payment_date: { type: string, format: date, example: 2025-07-10 }
+ *               due_date: { type: string, format: date, nullable: true, example: 2025-07-20 }
+ *               status: { type: string, example: "paid" }
+ *               is_recurring: { type: boolean, example: false }
+ *               recurrence_id: { type: integer, nullable: true, example: null }
+ *               notes: { type: string, example: "Paid in full" }
+ *     responses:
+ *       200:
+ *         description: Income record updated
+ *       401:
+ *         description: Unauthorized
+ *
+ *   delete:
+ *     summary: Delete an income record by ID
+ *     tags: [Income Records]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: Income record ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Income record deleted
+ *       401:
+ *         description: Unauthorized
+ */
+
+
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 

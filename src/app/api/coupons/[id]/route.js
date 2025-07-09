@@ -1,3 +1,110 @@
+/**
+ * @swagger
+ * /api/coupons/{id}:
+ *   get:
+ *     summary: Get a coupon by ID
+ *     tags: [Coupons]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Coupon ID
+ *     responses:
+ *       200:
+ *         description: Coupon details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 code:
+ *                   type: string
+ *                 discount_percent:
+ *                   type: number
+ *                 max_usage:
+ *                   type: integer
+ *                   nullable: true
+ *                 expires_at:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *       404:
+ *         description: Coupon not found
+ *       500:
+ *         description: Database error
+
+ *   put:
+ *     summary: Update a coupon by ID
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Coupon ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - discount_percent
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 example: SUMMER10
+ *               discount_percent:
+ *                 type: number
+ *                 example: 10
+ *               max_usage:
+ *                 type: integer
+ *                 nullable: true
+ *                 example: 50
+ *               expires_at:
+ *                 type: string
+ *                 format: date-time
+ *                 nullable: true
+ *                 example: 2025-12-31T23:59:59Z
+ *     responses:
+ *       200:
+ *         description: Coupon updated successfully
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Database error
+
+ *   delete:
+ *     summary: Delete a coupon by ID
+ *     tags: [Coupons]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Coupon ID
+ *     responses:
+ *       200:
+ *         description: Coupon deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Database error
+ */
+
 // src/app/api/coupons/[id]/route.js
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';

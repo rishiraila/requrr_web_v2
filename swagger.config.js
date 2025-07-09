@@ -16,8 +16,8 @@ const swaggerOptions = {
         },
         servers: [], // Injected dynamically
     },
-    //   apis: [path.resolve(__dirname, './src/swagger/swaggerDocs.js')],
-    apis: ['./swaggerDocs.js']
+      apis: [path.resolve('./src/app/api/**/*.js')],
+    // apis: ['./swaggerDocs.js']
 };
 
 export default swaggerOptions;

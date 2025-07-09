@@ -1,3 +1,103 @@
+/**
+ * @swagger
+ * /api/plans/{id}:
+ *   get:
+ *     summary: Get a plan by ID
+ *     tags: [Plans]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Plan ID
+ *     responses:
+ *       200:
+ *         description: Plan found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   example: 1
+ *                 name:
+ *                   type: string
+ *                   example: Starter
+ *                 price:
+ *                   type: number
+ *                   example: 199
+ *                 max_renewals:
+ *                   type: integer
+ *                   nullable: true
+ *                   example: 10
+ *                 description:
+ *                   type: string
+ *                   example: Starter plan description
+ *       404:
+ *         description: Plan not found
+ *   put:
+ *     summary: Update a plan by ID
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Plan ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Updated Plan
+ *               price:
+ *                 type: number
+ *                 example: 299
+ *               max_renewals:
+ *                 type: integer
+ *                 nullable: true
+ *                 example: 20
+ *               description:
+ *                 type: string
+ *                 example: Updated plan description
+ *     responses:
+ *       200:
+ *         description: Plan updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Database error
+ *   delete:
+ *     summary: Delete a plan by ID
+ *     tags: [Plans]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Plan ID
+ *     responses:
+ *       200:
+ *         description: Plan deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Database error
+ */
+
+
 // src/app/api/plans/[id]/route.js
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';

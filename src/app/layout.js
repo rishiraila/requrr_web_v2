@@ -29,7 +29,7 @@ const geistMono = Geist_Mono({
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isAuthPage = ["/login", "/signup", "/forgot"].includes(pathname.toLowerCase());
+  const isAuthPage = ["/login", "/signup", "/forgot", "/docs"].includes(pathname.toLowerCase());
 
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);

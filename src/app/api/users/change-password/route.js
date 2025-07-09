@@ -1,3 +1,54 @@
+/**
+ * @swagger
+ * /api/users/change-password:
+ *   put:
+ *     summary: Change user password
+ *     description: Allows an authenticated user to change their password.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 example: oldpassword123
+ *               newPassword:
+ *                 type: string
+ *                 example: newSecurePassword!456
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password changed successfully
+ *       400:
+ *         description: Incorrect current password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Incorrect current password
+ *       401:
+ *         description: Unauthorized (missing or invalid token)
+ */
+
+
 import { db } from '../../../../db';
 import bcrypt from 'bcryptjs';
 import { authenticate } from '../../../../middleware/auth';

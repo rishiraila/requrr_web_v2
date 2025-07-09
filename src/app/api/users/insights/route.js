@@ -1,3 +1,105 @@
+/**
+ * @swagger
+ * /api/users/insights:
+ *   get:
+ *     summary: Get admin insights
+ *     description: Retrieves insight data for all users including total clients, services, renewals, payments, and subscription details. Requires admin role.
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved insights
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 insights:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       username:
+ *                         type: string
+ *                         example: johndoe
+ *                       email:
+ *                         type: string
+ *                         example: johndoe@example.com
+ *                       role:
+ *                         type: string
+ *                         example: user
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       total_clients:
+ *                         type: integer
+ *                         example: 5
+ *                       total_services:
+ *                         type: integer
+ *                         example: 3
+ *                       total_renewals:
+ *                         type: integer
+ *                         example: 12
+ *                       total_paid:
+ *                         type: number
+ *                         example: 2999.99
+ *                       paid_transactions:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                             plan_id:
+ *                               type: integer
+ *                             coupon_code:
+ *                               type: string
+ *                               nullable: true
+ *                             original_price:
+ *                               type: number
+ *                             discount:
+ *                               type: number
+ *                             final_price:
+ *                               type: number
+ *                             razorpay_order_id:
+ *                               type: string
+ *                             razorpay_payment_id:
+ *                               type: string
+ *                             status:
+ *                               type: string
+ *                             message:
+ *                               type: string
+ *                             created_at:
+ *                               type: string
+ *                               format: date-time
+ *                       plan:
+ *                         type: string
+ *                         example: Pro
+ *                       plan_start:
+ *                         type: string
+ *                         format: date-time
+ *                       plan_end:
+ *                         type: string
+ *                         format: date-time
+ *       401:
+ *         description: Unauthorized access (only admin allowed)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal Server Error
+ */
+
+
 import { db } from '@/db';
 import { authenticate } from '@/middleware/auth';
 
