@@ -1,3 +1,32 @@
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login a user
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Auth success
+ *       401:
+ *         description: Invalid credentials
+ */
+
+
 // import { db } from '@/lib/db';
 import { db } from '../../../../db';
 import bcrypt from 'bcrypt';
