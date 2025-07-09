@@ -21,6 +21,7 @@
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.8",
     "country-currency-map": "^2.1.7",
+    "country-data": "^0.0.31",
     "currency-codes": "^2.2.0",
     "currency.js": "^2.0.4",
     "dotenv": "^16.4.7",
