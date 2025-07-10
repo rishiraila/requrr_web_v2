@@ -85,7 +85,20 @@ export async function GET(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [services] = await db.query('SELECT * FROM services WHERE user_id = ?', [user.id]);
+  // const [services] = await db.query('SELECT * FROM services WHERE user_id = ?', [user.id]);
+  const [services] = await db.query(`
+  SELECT 
+    s.*, 
+    CASE 
+      WHEN COUNT(ir.id) > 0 THEN 1 
+      ELSE 0 
+    END AS is_active
+  FROM services s
+  LEFT JOIN income_records ir ON ir.service_id = s.id
+  WHERE s.user_id = ?
+  GROUP BY s.id
+`, [user.id]);
+
   return Response.json(services);
 }
 

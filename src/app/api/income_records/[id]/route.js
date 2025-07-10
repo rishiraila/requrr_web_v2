@@ -147,10 +147,53 @@ export async function PUT(req, { params }) {
   return Response.json({ message: 'Income record updated' });
 }
 
+// export async function DELETE(req, { params }) {
+//   const user = authenticate(req);
+//   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+//   await db.query('DELETE FROM income_records WHERE id = ? AND user_id = ?', [params.id, user.id]);
+//   return Response.json({ message: 'Income record deleted' });
+// }
+
 export async function DELETE(req, { params }) {
   const user = authenticate(req);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  await db.query('DELETE FROM income_records WHERE id = ? AND user_id = ?', [params.id, user.id]);
-  return Response.json({ message: 'Income record deleted' });
+  const recordId = params.id;
+
+  // 1. Fetch the service_id for this income record before deleting
+  const [[record]] = await db.query(
+    `SELECT service_id FROM income_records WHERE id = ? AND user_id = ?`,
+    [recordId, user.id]
+  );
+
+  if (!record) {
+    return Response.json({ error: 'Income record not found' }, { status: 404 });
+  }
+
+  const serviceId = record.service_id;
+
+  // 2. Delete the income record
+  await db.query(
+    `DELETE FROM income_records WHERE id = ? AND user_id = ?`,
+    [recordId, user.id]
+  );
+
+  // 3. Check if the service is still used in other income records
+  const [[{ count }]] = await db.query(
+    `SELECT COUNT(*) AS count FROM income_records WHERE service_id = ? AND user_id = ?`,
+    [serviceId, user.id]
+  );
+
+  // 4. If count is 0, mark the service as inactive
+  if (count === 0) {
+    await db.query(
+      `UPDATE services SET is_active = 0 WHERE id = ? AND user_id = ?`,
+      [serviceId, user.id]
+    );
+  }
+
+  return Response.json({ message: 'Income record deleted successfully' });
 }

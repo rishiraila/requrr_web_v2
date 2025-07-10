@@ -52,7 +52,7 @@ export default function AddService({ onClose, onSuccess }) {
 
       <label htmlFor="price">Price</label>
       <input type="number" name="base_price" placeholder="Price" value={form.base_price} onChange={handleChange} style={styles.input} />
-      <label><input type="checkbox" name="is_active" checked={form.is_active} onChange={handleChange} /> Active</label>
+      {/* <label><input type="checkbox" name="is_active" checked={form.is_active} onChange={handleChange} /> Active</label> */}
     </ModalLayout>
   );
 }
