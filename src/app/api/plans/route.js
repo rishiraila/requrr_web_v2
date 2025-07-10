@@ -22,7 +22,13 @@
  *                     example: Starter
  *                   price:
  *                     type: number
- *                     example: 199
+ *                     example: 12000
+ *                   price_inr:
+ *                     type: number
+ *                     example: 12000
+ *                   price_usd:
+ *                     type: number
+ *                     example: 144.30
  *                   max_renewals:
  *                     type: integer
  *                     nullable: true
@@ -50,7 +56,7 @@
  *                 example: Premium
  *               price:
  *                 type: number
- *                 example: 499
+ *                 example: 12000
  *               max_renewals:
  *                 type: integer
  *                 nullable: true
@@ -83,7 +89,7 @@ import { authenticate } from '../../../middleware/auth';
 
 export async function GET() {
   const [plans] = await db.query(
-    'SELECT id, name, price, max_renewals, description FROM plans ORDER BY price ASC'
+    'SELECT id, name, price, price_inr, price_usd, max_renewals, description FROM plans ORDER BY price ASC'
   );
   return Response.json(plans);
 }
@@ -92,17 +98,29 @@ export async function POST(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Optional: check for admin role here
   const { name, price, max_renewals = null, description = '' } = await req.json();
 
   if (!name || price === undefined) {
     return Response.json({ error: 'Name and price are required' }, { status: 400 });
   }
 
+  let priceUSD = 0;
+
+  try {
+    const rateRes = await fetch('https://open.er-api.com/v6/latest/INR');
+    const rateData = await rateRes.json();
+    if (rateData?.result === 'success' && rateData.rates?.USD) {
+      priceUSD = parseFloat((price * rateData.rates.USD).toFixed(2));
+    }
+  } catch (err) {
+    console.error('[USD conversion failed]', err);
+    priceUSD = 0; // fallback
+  }
+
   try {
     await db.query(
-      `INSERT INTO plans (name, price, max_renewals, description) VALUES (?, ?, ?, ?)`,
-      [name, price, max_renewals, description]
+      `INSERT INTO plans (name, price, max_renewals, description, price_inr, price_usd) VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, price, max_renewals, description, price, priceUSD]
     );
     return Response.json({ message: 'Plan created successfully' });
   } catch (err) {

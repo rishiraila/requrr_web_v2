@@ -2,21 +2,13 @@
 import EditPlanModal from "./EditPlanModal"
 import AddPlanModal from "./AddPlanModal"
 
-import currency from 'currency.js';
-import countryCurrencyMap from 'country-currency-map';
-import { countries, currencies } from 'country-data';
-import currencyCodes from 'currency-codes';
 
 import { useEffect, useState } from 'react';
 
 export default function SubscribeButton() {
 
-  const [conversionLoading, setConversionLoading] = useState(true);
-
-  const [userCountry, setUserCountry] = useState('IN');
-  const [userCurrency, setUserCurrency] = useState('INR');
   const [currencySymbol, setCurrencySymbol] = useState('₹');
-  const [conversionRate, setConversionRate] = useState(1); // INR by default
+  const [isIndia, setIsIndia] = useState(true); // new
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -79,40 +71,11 @@ export default function SubscribeButton() {
 
         // 4. Map country to currency code and symbol
         const countryCode = user.country_code?.toUpperCase() || 'IN';
-        setUserCountry(countryCode);
+        const isIndianUser = countryCode === 'IN';
+        setIsIndia(isIndianUser);
+        setCurrencySymbol(isIndianUser ? '₹' : '$');
 
         const countryInfo = countries[countryCode];
-
-        const currencyCode = countryInfo?.currencies?.[0] || 'INR';
-
-        setUserCurrency(currencyCode);
-
-        const symbol = currencies[currencyCode]?.symbol || '₹';
-        setCurrencySymbol(symbol);
-
-        if (currencyCode !== 'INR') {
-          try {
-            const res = await fetch(`https://open.er-api.com/v6/latest/INR`);
-            const data = await res.json();
-
-            if (data.result === 'success' && data.rates && data.rates[currencyCode]) {
-              const rate = data.rates[currencyCode];
-              setConversionRate(rate);
-              console.log(`🪙 INR to ${currencyCode}:`, rate);
-            } else {
-              console.warn("⚠️ Could not find currency in rates. Falling back to 1.");
-              setConversionRate(1);
-            }
-          } catch (error) {
-            console.error("❌ Error fetching exchange rate:", error);
-            setConversionRate(1);
-          } finally {
-            setConversionLoading(false);
-          }
-        } else {
-          setConversionRate(1);
-          setConversionLoading(false);
-        }
 
       } catch (err) {
         console.error('Error loading plans, subscription, or user info:', err);
@@ -131,7 +94,8 @@ export default function SubscribeButton() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId, couponCode: code, userCurrency }),
+        body: JSON.stringify({ planId, couponCode: code }),
+        
       });
       const data = await res.json();
       if (data && !data.error) {
@@ -156,7 +120,9 @@ export default function SubscribeButton() {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planId, couponCode, userCurrency }),
+      body: JSON.stringify({ planId, couponCode }),
+
+
     });
 
     const order = await res.json();
@@ -233,9 +199,18 @@ export default function SubscribeButton() {
 
                 const couponCode = couponInputs[plan.id] || '';
                 const validated = couponValidation[plan.id];
-                const finalPrice = discountedPrices[plan.id] || plan.price;
 
-                const localPrice = currency(finalPrice).multiply(conversionRate).value;
+
+              
+
+                const basePrice = isIndia
+                  ? Number(plan.price_inr ?? plan.price ?? 0)
+                  : Number(plan.price_usd ?? plan.price ?? 0);
+
+                // const finalPrice = discountedPrices[plan.id] || basePrice;
+                const finalPrice = Number(discountedPrices[plan.id] ?? basePrice);
+
+
 
                 return (
                   <div className="col-lg mb-lg-0 mb-3" key={plan.id}>
@@ -263,20 +238,12 @@ export default function SubscribeButton() {
                         <div className="text-center">
                           <div className="d-flex justify-content-center">
                             <sup className="h6 pricing-currency mt-2 mb-0 me-1 text-body">{currencySymbol}</sup>
-                            {conversionLoading ? (
-                              <h1 className="mb-0 text-primary">Loading...</h1>
-                            ) : (
-                              <h1 className="mb-0 text-primary">
-                                {new Intl.NumberFormat('en-US', {
-                                  style: 'currency',
-                                  currency: userCurrency
-                                }).format(localPrice / 12)}
-                              </h1>
-                            )}
-
+                            <h1 className="mb-0 text-primary">
+                              {currencySymbol}{(finalPrice / 12).toFixed(2)}
+                            </h1>
                             <sub className="h6 pricing-duration mt-auto mb-1 text-body">/month</sub>
                           </div>
-                          <p>[ Billed Annually at {currencySymbol}{localPrice.toFixed(2)} ]</p>
+                          <p>[ Billed Annually at {currencySymbol}{finalPrice.toFixed(2)} ]</p>
                         </div>
 
                         <ul className="list-group ps-6 my-5 pt-4">
@@ -334,7 +301,7 @@ export default function SubscribeButton() {
                           >
                             {disableButton
                               ? 'Not Available'
-                              : `Subscribe ${currencySymbol}${(localPrice / 12).toFixed(2)} /month`}
+                              : `Subscribe ${currencySymbol}${(finalPrice / 12).toFixed(2)} /month`}
                           </button>
                         )}
                       </div>

@@ -3,13 +3,12 @@
  * /api/subscription/status:
  *   get:
  *     summary: Get current user's active subscription status
- *     description: Returns subscription info including plan name, price, and limits if active, otherwise `subscribed: false`.
- *     tags: [Subscription]
+ *     tags: [Subscriptions]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Subscription status retrieved
+ *         description: Subscription details or unsubscribed status
  *         content:
  *           application/json:
  *             schema:
@@ -26,18 +25,29 @@
  *                       example: true
  *                     plan_name:
  *                       type: string
- *                       example: Pro
- *                     price:
+ *                       example: Premium
+ *                     price_inr:
  *                       type: number
- *                       example: 499
+ *                       example: 999
+ *                     price_usd:
+ *                       type: number
+ *                       example: 12.99
+ *                     final_price:
+ *                       type: number
+ *                       description: Final amount paid by the user
+ *                       example: 9.99
+ *                     currency:
+ *                       type: string
+ *                       description: Payment currency
+ *                       example: "USD"
  *                     start_date:
  *                       type: string
  *                       format: date-time
- *                       example: "2024-08-01T00:00:00Z"
+ *                       example: "2025-07-09T12:00:00"
  *                     end_date:
  *                       type: string
  *                       format: date-time
- *                       example: "2025-08-01T00:00:00Z"
+ *                       example: "2026-07-09T12:00:00"
  *                     max_renewals:
  *                       type: integer
  *                       nullable: true
@@ -45,6 +55,7 @@
  *       401:
  *         description: Unauthorized
  */
+
 
 
 // src/app/api/subscription/status/route.js
@@ -60,7 +71,10 @@ export async function GET(req) {
        s.start_date, 
        s.end_date, 
        p.name AS plan_name, 
-       p.price, 
+       p.price_inr, 
+       p.price_usd, 
+       s.currency,
+       s.final_price,
        p.max_renewals
      FROM subscriptions s
      JOIN plans p ON s.plan_id = p.id
@@ -77,7 +91,10 @@ export async function GET(req) {
   return Response.json({
     subscribed: true,
     plan_name: subscription.plan_name,
-    price: subscription.price,
+    price_inr: subscription.price_inr,
+    price_usd: subscription.price_usd,
+    final_price: subscription.final_price, // actual paid
+    currency: subscription.currency,       // e.g., 'INR' or 'USD'
     start_date: subscription.start_date,
     end_date: subscription.end_date,
     max_renewals: subscription.max_renewals,

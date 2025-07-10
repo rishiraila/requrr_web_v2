@@ -22,28 +22,31 @@
  *             properties:
  *               razorpay_order_id:
  *                 type: string
- *                 example: order_JcWjTtqvYzvYpm
+ *                 example: "order_LztJ7VGcZ0BipD"
  *               razorpay_payment_id:
  *                 type: string
- *                 example: pay_JcWjUdgyvJad1b
+ *                 example: "pay_LztJHMEt5U8Rqq"
  *               razorpay_signature:
  *                 type: string
- *                 example: 5f1f2f84bb85bba1118f313e8eaa05f9d2f9d4f0b77a7e4d20d6cfe145c8a4e4
+ *                 example: "d24a6dc1b8893e17c987e5f6c84e9f3f2e1b30d0d7fae7df69fc6bd264da2c58"
  *               plan_id:
  *                 type: integer
  *                 example: 2
  *               coupon_code:
  *                 type: string
- *                 example: WELCOME10
+ *                 nullable: true
+ *                 example: "SAVE20"
  *               final_price:
  *                 type: number
- *                 example: 449
+ *                 description: Final amount paid by the user (in local currency)
+ *                 example: 9.99
  *               currency:
  *                 type: string
- *                 example: USD
+ *                 description: Currency in which payment was made (e.g., 'INR', 'USD')
+ *                 example: "USD"
  *     responses:
  *       200:
- *         description: Subscription activated successfully
+ *         description: Subscription verified and activated
  *         content:
  *           application/json:
  *             schema:
@@ -56,12 +59,21 @@
  *                   type: string
  *                   example: Premium
  *       400:
- *         description: Invalid input or signature
+ *         description: Invalid request or signature
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid signature
  *       401:
  *         description: Unauthorized
  *       500:
- *         description: Server error or database failure
+ *         description: Server or database error
  */
+
 
 
 // src/app/api/payment/verify/route.js
@@ -110,10 +122,10 @@ export async function POST(req) {
   try {
     // Save/Update subscription
     await db.query(
-      `INSERT INTO subscriptions (user_id, plan_id, start_date, end_date)
-       VALUES (?, ?, ?, ?)
+      `INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, currency, final_price)
+       VALUES (?, ?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), start_date = VALUES(start_date), end_date = VALUES(end_date)`,
-      [user.id, plan.id, startDate, endDate]
+      [user.id, plan.id, startDate, endDate, currency, final_price]
     );
 
     // Update coupon usage count

@@ -27,7 +27,13 @@
  *                   example: Starter
  *                 price:
  *                   type: number
- *                   example: 199
+ *                   example: 12000
+ *                 price_inr:
+ *                   type: number
+ *                   example: 12000
+ *                 price_usd:
+ *                   type: number
+ *                   example: 144.30
  *                 max_renewals:
  *                   type: integer
  *                   nullable: true
@@ -38,7 +44,7 @@
  *       404:
  *         description: Plan not found
  *   put:
- *     summary: Update a plan by ID
+ *     summary: Update a subscription plan by ID
  *     tags: [Plans]
  *     security:
  *       - bearerAuth: []
@@ -48,20 +54,23 @@
  *         required: true
  *         schema:
  *           type: integer
- *         description: Plan ID
+ *         description: ID of the plan to update
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - price
  *             properties:
  *               name:
  *                 type: string
  *                 example: Updated Plan
  *               price:
  *                 type: number
- *                 example: 299
+ *                 example: 13000
  *               max_renewals:
  *                 type: integer
  *                 nullable: true
@@ -72,6 +81,14 @@
  *     responses:
  *       200:
  *         description: Plan updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Plan updated successfully
  *       401:
  *         description: Unauthorized
  *       500:
@@ -91,6 +108,14 @@
  *     responses:
  *       200:
  *         description: Plan deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Plan deleted successfully
  *       401:
  *         description: Unauthorized
  *       500:
@@ -115,14 +140,25 @@ export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Optional: check for admin role here
   const planId = params.id;
   const { name, price, max_renewals, description } = await req.json();
 
+  let priceUSD = 0;
+  try {
+    const rateRes = await fetch('https://open.er-api.com/v6/latest/INR');
+    const rateData = await rateRes.json();
+    if (rateData?.result === 'success' && rateData.rates?.USD) {
+      priceUSD = parseFloat((price * rateData.rates.USD).toFixed(2));
+    }
+  } catch (err) {
+    console.error('[USD conversion failed]', err);
+    priceUSD = 0;
+  }
+
   try {
     await db.query(
-      `UPDATE plans SET name = ?, price = ?, max_renewals = ?, description = ? WHERE id = ?`,
-      [name, price, max_renewals, description, planId]
+      `UPDATE plans SET name = ?, price = ?, max_renewals = ?, description = ?, price_inr = ?, price_usd = ? WHERE id = ?`,
+      [name, price, max_renewals, description, price, priceUSD, planId]
     );
     return Response.json({ message: 'Plan updated successfully' });
   } catch (err) {
@@ -130,6 +166,7 @@ export async function PUT(req, { params }) {
     return Response.json({ error: 'Database error' }, { status: 500 });
   }
 }
+
 
 export async function DELETE(req, { params }) {
   const user = authenticate(req);
