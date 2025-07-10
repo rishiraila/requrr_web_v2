@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react';
 
 export default function SubscribeButton() {
 
+  const [userCountry, setUserCountry] = useState('IN');
+
   const [currencySymbol, setCurrencySymbol] = useState('₹');
   const [isIndia, setIsIndia] = useState(true); // new
 
@@ -95,7 +97,7 @@ export default function SubscribeButton() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ planId, couponCode: code }),
-        
+
       });
       const data = await res.json();
       if (data && !data.error) {
@@ -194,21 +196,29 @@ export default function SubscribeButton() {
               {plans.map(plan => {
                 const isCurrentPlan = currentPlan?.plan_name === plan.name;
                 const isSubscribed = !!currentPlan;
-                const isUpgrade = !isSubscribed || plan.price > currentPlan.price;
+
+
+                // const isUpgrade = !isSubscribed || plan.price > currentPlan.price;
+
+
+
+
+
+
+
+                const basePrice = isIndia
+                  ? Number(plan.price_inr || 0)
+                  : Number(plan.price_usd || 0);
+
+                // const finalPrice = discountedPrices[plan.id] || basePrice;
+                const finalPrice = Number(discountedPrices[plan.id] ?? basePrice);
+                const currentPrice = currentPlan?.price || 0;
+                const isUpgrade = !isSubscribed || basePrice > currentPrice;
+
                 const disableButton = isCurrentPlan || !isUpgrade;
 
                 const couponCode = couponInputs[plan.id] || '';
                 const validated = couponValidation[plan.id];
-
-
-              
-
-                const basePrice = isIndia
-                  ? Number(plan.price_inr ?? plan.price ?? 0)
-                  : Number(plan.price_usd ?? plan.price ?? 0);
-
-                // const finalPrice = discountedPrices[plan.id] || basePrice;
-                const finalPrice = Number(discountedPrices[plan.id] ?? basePrice);
 
 
 
