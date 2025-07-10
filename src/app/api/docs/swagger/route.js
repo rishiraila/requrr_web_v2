@@ -1,29 +1,39 @@
-// src/app/api/docs/swagger/route.js
-import swaggerJsdoc from 'swagger-jsdoc';
-import swaggerOptions from '../../../../../swagger.config'; // 👈 now it's default import
+// // src/app/api/docs/swagger/route.js
+// import swaggerJsdoc from 'swagger-jsdoc';
+// import swaggerOptions from '../../../../../swagger.config'; // 👈 now it's default import
 
-export async function GET(req) {
-  const protocol = req.headers.get('x-forwarded-proto') || 'http';
-  const host = req.headers.get('host');
+// export async function GET(req) {
+//   const protocol = req.headers.get('x-forwarded-proto') || 'http';
+//   const host = req.headers.get('host');
 
-  const dynamicOptions = {
-    ...swaggerOptions,
-    definition: {
-      ...swaggerOptions.definition,
-      servers: [
-        {
-          url: `${protocol}://${host}`,
-        },
-      ],
-    },
-  };
+//   const dynamicOptions = {
+//     ...swaggerOptions,
+//     definition: {
+//       ...swaggerOptions.definition,
+//       servers: [
+//         {
+//           url: `${protocol}://${host}`,
+//         },
+//       ],
+//     },
+//   };
 
-  const specs = swaggerJsdoc(dynamicOptions);
+//   const specs = swaggerJsdoc(dynamicOptions);
 
-  return new Response(JSON.stringify(specs), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+//   return new Response(JSON.stringify(specs), {
+//     status: 200,
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//   });
+// }
+
+
+// app/api/docs/swagger/route.js
+
+import { NextResponse } from 'next/server';
+import { swaggerDocument } from '@/swagger/swaggerDocs';
+
+export async function GET() {
+  return NextResponse.json(swaggerDocument);
 }
