@@ -55,15 +55,27 @@ export default function SubscribeButton() {
         const subRes = await fetch('/api/subscription/status', { headers });
         const subData = await subRes.json();
 
+        // if (subData.subscribed) {
+        //   setCurrentPlan({
+        //     plan_name: subData.plan_name,
+        //     price: subData.price,
+        //     start_date: subData.start_date,
+        //     end_date: subData.end_date,
+        //     max_renewals: subData.max_renewals
+        //   });
+        // }
+
         if (subData.subscribed) {
+          const subPrice = isIndia ? subData.price_inr : subData.price_usd;
           setCurrentPlan({
             plan_name: subData.plan_name,
-            price: subData.price,
+            price: subPrice,
             start_date: subData.start_date,
             end_date: subData.end_date,
             max_renewals: subData.max_renewals
           });
         }
+
 
         // 3. Load user info to get country
         const userRes = await fetch('/api/me', { headers });
@@ -87,6 +99,32 @@ export default function SubscribeButton() {
     fetchData();
   }, [token]);
 
+  // const handleValidateCoupon = async (planId) => {
+  //   const code = couponInputs[planId];
+  //   try {
+  //     const res = await fetch('/api/payment/create-order', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify({ planId, couponCode: code }),
+
+  //     });
+  //     const data = await res.json();
+  //     if (data && !data.error) {
+  //       setCouponValidation(prev => ({ ...prev, [planId]: 'success' }));
+  //       setDiscountedPrices(prev => ({ ...prev, [planId]: data.finalPrice }));
+  //     } else {
+  //       setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
+  //     }
+  //     setShowCouponPopup(prev => ({ ...prev, [planId]: false }));
+  //   } catch (err) {
+  //     console.error('Coupon validation error:', err);
+  //     setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
+  //   }
+  // };
+
   const handleValidateCoupon = async (planId) => {
     const code = couponInputs[planId];
     try {
@@ -96,22 +134,33 @@ export default function SubscribeButton() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ planId, couponCode: code }),
-
+        body: JSON.stringify({
+          planId,
+          couponCode: code,
+          userCurrency: isIndia ? 'INR' : 'USD',  // pass user currency
+        }),
       });
+
       const data = await res.json();
       if (data && !data.error) {
         setCouponValidation(prev => ({ ...prev, [planId]: 'success' }));
-        setDiscountedPrices(prev => ({ ...prev, [planId]: data.finalPrice }));
+
+        setDiscountedPrices(prev => ({
+          ...prev,
+          [planId]: isIndia ? data.finalPrice : data.localPrice
+        }));
       } else {
         setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
       }
+
       setShowCouponPopup(prev => ({ ...prev, [planId]: false }));
     } catch (err) {
       console.error('Coupon validation error:', err);
       setCouponValidation(prev => ({ ...prev, [planId]: 'error' }));
     }
   };
+
+
 
   const handlePayment = async (planId, price, planName, couponCode = '') => {
     if (!token) return alert('User not authenticated');

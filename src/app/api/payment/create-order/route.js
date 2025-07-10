@@ -96,8 +96,14 @@ export async function POST(req) {
     const [[plan]] = await db.query('SELECT * FROM plans WHERE id = ?', [planId]);
     if (!plan) return Response.json({ error: 'Invalid plan' }, { status: 400 });
 
-    let finalAmount = plan.price; // Base price in INR
-    let discount = 0;
+    // let finalAmount = plan.price; // Base price in INR
+    // let discount = 0;
+
+    const isIndianUser = !userCurrency || userCurrency === 'INR';
+    const basePrice = isIndianUser ? plan.price_inr : plan.price_usd;
+
+    let finalAmount = basePrice;
+    let discount = 0
 
     // 2. Apply coupon if provided
     if (couponCode) {
@@ -116,8 +122,11 @@ export async function POST(req) {
         return Response.json({ error: 'Coupon usage limit reached' }, { status: 400 });
       }
 
-      discount = (plan.price * coupon.discount_percent) / 100;
-      finalAmount = plan.price - discount;
+      // discount = (plan.price * coupon.discount_percent) / 100;
+      // finalAmount = plan.price - discount;
+
+      discount = (basePrice * coupon.discount_percent) / 100;
+      finalAmount = basePrice - discount;
 
       // Razorpay does not allow zero or negative amounts
       if (finalAmount < 1) finalAmount = 1;
@@ -157,7 +166,8 @@ export async function POST(req) {
     return Response.json({
       ...order,
       planId: plan.id,
-      originalPrice: plan.price,   // INR
+      // originalPrice: plan.price,   // INR
+      originalPrice: basePrice, 
       discount,
       finalPrice: finalAmount,     // INR
       localPrice,                  // converted value
