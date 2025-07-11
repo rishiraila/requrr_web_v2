@@ -1,6 +1,6 @@
 {
   "crons": [{
-    "path": "/api/cron/update-status",
+    "path": "/api/cron-process/update-status",
     "schedule": "*/5 * * * *"
   }]
 }
