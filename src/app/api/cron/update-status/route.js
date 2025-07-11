@@ -3,7 +3,6 @@ import { db } from '../../../../db';
 import { NextResponse } from 'next/server';
 
 export async function GET(req) {
-  // Authorization header check
   const authHeader = req.headers.get('Authorization');
   const expected = `Bearer ${process.env.CRON_SECRET}`;
 
