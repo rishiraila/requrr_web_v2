@@ -539,39 +539,6 @@ export default function Home() {
             </div>
           </div>
 
-{/*
-          <div className="col-sm-6 col-lg-3 mb-5">
-            <div className="card card-border-shadow-primary h-100">
-              <div className="card-body">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="avatar me-4">
-                    <span className="avatar-initial rounded-3 bg-label-primary"
-                    ><i className="ri-group-line ri-24px"></i
-                    ></span>
-                  </div>
-                  <h4 className="mb-0">{clientCount}</h4>
-                </div>
-                <h6 className="mb-0 fw-normal">Total Clients </h6>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-sm-6 col-lg-3 mb-5">
-            <div className="card card-border-shadow-warning h-100">
-              <div className="card-body">
-                <div className="d-flex align-items-center mb-2">
-                  <div className="avatar me-4">
-                    <span className="avatar-initial rounded-3 bg-label-warning"
-                    ><i className="ri-suitcase-line ri-24px"></i
-                    ></span>
-                  </div>
-                  <h4 className="mb-0">{serviceCount}</h4>
-                </div>
-                <h6 className="mb-0 fw-normal">Active Services</h6>
-              </div>
-            </div>
-          </div>
-*/}
           <div className="col-sm-6 col-lg-3 mb-5">
             <div className="card card-border-shadow-danger h-100">
               <div className="card-body">
@@ -583,10 +550,7 @@ export default function Home() {
                   </div>
                   <h4 className="mb-0">{pendingRevenue.toFixed(2)}</h4>
                 </div>
-                <h6 className="mb-0 fw-normal">Pending Revenue</h6>
-                {/* <p className="mb-0 text-danger">
-                  Highest pending: {getServiceWithHighestPending()}
-                </p> */}
+                <h6 className="mb-0 fw-normal">Pending Revenue for trial</h6>
               </div>
             </div>
           </div>
