@@ -1,8 +1,16 @@
-// app/api/cron/update-status/route.js (Next.js 13+)
+// app/api/cron/update-status/route.js
 import { db } from '../../../../db';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function GET(req) {
+  // Authorization header check
+  const authHeader = req.headers.get('Authorization');
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+
+  if (authHeader !== expected) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
   try {
     await db.execute(`
       UPDATE income_records
