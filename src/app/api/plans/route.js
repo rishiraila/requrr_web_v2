@@ -83,7 +83,6 @@
  *         description: Database error
  */
 
-
 import { db } from '../../../db'
 import { authenticate } from '../../../middleware/auth';
 
@@ -98,29 +97,16 @@ export async function POST(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { name, price, max_renewals = null, description = '' } = await req.json();
+  const { name, price_inr, price_usd, max_renewals = null, description = '' } = await req.json();
 
-  if (!name || price === undefined) {
-    return Response.json({ error: 'Name and price are required' }, { status: 400 });
-  }
-
-  let priceUSD = 0;
-
-  try {
-    const rateRes = await fetch('https://open.er-api.com/v6/latest/INR');
-    const rateData = await rateRes.json();
-    if (rateData?.result === 'success' && rateData.rates?.USD) {
-      priceUSD = parseFloat((price * rateData.rates.USD).toFixed(2));
-    }
-  } catch (err) {
-    console.error('[USD conversion failed]', err);
-    priceUSD = 0; // fallback
+  if (!name || price_inr === undefined || price_usd === undefined) {
+    return Response.json({ error: 'Name, price_inr and price_usd are required' }, { status: 400 });
   }
 
   try {
     await db.query(
       `INSERT INTO plans (name, price, max_renewals, description, price_inr, price_usd) VALUES (?, ?, ?, ?, ?, ?)`,
-      [name, price, max_renewals, description, price, priceUSD]
+      [name, price_inr, max_renewals, description, price_inr, price_usd]
     );
     return Response.json({ message: 'Plan created successfully' });
   } catch (err) {

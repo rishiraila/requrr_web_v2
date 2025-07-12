@@ -8,7 +8,13 @@ export default function PlanPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editPlan, setEditPlan] = useState(null);
-  const [formData, setFormData] = useState({ name: '', price: '', max_renewals: '', description: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    price_inr: '',
+    price_usd: '',
+    max_renewals: '',
+    description: ''
+  });
 
   const fetchPlans = async () => {
     try {
@@ -45,9 +51,10 @@ export default function PlanPage() {
   const handleEdit = (plan) => {
     setFormData({
       name: plan.name,
-      price: plan.price,
-      max_renewals: plan.max_renewals || '',
-      description: plan.description || ''
+      price_inr: plan.price_inr,
+      price_usd: plan.price_usd,
+      max_renewals: plan.max_renewals ?? '',
+      description: plan.description ?? ''
     });
     setEditPlan(plan);
     setShowForm(true);
@@ -56,10 +63,13 @@ export default function PlanPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
+
     const payload = {
-      ...formData,
-      price: parseFloat(formData.price),
-      max_renewals: formData.max_renewals ? parseInt(formData.max_renewals) : null
+      name: formData.name,
+      price_inr: parseFloat(formData.price_inr),
+      price_usd: parseFloat(formData.price_usd),
+      max_renewals: formData.max_renewals ? parseInt(formData.max_renewals) : null,
+      description: formData.description
     };
 
     try {
@@ -87,7 +97,7 @@ export default function PlanPage() {
           <h4>All Plans</h4>
           <button className="btn btn-primary" onClick={() => {
             setEditPlan(null);
-            setFormData({ name: '', price: '', max_renewals: '', description: '' });
+            setFormData({ name: '', price_inr: '', price_usd: '', max_renewals: '', description: '' });
             setShowForm(true);
           }}>
             + Add Plan
@@ -100,7 +110,8 @@ export default function PlanPage() {
               <thead className="table-light">
                 <tr>
                   <th>Name</th>
-                  <th>Price</th>
+                  <th>INR Price</th>
+                  <th>USD Price</th>
                   <th>Max Renewals</th>
                   <th>Description</th>
                   <th>Action</th>
@@ -108,12 +119,13 @@ export default function PlanPage() {
               </thead>
               <tbody>
                 {plans.length === 0 ? (
-                  <tr><td colSpan="5" className="text-center">No plans found.</td></tr>
+                  <tr><td colSpan="6" className="text-center">No plans found.</td></tr>
                 ) : (
                   plans.map(plan => (
                     <tr key={plan.id}>
                       <td>{plan.name}</td>
-                      <td>₹{parseFloat(plan.price).toFixed(2)}</td>
+                      <td>₹{parseFloat(plan.price_inr).toFixed(2)}</td>
+                      <td>${parseFloat(plan.price_usd).toFixed(2)}</td>
                       <td>{plan.max_renewals ?? 'Unlimited'}</td>
                       <td>{plan.description}</td>
                       <td>
@@ -148,8 +160,12 @@ export default function PlanPage() {
                 <input className="form-control" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
               </div>
               <div className="mb-2">
-                <label className="form-label">Price</label>
-                <input type="number" className="form-control" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
+                <label className="form-label">INR Price</label>
+                <input type="number" className="form-control" value={formData.price_inr} onChange={(e) => setFormData({ ...formData, price_inr: e.target.value })} required />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">USD Price</label>
+                <input type="number" className="form-control" value={formData.price_usd} onChange={(e) => setFormData({ ...formData, price_usd: e.target.value })} required />
               </div>
               <div className="mb-2">
                 <label className="form-label">Max Renewals (optional)</label>

@@ -123,7 +123,6 @@
  */
 
 
-// src/app/api/plans/[id]/route.js
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
@@ -141,24 +140,16 @@ export async function PUT(req, { params }) {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const planId = params.id;
-  const { name, price, max_renewals, description } = await req.json();
+  const { name, price_inr, price_usd, max_renewals, description } = await req.json();
 
-  let priceUSD = 0;
-  try {
-    const rateRes = await fetch('https://open.er-api.com/v6/latest/INR');
-    const rateData = await rateRes.json();
-    if (rateData?.result === 'success' && rateData.rates?.USD) {
-      priceUSD = parseFloat((price * rateData.rates.USD).toFixed(2));
-    }
-  } catch (err) {
-    console.error('[USD conversion failed]', err);
-    priceUSD = 0;
+  if (!name || price_inr === undefined || price_usd === undefined) {
+    return Response.json({ error: 'Name, price_inr and price_usd are required' }, { status: 400 });
   }
 
   try {
     await db.query(
       `UPDATE plans SET name = ?, price = ?, max_renewals = ?, description = ?, price_inr = ?, price_usd = ? WHERE id = ?`,
-      [name, price, max_renewals, description, price, priceUSD, planId]
+      [name, price_inr, max_renewals, description, price_inr, price_usd, planId]
     );
     return Response.json({ message: 'Plan updated successfully' });
   } catch (err) {
@@ -167,12 +158,10 @@ export async function PUT(req, { params }) {
   }
 }
 
-
 export async function DELETE(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Optional: check for admin role here
   const planId = params.id;
 
   try {

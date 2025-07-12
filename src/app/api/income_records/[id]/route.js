@@ -147,13 +147,6 @@ export async function PUT(req, { params }) {
   return Response.json({ message: 'Income record updated' });
 }
 
-// export async function DELETE(req, { params }) {
-//   const user = authenticate(req);
-//   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-//   await db.query('DELETE FROM income_records WHERE id = ? AND user_id = ?', [params.id, user.id]);
-//   return Response.json({ message: 'Income record deleted' });
-// }
 
 export async function DELETE(req, { params }) {
   const user = authenticate(req);
