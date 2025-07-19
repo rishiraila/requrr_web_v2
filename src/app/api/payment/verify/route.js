@@ -73,18 +73,13 @@
  *       500:
  *         description: Server or database error
  */
-
-
-
 // src/app/api/payment/verify/route.js
 import crypto from 'crypto';
 import { authenticate } from '../../../../middleware/auth';
 import { db } from '../../../../db';
-
 export async function POST(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
   const {
     razorpay_order_id,
     razorpay_payment_id,
@@ -94,35 +89,28 @@ export async function POST(req) {
     final_price,
     currency  // user's local currency (e.g., USD)
   } = await req.json();
-
   if (!plan_id) return Response.json({ error: 'Missing plan_id' }, { status: 400 });
-
   // Verify signature
   const signatureBase = `${razorpay_order_id}|${razorpay_payment_id}`;
   const expectedSignature = crypto
     .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
     .update(signatureBase)
     .digest('hex');
-
   if (expectedSignature !== razorpay_signature) {
     return Response.json({ error: 'Invalid signature' }, { status: 400 });
   }
-
   // Fetch plan
   const [[plan]] = await db.query('SELECT * FROM plans WHERE id = ?', [plan_id]);
   if (!plan) return Response.json({ error: 'Invalid plan ID' }, { status: 400 });
-
   // Calculate subscription period
   const now = new Date();
   const startDate = now.toISOString().slice(0, 19).replace('T', ' ');
   const end = new Date(now);
   end.setFullYear(end.getFullYear() + 1);
   const endDate = end.toISOString().slice(0, 19).replace('T', ' ');
-
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
-
     // Save/Update subscription
     await connection.query(
       `INSERT INTO subscriptions (user_id, plan_id, start_date, end_date, currency, final_price)
@@ -130,7 +118,6 @@ export async function POST(req) {
        ON DUPLICATE KEY UPDATE plan_id = VALUES(plan_id), start_date = VALUES(start_date), end_date = VALUES(end_date)`,
       [user.id, plan.id, startDate, endDate, currency, final_price]
     );
-
     // Update coupon usage count
     if (coupon_code) {
       await connection.query(
@@ -138,7 +125,6 @@ export async function POST(req) {
         [coupon_code]
       );
     }
-
     // Save transaction
     await connection.query(
       `INSERT INTO transactions
@@ -158,11 +144,8 @@ export async function POST(req) {
         'Subscription payment successful'
       ]
     );
-
     await connection.commit();
- 
     return Response.json({ message: 'Subscription activated', plan: plan.name });
-
   } catch (err) {
     await connection.rollback();
     console.error('[VERIFY ERROR]', err);
