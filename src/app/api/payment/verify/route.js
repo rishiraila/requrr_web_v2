@@ -138,7 +138,7 @@ export async function POST(req) {
         [coupon_code]
       );
     }
-
+ 
     // Save transaction
     await connection.query(
       `INSERT INTO transactions
