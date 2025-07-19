@@ -139,7 +139,7 @@ export async function POST(req) {
       );
     }
  
-    // Save transactio
+    // Save transaction
     await connection.query(
       `INSERT INTO transactions
        (user_id, plan_id, coupon_code, original_price, discount, final_price, currency, razorpay_order_id, razorpay_payment_id, status, message)
