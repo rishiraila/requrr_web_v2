@@ -1,192 +1,246 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import axios from 'axios';
-import Preloader from './Preloader';
+"use client";
+import React, { useEffect, useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import axios from "axios";
+import Preloader from "./Preloader";
 
 export default function CalendarPage() {
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [records, setRecords] = useState([]);
 
-    const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
 
-    const [events, setEvents] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [records, setRecords] = useState([]);
+    const fetchAll = async () => {
+      try {
+        setLoading(true);
+        const [clientsRes, servicesRes, incomeRes, recurringRes] =
+          await Promise.all([
+            axios.get("/api/clients", { headers }),
+            axios.get("/api/Services", { headers }),
+            axios.get("/api/income_records", { headers }),
+            axios.get("/api/requrring_expenses", { headers }),
+          ]);
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const headers = { Authorization: `Bearer ${token}` };
+        const clients = clientsRes.data;
+        const services = servicesRes.data;
 
-        const fetchAll = async () => {
-            try {
-                setLoading(true); // Show loader
-                const [clientsRes, servicesRes, incomeRes] = await Promise.all([
-                    axios.get('/api/clients', { headers }),
-                    axios.get('/api/Services', { headers }),
-                    axios.get('/api/income_records', { headers }),
-                ]);
+        const enrichedRenewals = incomeRes.data.map((r) => {
+          const client = clients.find((c) => c.id === r.client_id);
+          const service = services.find((s) => s.id === r.service_id);
+          return {
+            ...r,
+            client_name: client?.name || "Unknown Client",
+            company_name: client?.company_name || "",
+            service_name: service?.name || "Unknown Service",
+            type: "renewal",
+          };
+        });
 
-                const clients = clientsRes.data;
-                const services = servicesRes.data;
-                const enriched = incomeRes.data.map(r => {
-                    const client = clients.find(c => c.id === r.client_id);
-                    const service = services.find(s => s.id === r.service_id);
-                    return {
-                        ...r,
-                        client_name: client?.name || 'Unknown Client',
-                        company_name: client?.company_name || '',
-                        service_name: service?.name || 'Unknown Service',
-                    };
-                });
+        const enrichedRecurring = recurringRes.data.map((r) => ({
+          ...r,
+          type: "recurring",
+        }));
 
-                setRecords(enriched);
-                const events = enriched.map(r => ({
-                    id: r.id,
-                    title: r.client_name,
-                    start: r.due_date,
-                    extendedProps: { ...r }
-                }));
-                setEvents(events);
-                setSelectedDate(null); // show all by default
-            } catch (err) {
-                console.error('Failed to fetch data:', err);
-            } finally {
-                setLoading(false); // Hide loader
-            }
-        };
+        const allRecords = [...enrichedRenewals, ...enrichedRecurring];
+        setRecords(allRecords);
 
-        fetchAll();
-    }, []);
+        const renewalEvents = enrichedRenewals.map((r) => ({
+          id: `renewal-${r.id}`,
+          title: r.client_name,
+          start: r.due_date,
+          backgroundColor: "#007bff",
+          borderColor: "#007bff",
+          extendedProps: { ...r },
+        }));
 
+        const recurringEvents = enrichedRecurring.map((r) => ({
+          id: `recurring-${r.id}`,
+          title: r.title,
+          start: r.due_date,
+          backgroundColor: "#ff6f00",
+          borderColor: "#ff6f00",
+          extendedProps: { ...r },
+        }));
 
-    const recordsForCurrentMonth = records.filter((r) => {
-        const due = new Date(r.due_date);
-        const month = currentMonth.getMonth();
-        const year = currentMonth.getFullYear();
-        return (
-            due.getMonth() === month && due.getFullYear() === year
-        );
-    });
-
-
-
-    const handleDateClick = (info) => {
-        setSelectedDate(new Date(info.date));
+        setEvents([...renewalEvents, ...recurringEvents]);
+        setSelectedDate(null);
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const formatDate = (d) => new Date(d).toISOString().slice(0, 10);
+    fetchAll();
+  }, []);
 
-    const recordsForSelectedDate = records.filter(r =>
-        selectedDate && formatDate(r.due_date) === formatDate(selectedDate)
-    );
+  const recordsForCurrentMonth = records.filter((r) => {
+    const due = new Date(r.due_date);
+    const month = currentMonth.getMonth();
+    const year = currentMonth.getFullYear();
+    return due.getMonth() === month && due.getFullYear() === year;
+  });
 
-    const renderEventContent = (eventInfo) => {
-        return (
-            <div style={{
-                backgroundColor: '#007bff',
-                color: 'white',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                textAlign: 'center',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-            }}>
-                {eventInfo.event.title}
-            </div>
-        );
-    };
+  const handleDateClick = (info) => {
+    setSelectedDate(new Date(info.date));
+  };
 
-    const recordCardStyle = (status) => ({
-        padding: '1rem',
-        borderRadius: '8px',
-        background: status === 'paid' ? '#e2fbe4' : '#fdecea',
-        marginBottom: '1rem'
-    });
+  const formatDate = (d) => new Date(d).toISOString().slice(0, 10);
 
-    if (loading) {
-        return <Preloader />;
-    }
+  const recordsForSelectedDate = records.filter(
+    (r) => selectedDate && formatDate(r.due_date) === formatDate(selectedDate)
+  );
 
+  const renderEventContent = (eventInfo) => {
     return (
-        <div className='container pt-5'>
-            <div className='card p-5'>
-                <h4 style={{ lineHeight: "5px" }} className='pt-3'>Calendar</h4>
-                <p>View and manage your renewal schedule</p>
-
-                <div className='row border border-bottom-0 border-start-0 border-end-0 pt-4'>
-                    <div className='col-md-8'>
-
-                        <FullCalendar
-                            plugins={[dayGridPlugin, interactionPlugin]}
-                            initialView="dayGridMonth"
-                            events={events}
-                            dateClick={handleDateClick}
-                            eventClick={(info) => {
-                                setSelectedDate(new Date(info.event.start)); // 👈 restores expected behavior
-                            }}
-
-                            datesSet={(arg) => {
-                                const correctMonth = new Date(arg.view.currentStart);
-                                setCurrentMonth(correctMonth);
-                                setSelectedDate(null); // reset selected day
-                            }}
-
-                            height="auto"
-                            eventContent={renderEventContent}
-                        />
-
-
-                    </div>
-
-                    <div className='col-md-4' style={{
-                        overflowY: "scroll",
-                        height: "80vh"
-                    }}>
-                        {/* Right: Daily or Full Renewal List */}
-                        <div>
-                            {selectedDate ? (
-                                <>
-                                    <h5>{new Date(selectedDate).toDateString()} Renewals</h5>
-                                    {recordsForSelectedDate.length === 0 ? (
-                                        <p>No renewals due on this day.</p>
-                                    ) : (
-                                        recordsForSelectedDate.map((r) => (
-                                            <div key={r.id} style={recordCardStyle(r.status)}>
-                                                <strong>{r.client_name} - <small>{r.company_name}</small></strong>
-                                                <div>{r.service_name}</div>
-                                                <div>₹{parseFloat(r.amount).toFixed(2)}</div>
-                                                <div>Status: {r.status}</div>
-                                            </div>
-                                        ))
-                                    )}
-                                    <button className='btn btn-sm btn-outline-secondary mt-2' onClick={() => setSelectedDate(null)}>Show Month</button>
-                                </>
-                            ) : (
-                                <>
-                                    <h5>{currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })} Renewals</h5>
-                                    {recordsForCurrentMonth.length === 0 ? (
-                                        <p>No renewals in this month.</p>
-                                    ) : (
-                                        recordsForCurrentMonth.map((r) => (
-                                            <div key={r.id} style={recordCardStyle(r.status)}>
-                                                <strong>{r.client_name} - <small>{r.company_name}</small></strong>
-                                                <div>{r.service_name}</div>
-                                                <div>₹{parseFloat(r.amount).toFixed(2)}</div>
-                                                <div>Status: {r.status}</div>
-                                            </div>
-                                        ))
-                                    )}
-                                </>
-                            )}
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div
+        style={{
+          backgroundColor: eventInfo.event.backgroundColor,
+          color: "white",
+          padding: "4px 8px",
+          borderRadius: "12px",
+          fontSize: "0.75rem",
+          textAlign: "center",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {eventInfo.event.title}
+      </div>
     );
+  };
+
+  const recordCardStyle = (status, type) => ({
+    padding: "1rem",
+    borderRadius: "8px",
+    background:
+      type === "recurring"
+        ? "#fff4e5"
+        : status === "paid"
+        ? "#e2fbe4"
+        : "#fdecea",
+    border: "1px solid #ddd",
+    marginBottom: "1rem",
+  });
+
+  if (loading) return <Preloader />;
+
+  return (
+    <div className="container pt-5">
+      <div className="card p-5">
+        <h4 style={{ lineHeight: "5px" }} className="pt-3">
+          Calendar
+        </h4>
+        <p>View and manage your renewal & recurring expense schedule</p>
+
+        <div className="row border border-bottom-0 border-start-0 border-end-0 pt-4">
+          <div className="col-md-8">
+            <FullCalendar
+              plugins={[dayGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              events={events}
+              dateClick={handleDateClick}
+              eventClick={(info) => {
+                setSelectedDate(new Date(info.event.start));
+              }}
+              datesSet={(arg) => {
+                setCurrentMonth(new Date(arg.view.currentStart));
+                setSelectedDate(null);
+              }}
+              height="auto"
+              eventContent={renderEventContent}
+            />
+          </div>
+
+          <div
+            className="col-md-4"
+            style={{
+              overflowY: "scroll",
+              height: "80vh",
+            }}
+          >
+            <div>
+              {selectedDate ? (
+                <>
+                  <h5>
+                    {new Date(selectedDate).toDateString()} Scheduled Items
+                  </h5>
+                  {recordsForSelectedDate.length === 0 ? (
+                    <p>No items due on this day.</p>
+                  ) : (
+                    recordsForSelectedDate.map((r) => (
+                      <div
+                        key={`${r.type}-${r.id}`}
+                        style={recordCardStyle(r.status, r.type)}
+                      >
+                        <strong>
+                          {r.type === "renewal"
+                            ? `${r.client_name} - ${r.company_name}`
+                            : r.title}
+                        </strong>
+                        <div>
+                          {r.type === "renewal"
+                            ? r.service_name
+                            : "Recurring Expense"}
+                        </div>
+                        <div>₹{parseFloat(r.amount).toFixed(2)}</div>
+                        <div>Status: {r.status}</div>
+                      </div>
+                    ))
+                  )}
+                  <button
+                    className="btn btn-sm btn-outline-secondary mt-2"
+                    onClick={() => setSelectedDate(null)}
+                  >
+                    Show Month
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h5>
+                    {currentMonth.toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    })}{" "}
+                    Scheduled Items
+                  </h5>
+                  {recordsForCurrentMonth.length === 0 ? (
+                    <p>No scheduled items this month.</p>
+                  ) : (
+                    recordsForCurrentMonth.map((r) => (
+                      <div
+                        key={`${r.type}-${r.id}`}
+                        style={recordCardStyle(r.status, r.type)}
+                      >
+                        <strong>
+                          {r.type === "renewal"
+                            ? `${r.client_name} - ${r.company_name}`
+                            : r.title}
+                        </strong>
+                        <div>
+                          {r.type === "renewal"
+                            ? r.service_name
+                            : "Recurring Expense"}
+                        </div>
+                        <div>₹{parseFloat(r.amount).toFixed(2)}</div>
+                        <div>Status: {r.status}</div>
+                      </div>
+                    ))
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }

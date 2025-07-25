@@ -1,0 +1,2 @@
+ALTER TABLE expenses
+ADD COLUMN account VARCHAR(50) DEFAULT 'card';

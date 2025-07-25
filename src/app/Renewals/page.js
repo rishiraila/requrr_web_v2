@@ -1,5 +1,5 @@
 import React from 'react'
-import RenewalPage from '../../components/RenewalPage'
+import RenewalPage from '../components/RenewalPage'
 
 export default function Page() {
   return (
