@@ -1,26 +1,17 @@
 // app/api/run-cron/route.js
 export const config = {
-  schedule: '@daily', // Optional if using Vercel's CRON
+  schedule: '@daily', // Optional if you're using Vercel's CRON too
 };
 
 import { NextResponse } from 'next/server';
 import { db } from '../../../db';
 import { sendEmail } from '../../utils/mailer';
 
-// Format date to DD-MM-YYYY
-function formatDate(dateStr) {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
 
+  // Optional security for cron-job.org
   if (secret !== process.env.CRON_SECRET) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
@@ -55,6 +46,7 @@ export async function GET(req) {
 
       if (!prefsRows.length) continue;
       const prefs = prefsRows[0];
+
       const notifications = [];
 
       const intervals = [
@@ -67,9 +59,8 @@ export async function GET(req) {
         if (!prefs[key]) continue;
 
         const [records] = await db.query(
-          `SELECT ir.*, s.service_name FROM income_records ir
-           JOIN services s ON ir.service_id = s.id
-           WHERE ir.user_id = ? AND ir.due_date = DATE_ADD(CURDATE(), INTERVAL ? DAY) AND ir.status = 'pending'`,
+          `SELECT * FROM income_records
+           WHERE user_id = ? AND due_date = DATE_ADD(CURDATE(), INTERVAL ? DAY) AND status = 'pending'`,
           [user.id, days]
         );
 
@@ -77,16 +68,15 @@ export async function GET(req) {
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${days} days`,
-            message: `Your payment for ${record.service_name} is due on ${formatDate(record.due_date)}.`,
+            message: `Your payment for service ID ${record.service_id} is due on ${record.due_date}.`,
           });
         }
       }
 
       if (prefs.remind_overdue) {
         const [records] = await db.query(
-          `SELECT ir.*, s.service_name FROM income_records ir
-           JOIN services s ON ir.service_id = s.id
-           WHERE ir.user_id = ? AND ir.due_date < CURDATE() AND ir.status = 'pending'`,
+          `SELECT * FROM income_records
+           WHERE user_id = ? AND due_date < CURDATE() AND status = 'pending'`,
           [user.id]
         );
 
@@ -94,7 +84,7 @@ export async function GET(req) {
           notifications.push({
             to: user.email,
             subject: `Reminder: Overdue Payment`,
-            message: `Your payment for ${record.service_name} was due on ${formatDate(record.due_date)}.`,
+            message: `Your payment for service ID ${record.service_id} was due on ${record.due_date}.`,
           });
         }
       }
