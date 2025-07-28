@@ -30,6 +30,12 @@ export async function GET(req) {
     const [users] = await db.query('SELECT * FROM users');
 
     for (const user of users) {
+      // Skip user if no valid email
+      if (!user.email || !user.email.includes('@')) {
+        console.warn(`⚠️ Skipping user ${user.id}: invalid email "${user.email}"`);
+        continue;
+      }
+
       const [prefsRows] = await db.query(
         'SELECT * FROM notification_preferences WHERE user_id = ?',
         [user.id]
@@ -82,6 +88,11 @@ export async function GET(req) {
       if (prefs.email_notifications && notifications.length > 0) {
         for (const email of notifications) {
           try {
+            if (!email.to || !email.to.includes('@')) {
+              console.warn(`⚠️ Skipping invalid recipient email: ${email.to}`);
+              continue;
+            }
+
             await sendEmail(email.to, email.subject, email.message);
             console.log(`✅ Email sent to ${email.to}: ${email.subject}`);
           } catch (emailErr) {
