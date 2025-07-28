@@ -4,10 +4,11 @@ import { db } from '../../../db';
 import { sendEmail } from '../../utils/mailer';
 
 export async function GET(req) {
-  const authHeader = req.headers.get('Authorization');
-  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  const { searchParams } = new URL(req.url);
+  const secret = searchParams.get('secret');
 
-  if (authHeader !== expected) {
+  // Check the secret from query params
+  if (secret !== process.env.CRON_SECRET) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
@@ -90,7 +91,9 @@ export async function GET(req) {
       }
     }
 
-    return NextResponse.json({ status: '✅ Cron tasks executed: statuses updated & notifications sent.' });
+    return NextResponse.json({
+      status: '✅ Cron tasks executed: statuses updated & notifications sent.',
+    });
   } catch (err) {
     console.error('❌ Cron error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
