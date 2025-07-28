@@ -1,4 +1,8 @@
 // app/api/run-cron/route.js
+export const config = {
+  schedule: '@daily', // Optional if you're using Vercel's CRON too
+};
+
 import { NextResponse } from 'next/server';
 import { db } from '../../../db';
 import { sendEmail } from '../../utils/mailer';
@@ -7,7 +11,7 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get('secret');
 
-  // Check the secret from query params
+  // Optional security for cron-job.org
   if (secret !== process.env.CRON_SECRET) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
@@ -26,11 +30,10 @@ export async function GET(req) {
       WHERE status = 'pending' AND due_date < CURDATE();
     `);
 
-    // 2. Notification logic
+    // 2. Email Notification Logic
     const [users] = await db.query('SELECT * FROM users');
 
     for (const user of users) {
-      // Skip user if no valid email
       if (!user.email || !user.email.includes('@')) {
         console.warn(`⚠️ Skipping user ${user.id}: invalid email "${user.email}"`);
         continue;
@@ -43,6 +46,7 @@ export async function GET(req) {
 
       if (!prefsRows.length) continue;
       const prefs = prefsRows[0];
+
       const notifications = [];
 
       const intervals = [
@@ -88,12 +92,12 @@ export async function GET(req) {
       if (prefs.email_notifications && notifications.length > 0) {
         for (const email of notifications) {
           try {
-            if (!email.to || !email.to.includes('@')) {
-              console.warn(`⚠️ Skipping invalid recipient email: ${email.to}`);
+            if (!email.to || typeof email.to !== 'string' || !email.to.includes('@')) {
+              console.warn(`⚠️ Skipping invalid recipient email:`, email.to);
               continue;
             }
 
-            await sendEmail(email.to, email.subject, email.message);
+            await sendEmail({ to: email.to, subject: email.subject, text: email.message });
             console.log(`✅ Email sent to ${email.to}: ${email.subject}`);
           } catch (emailErr) {
             console.error(`❌ Email error for ${email.to}:`, emailErr);
