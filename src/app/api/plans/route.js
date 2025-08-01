@@ -83,9 +83,40 @@
  *         description: Database error
  */
 
-import { db } from '../../../db'
+// import { db } from '../../../db'
+// import { authenticate } from '../../../middleware/auth';
+
+
+// export async function POST(req) {
+//   const user = authenticate(req);
+//   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+//   const { name, price_inr, price_usd, max_renewals = null, description = '' } = await req.json();
+
+//   if (!name || price_inr === undefined || price_usd === undefined) {
+//     return Response.json({ error: 'Name, price_inr and price_usd are required' }, { status: 400 });
+//   }
+
+//   try {
+//     await db.query(
+//       `INSERT INTO plans (name, price, max_renewals, description, price_inr, price_usd) VALUES (?, ?, ?, ?, ?, ?)`,
+//       [name, price_inr, max_renewals, description, price_inr, price_usd]
+//     );
+//     return Response.json({ message: 'Plan created successfully' });
+//   } catch (err) {
+//     console.error(err);
+//     return Response.json({ error: 'Database error' }, { status: 500 });
+//   }
+// }
+
+import Razorpay from 'razorpay';
+import { db } from '../../../db';
 import { authenticate } from '../../../middleware/auth';
 
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 export async function GET() {
   const [plans] = await db.query(
     'SELECT id, name, price, price_inr, price_usd, max_renewals, description FROM plans ORDER BY price ASC'
@@ -94,23 +125,49 @@ export async function GET() {
 }
 
 export async function POST(req) {
-  const user = authenticate(req);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  const { name, price_inr, price_usd, max_renewals = null, description = '' } = await req.json();
-
-  if (!name || price_inr === undefined || price_usd === undefined) {
-    return Response.json({ error: 'Name, price_inr and price_usd are required' }, { status: 400 });
-  }
-
   try {
-    await db.query(
+    const user = await authenticate(req);
+    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const body = await req.json();
+    const { name, price_inr, price_usd, max_renewals = null, description = '' } = body;
+
+    if (!name || !price_inr || !price_usd) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+
+    // Save to your own DB
+    const [result] = await db.query(
       `INSERT INTO plans (name, price, max_renewals, description, price_inr, price_usd) VALUES (?, ?, ?, ?, ?, ?)`,
       [name, price_inr, max_renewals, description, price_inr, price_usd]
     );
-    return Response.json({ message: 'Plan created successfully' });
+
+    const planId = result.insertId;
+
+    // Create Plan in Razorpay
+    const razorpayPlan = await razorpay.plans.create({
+      period: 'monthly',             // or 'yearly' — you can make this dynamic
+      interval: 1,                   // every month
+      item: {
+        name: name,
+        amount: price_inr * 100,    // Razorpay takes amount in paise
+        currency: 'INR',
+        description: description,
+      },
+      notes: {
+        local_plan_id: planId.toString(),
+      },
+    });
+
+    return Response.json({
+      message: 'Plan created successfully',
+      planId,
+      razorpayPlanId: razorpayPlan.id,
+    }, { status: 201 });
+
   } catch (err) {
-    console.error(err);
-    return Response.json({ error: 'Database error' }, { status: 500 });
+    console.error('Plan creation error:', err);
+    return Response.json({ error: 'Server error' }, { status: 500 });
   }
 }
+

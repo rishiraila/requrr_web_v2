@@ -81,102 +81,45 @@
 
 
 import Razorpay from 'razorpay';
-import { authenticate } from '../../../../middleware/auth';
 import { db } from '../../../../db';
+import { authenticate } from '../../../../middleware/auth';
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 export async function POST(req) {
   try {
     const user = authenticate(req);
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { planId, couponCode, userCurrency } = await req.json();
-    if (!planId) return Response.json({ error: 'Missing planId' }, { status: 400 });
+    const { planId } = await req.json();
 
-    // 1. Fetch the plan
-    const [[plan]] = await db.query('SELECT * FROM plans WHERE id = ?', [planId]);
-    if (!plan) return Response.json({ error: 'Invalid plan' }, { status: 400 });
-
-    // let finalAmount = plan.price; // Base price in INR
-    // let discount = 0;
-
-    const isIndianUser = !userCurrency || userCurrency === 'INR';
-    const basePrice = isIndianUser ? plan.price_inr : plan.price_usd;
-
-    let finalAmount = basePrice;
-    let discount = 0
-
-    // 2. Apply coupon if provided
-    if (couponCode) {
-      const [coupons] = await db.query(
-        `SELECT * FROM coupons WHERE code = ? AND (expires_at IS NULL OR expires_at > NOW())`,
-        [couponCode]
-      );
-
-      const coupon = coupons[0];
-
-      if (!coupon) {
-        return Response.json({ error: 'Invalid or expired coupon' }, { status: 400 });
-      }
-
-      if (coupon.max_usage !== null && coupon.used_count >= coupon.max_usage) {
-        return Response.json({ error: 'Coupon usage limit reached' }, { status: 400 });
-      }
-
-      // discount = (plan.price * coupon.discount_percent) / 100;
-      // finalAmount = plan.price - discount;
-
-      discount = (basePrice * coupon.discount_percent) / 100;
-      finalAmount = basePrice - discount;
-
-      // Razorpay does not allow zero or negative amounts
-      if (finalAmount < 1) finalAmount = 1;
+    // Get Razorpay Plan ID from DB
+    const [planResult] = await db.query('SELECT razorpay_plan_id FROM plans WHERE id = ?', [planId]);
+    if (!planResult.length) {
+      return Response.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    // 3. Create order in Razorpay (charge always in INR)
-    const razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    const razorpayPlanId = planResult[0].razorpay_plan_id;
+
+    // Create Subscription in Razorpay
+    const subscription = await razorpay.subscriptions.create({
+      plan_id: razorpayPlanId,
+      customer_notify: 1,
+      total_count: 12, // or make dynamic
+      quantity: 1,
     });
 
-    const order = await razorpay.orders.create({
-      amount: Math.round(finalAmount * 100), // INR in paise
-      currency: 'INR',
-      receipt: `receipt_${user.id}_${Date.now()}`
-    });
-
-    // 4. Get local currency conversion (only for display)
-    let localCurrency = userCurrency || 'INR';
-    let localPrice = finalAmount;
-
-    if (localCurrency !== 'INR') {
-      try {
-        const res = await fetch(`https://api.exchangerate.host/convert?from=INR&to=${localCurrency}`);
-        const data = await res.json();
-        if (data?.result) {
-          localPrice = Math.round(finalAmount * data.result * 100) / 100;
-        }
-      } catch (error) {
-        console.warn('[Currency Conversion Failed]', error);
-        localCurrency = 'INR';
-        localPrice = finalAmount;
-      }
-    }
-
-    // 5. Send all pricing info back to frontend
+    // Return subscription details to frontend
     return Response.json({
-      ...order,
-      planId: plan.id,
-      // originalPrice: plan.price,   // INR
-      originalPrice: basePrice, 
-      discount,
-      finalPrice: finalAmount,     // INR
-      localPrice,                  // converted value
-      localCurrency,               // e.g., USD, AUD
-      couponCode: couponCode || null
+      subscription_id: subscription.id,
+      status: subscription.status,
+      short_url: subscription.short_url,
     });
-
   } catch (err) {
-    console.error('[CREATE ORDER ERROR]', err);
-    return Response.json({ error: 'Order creation failed' }, { status: 500 });
+    console.error('Subscription Error:', err);
+    return Response.json({ error: 'Subscription creation failed' }, { status: 500 });
   }
 }

@@ -62,6 +62,10 @@ export default function Home() {
     const fetchAll = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/Login";
+          return;
+        }
         const headers = { Authorization: `Bearer ${token}` };
 
         const [clientsRes, servicesRes, incomeRes, recurringRes] =
@@ -95,7 +99,11 @@ export default function Home() {
         setRecords([...enrichedRenewals, ...enrichedRecurring]);
         setRecurringExpenses(recurringRes.data);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
+        if (err.response && err.response.status === 401) {
+          window.location.href = "/Login";
+        } else {
+          console.error("Failed to fetch data:", err);
+        }
       }
     };
 
@@ -150,13 +158,20 @@ export default function Home() {
 
       setSubscriptions(subscriptions); // ✅ Still uses enriched `/api/income_records/upcoming` response
     } catch (err) {
-      console.error("Error fetching subscriptions or clients:", err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching subscriptions or clients:", err);
+      }
     }
   };
 
   const fetchTotalIncomeAmount = async () => {
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
 
     try {
       const response = await axios.get("/api/income_records", {
@@ -170,36 +185,60 @@ export default function Home() {
       );
       setTotalIncomeAmount(total);
     } catch (error) {
-      console.error("Error fetching total income amount:", error);
+      if (error.response && error.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching total income amount:", error);
+      }
     }
   };
 
   const fetchClientCount = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
     try {
       const res = await axios.get("/api/clients", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setClientCount(res.data.length);
     } catch (err) {
-      console.error("Error fetching clients:", err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching clients:", err);
+      }
     }
   };
 
   const fetchServiceCount = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
     try {
       const res = await axios.get("/api/Services", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setServiceCount(res.data.length);
     } catch (err) {
-      console.error("Error fetching services:", err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching services:", err);
+      }
     }
   };
 
   const fetchPendingRevenue = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
     try {
       const res = await axios.get("/api/income_records", {
         headers: { Authorization: `Bearer ${token}` },
@@ -211,7 +250,11 @@ export default function Home() {
 
       setPendingRevenue(pendingTotal);
     } catch (err) {
-      console.error("Error fetching pending revenue:", err);
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching pending revenue:", err);
+      }
     }
   };
 
@@ -269,10 +312,14 @@ export default function Home() {
 
   const fetchUserData = async () => {
     const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
     try {
-      const response = await axios.get("/api/EditUser ", {
+      const response = await axios.get("/api/EditUser", {
         headers: {
-          Authorization: `${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -287,10 +334,14 @@ export default function Home() {
         );
       }
     } catch (error) {
-      console.error(
-        "Error fetching user data:",
-        error.response ? error.response.data : error.message
-      );
+      if (error.response && error.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error(
+          "Error fetching user data:",
+          error.response ? error.response.data : error.message
+        );
+      }
     }
   };
   useEffect(() => {
