@@ -162,61 +162,63 @@ export default function SubscribeButton() {
 
 
 
-  const handlePayment = async (planId, price, planName, couponCode = '') => {
-    if (!token) return alert('User not authenticated');
+  const handleSubscription = async (planId, planName) => {
+  if (!token) return alert('User not authenticated');
 
-    const res = await fetch('/api/payment/create-order', {
+  try {
+    const res = await fetch('/api/subscription/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planId, couponCode }),
-
-
+      body: JSON.stringify({ planId }),
     });
 
-    const order = await res.json();
-    if (!order || order.error) return alert(order.error || 'Order creation failed');
-
-    const localPrice = order.localPrice;
-    const localCurrency = order.localCurrency || 'INR';
+    const data = await res.json();
+    const { subscription_id } = data;
 
     const options = {
-      key: "rzp_test_K2K20arHghyhnD",
-      amount: order.amount, // INR in paise
-      // currency: 'INR',      // Razorpay will only accept INR
-      currency: localCurrency,
-      name: 'Income Tracker',
-      description: `${planName} Plan - ${currencySymbol}${localPrice} ${localCurrency}/year`,
-      order_id: order.id,
-      handler: async (response) => {
-        const verifyRes = await fetch('/api/payment/verify', {
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+      subscription_id: subscription_id,
+      name: "YourApp",
+      description: `Subscribe to ${planName}`,
+      handler: async function (response) {
+        const razorpay_subscription_id = response.razorpay_subscription_id;
+        const razorpay_payment_id = response.razorpay_payment_id;
+
+        // ✅ Update plan in DB
+        await fetch('/api/subscription/update', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_signature: response.razorpay_signature,
-            plan_id: planId,
-            coupon_code: couponCode,
-            final_price: order.finalPrice, // this is in INR
-            currency: 'INR'
+            planId,
+            razorpay_subscription_id,
+            razorpay_payment_id,
+            final_price: (discountedPrices[planId] ?? (isIndia ? plans.find(p => p.id === planId)?.price_inr : plans.find(p => p.id === planId)?.price_usd)) || 0,
           }),
         });
 
-        const verifyData = await verifyRes.json();
-        alert(verifyData.message || verifyData.error);
+        // ✅ Redirect
+        window.location.href = "/subscription/success";
       },
-      theme: { color: '#3399cc' },
+      theme: {
+        color: "#3399cc",
+      },
     };
 
-    const razor = new window.Razorpay(options);
-    razor.open();
-  };
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  } catch (err) {
+    console.error('Subscription error:', err);
+    alert('Subscription failed.');
+  }
+};
+
+
 
 
   const handleCouponChange = (planId, value) => {
@@ -356,7 +358,8 @@ export default function SubscribeButton() {
                           <button
                             className="btn btn-primary d-grid w-100"
                             disabled={disableButton}
-                            onClick={() => handlePayment(plan.id, finalPrice, plan.name, couponCode)}
+                            onClick={() => handleSubscription(plan.id, plan.name)}
+
                           >
                             {disableButton
                               ? 'Not Available'

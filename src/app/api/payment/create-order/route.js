@@ -96,23 +96,31 @@ export async function POST(req) {
 
     const { planId } = await req.json();
 
+    if (!planId) {
+      return Response.json({ error: 'Missing planId in request body' }, { status: 400 });
+    }
+
     // Get Razorpay Plan ID from DB
-    const [planResult] = await db.query('SELECT razorpay_plan_id FROM plans WHERE id = ?', [planId]);
-    if (!planResult.length) {
+    const [results] = await db.query('SELECT razorpay_plan_id FROM plans WHERE id = ?', [planId]);
+
+    if (!results.length) {
       return Response.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    const razorpayPlanId = planResult[0].razorpay_plan_id;
+    const razorpayPlanId = results[0].razorpay_plan_id;
+
+    if (!razorpayPlanId) {
+      return Response.json({ error: 'Razorpay plan ID not found in DB' }, { status: 500 });
+    }
 
     // Create Subscription in Razorpay
     const subscription = await razorpay.subscriptions.create({
       plan_id: razorpayPlanId,
       customer_notify: 1,
-      total_count: 12, // or make dynamic
+      total_count: 12, // Can be dynamic
       quantity: 1,
     });
 
-    // Return subscription details to frontend
     return Response.json({
       subscription_id: subscription.id,
       status: subscription.status,
@@ -120,6 +128,6 @@ export async function POST(req) {
     });
   } catch (err) {
     console.error('Subscription Error:', err);
-    return Response.json({ error: 'Subscription creation failed' }, { status: 500 });
+    return Response.json({ error: 'Subscription creation failed', details: err }, { status: 500 });
   }
 }
