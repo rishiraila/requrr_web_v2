@@ -1,36 +1,22 @@
-import { db } from '../../../../db';
-import { authenticate } from '../../../../middleware/auth';
+import { db } from '@/db'; // Adjust this import to your actual db file
+import { NextResponse } from 'next/server';
 
-export async function POST(req) {
-  const user = authenticate(req);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-  // Optional: allow only admin
-  // if (user.email !== 'admin@example.com') {
-  //   return Response.json({ error: 'Forbidden' }, { status: 403 });
-  // }
-
+export async function GET() {
   try {
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS recurring_expenses (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id INT NOT NULL,
-        title VARCHAR(255) NOT NULL,
-        amount DECIMAL(10, 2) NOT NULL,
-        payment_date DATE NOT NULL,
-        frequency ENUM('daily', 'weekly', 'monthly', 'yearly') DEFAULT 'monthly',
-        due_date DATE,
-        status VARCHAR(50) DEFAULT 'pending',
-        is_recurring BOOLEAN DEFAULT TRUE,
-        recurrence_id INT,
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      );
+    const [columns] = await db.query(`
+      SHOW COLUMNS FROM plans LIKE 'razorpay_plan_id';
     `);
 
-    return Response.json({ message: '✅ recurring_expenses table created successfully' });
+    if (columns.length === 0) {
+      await db.query(`
+        ALTER TABLE plans ADD COLUMN razorpay_plan_id VARCHAR(255);
+      `);
+      return NextResponse.json({ message: 'Column razorpay_plan_id added successfully' });
+    } else {
+      return NextResponse.json({ message: 'Column razorpay_plan_id already exists' });
+    }
   } catch (error) {
-    return Response.json({ error: '❌ Failed to create table', details: error.message }, { status: 500 });
+    console.error('Migration Error:', error);
+    return NextResponse.json({ error: 'Migration failed', details: error.message }, { status: 500 });
   }
 }
