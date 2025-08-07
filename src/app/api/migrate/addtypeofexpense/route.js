@@ -40,25 +40,36 @@ export async function POST(req) {
   }
 }
 
-export async function GET(req) {
+// export async function GET(req) {
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const email = searchParams.get('email');
+
+//     if (!email) {
+//       return Response.json({ error: 'Missing email' }, { status: 400 });
+//     }
+
+//     const [rows] = await db.query(
+//       'SELECT token, platform, updated_at FROM fcm_tokens WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
+//       [email]
+//     );
+
+//     if (rows.length === 0) {
+//       return Response.json({ error: 'No token found for user' }, { status: 404 });
+//     }
+
+//     return Response.json({ token: rows[0] });
+//   } catch (error) {
+//     return Response.json({ error: 'DB error', details: error.message }, { status: 500 });
+//   }
+// }
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url);
-    const email = searchParams.get('email');
-
-    if (!email) {
-      return Response.json({ error: 'Missing email' }, { status: 400 });
-    }
-
     const [rows] = await db.query(
-      'SELECT token, platform, updated_at FROM fcm_tokens WHERE user_id = ? ORDER BY updated_at DESC LIMIT 1',
-      [email]
+      'SELECT user_id AS email, token, platform, updated_at FROM fcm_tokens ORDER BY updated_at DESC'
     );
 
-    if (rows.length === 0) {
-      return Response.json({ error: 'No token found for user' }, { status: 404 });
-    }
-
-    return Response.json({ token: rows[0] });
+    return Response.json({ tokens: rows });
   } catch (error) {
     return Response.json({ error: 'DB error', details: error.message }, { status: 500 });
   }
