@@ -1,4 +1,5 @@
 // app/api/run-cron/route.js
+
 export const config = {
   schedule: '@daily',
 };
@@ -61,15 +62,27 @@ export async function GET(req) {
         );
 
         for (const record of records) {
+          const [serviceRows] = await db.query(
+            'SELECT service_name FROM services WHERE id = ?',
+            [record.service_id]
+          );
+          const serviceName = serviceRows.length ? serviceRows[0].service_name : `Service ID ${record.service_id}`;
+          const dueDateFormatted = new Date(record.due_date).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${days} days`,
-            message: `Your payment for service ID ${record.service_id} is due on ${record.due_date}.`,
+            message: `Your payment for "${serviceName}" is due on ${dueDateFormatted}.`,
           });
         }
       }
 
-      // 7-day daily reminder (if due date is within next 7 days and status is not 'paid')
+      // 7-day daily reminder
       if (prefs.remind_7_days_before) {
         const [records] = await db.query(
           `SELECT * FROM income_records
@@ -80,14 +93,27 @@ export async function GET(req) {
 
         for (const record of records) {
           const daysLeft = Math.ceil((new Date(record.due_date) - new Date()) / (1000 * 60 * 60 * 24));
+          const [serviceRows] = await db.query(
+            'SELECT service_name FROM services WHERE id = ?',
+            [record.service_id]
+          );
+          const serviceName = serviceRows.length ? serviceRows[0].service_name : `Service ID ${record.service_id}`;
+          const dueDateFormatted = new Date(record.due_date).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${daysLeft} day(s)`,
-            message: `Reminder: Your payment for service ID ${record.service_id} is due on ${record.due_date}.`,
+            message: `Reminder: Your payment for "${serviceName}" is due on ${dueDateFormatted}.`,
           });
         }
       }
 
+      // Overdue reminders
       if (prefs.remind_overdue) {
         const [records] = await db.query(
           `SELECT * FROM income_records
@@ -96,14 +122,27 @@ export async function GET(req) {
         );
 
         for (const record of records) {
+          const [serviceRows] = await db.query(
+            'SELECT service_name FROM services WHERE id = ?',
+            [record.service_id]
+          );
+          const serviceName = serviceRows.length ? serviceRows[0].service_name : `Service ID ${record.service_id}`;
+          const dueDateFormatted = new Date(record.due_date).toLocaleDateString('en-IN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
+
           notifications.push({
             to: user.email,
             subject: `Reminder: Overdue Payment`,
-            message: `Your payment for service ID ${record.service_id} was due on ${record.due_date}. Please take action.`,
+            message: `Your payment for "${serviceName}" was due on ${dueDateFormatted}. Please take action.`,
           });
         }
       }
 
+      // Send Emails
       if (prefs.email_notifications && notifications.length > 0) {
         for (const email of notifications) {
           try {
