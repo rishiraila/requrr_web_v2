@@ -1,57 +1,87 @@
-/**
- * Notification Service for sending push notifications
- * Similar structure to mailer.js for consistency
- */
+import admin from "firebase-admin";
 
-// Mock notification service - replace with actual push service (Firebase, OneSignal, etc.)
-export const sendPushNotification = async ({ 
-  userId, 
-  title, 
-  body, 
+// ✅ Initialize Firebase Admin with environment variables
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      type: process.env.FIREBASE_TYPE,
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID,
+      auth_uri: process.env.FIREBASE_AUTH_URI,
+      token_uri: process.env.FIREBASE_TOKEN_URI,
+      auth_provider_x509_cert_url: process.env.FIREBASE_AUTH_PROVIDER_X509_CERT_URL,
+      client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
+    }),
+  });
+}
+
+// ✅ Import your DB connection
+import { db } from "../../db"; // adjust path if needed
+
+/**
+ * Send push notification to one user
+ */
+export const sendPushNotification = async ({
+  userId,
+  fcmToken,
+  title,
+  body,
   data = {},
-  type = 'push' 
+  type = "push",
 }) => {
   try {
     console.log(`📱 Sending ${type} notification to user ${userId}:`, { title, body, data });
-    
-    // In production, integrate with actual push service
-    // Example: Firebase Cloud Messaging, OneSignal, etc.
-    
-    // Mock implementation for now
-    const notification = {
-      id: Date.now().toString(),
-      userId,
-      title,
-      body,
-      data,
-      type,
-      status: 'sent',
-      createdAt: new Date().toISOString()
+
+    // ✅ Send push via Firebase
+    const message = {
+      token: fcmToken,
+      notification: {
+        title,
+        body,
+      },
+      data: {
+        ...data,
+        type,
+      },
     };
-    
-    // Store notification in database
-    const { db } = require('../../../db');
+
+    await admin.messaging().send(message);
+
+    // ✅ Store in DB
     await db.execute(
-      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at) 
+      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, title, body, JSON.stringify(data), type, 'sent', new Date()]
+      [userId, title, body, JSON.stringify(data), type, "sent", new Date()]
     );
-    
-    return { success: true, notification };
+
+    return { success: true };
   } catch (error) {
-    console.error('❌ Error sending notification:', error);
+    console.error("❌ Error sending notification:", error);
+
+    // Optional: Store failed attempts
+    await db.execute(
+      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, title, body, JSON.stringify(data), type, "failed", new Date()]
+    );
+
     return { success: false, error: error.message };
   }
 };
 
-// Generate notification templates similar to email templates
+/**
+ * Generate notification title/body based on due/overdue logic
+ */
 export const generateNotificationTemplate = ({
   userFirstName,
   clientName,
   serviceName,
   dueDate,
   isOverdue = false,
-  daysLeft = null
+  daysLeft = null,
 }) => {
   const formattedDate = new Date(dueDate).toLocaleDateString("en-US", {
     year: "numeric",
@@ -65,7 +95,7 @@ export const generateNotificationTemplate = ({
     title = "⚠️ Overdue Payment";
     body = `Payment for ${serviceName} (${clientName}) is overdue. Please settle it immediately.`;
   } else if (daysLeft !== null) {
-    title = `⏰ Payment Due in ${daysLeft} day${daysLeft > 1 ? 's' : ''}`;
+    title = `⏰ Payment Due in ${daysLeft} day${daysLeft > 1 ? "s" : ""}`;
     body = `Payment for ${serviceName} (${clientName}) is due on ${formattedDate}.`;
   } else {
     title = "💳 Payment Reminder";
@@ -75,14 +105,16 @@ export const generateNotificationTemplate = ({
   return { title, body };
 };
 
-// Batch send notifications
+/**
+ * Send push notifications in batch
+ */
 export const sendBatchNotifications = async (notifications) => {
   const results = [];
-  
+
   for (const notification of notifications) {
     const result = await sendPushNotification(notification);
     results.push(result);
   }
-  
+
   return results;
 };

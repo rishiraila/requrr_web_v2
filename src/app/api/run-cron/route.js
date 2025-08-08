@@ -6,6 +6,10 @@ export const config = {
 import { NextResponse } from "next/server";
 import { db } from "../../../db";
 import { sendEmail } from "../../utils/mailer";
+import {
+  sendPushNotification,
+  generateNotificationTemplate
+} from '../../utils/notificationService';
 
 function generateEmailTemplate({
   userFirstName,
@@ -63,7 +67,6 @@ function generateEmailTemplate({
   `;
 }
 
-
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const secret = searchParams.get("secret");
@@ -88,8 +91,8 @@ export async function GET(req) {
 
     // 2. Process renewals
     const [paidRecords] = await db.query(`
-  SELECT * FROM income_records WHERE status = 'paid'
-`);
+      SELECT * FROM income_records WHERE status = 'paid'
+    `);
 
     for (const record of paidRecords) {
       const [serviceRows] = await db.query(
@@ -109,12 +112,9 @@ export async function GET(req) {
 
         await db.execute(
           `INSERT INTO income_records (user_id, client_id, service_id, amount, due_date, status)
-     VALUES (?, ?, ?, ?, ${newDueDate}, 'pending')`,
+           VALUES (?, ?, ?, ?, ${newDueDate}, 'pending')`,
           [record.user_id, record.client_id, record.service_id, record.amount]
         );
-
-        // Comment out if 'auto_renewed' doesn't exist in your DB schema
-        // await db.execute(`UPDATE income_records SET auto_renewed = 1 WHERE id = ?`, [record.id]);
       }
     }
 
@@ -132,6 +132,13 @@ export async function GET(req) {
 
       const prefs = prefsRows[0];
       const notifications = [];
+
+      // Fetch FCM token for this user
+      const [fcmRows] = await db.query(
+        "SELECT fcm_token FROM fcm_tokens WHERE user_id = ?",
+        [user.id]
+      );
+      const fcmToken = fcmRows[0]?.fcm_token;
 
       const singleDayReminders = [
         { days: 30, key: "remind_30_days_before" },
@@ -151,6 +158,7 @@ export async function GET(req) {
         );
 
         for (const record of records) {
+          // Email
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${days} days`,
@@ -161,6 +169,28 @@ export async function GET(req) {
               dueDate: record.due_date,
             }),
           });
+
+          // Push
+          if (prefs.dashboard_notifications && fcmToken) {
+            const notif = generateNotificationTemplate({
+              userFirstName: user.first_name,
+              clientName: record.client_name,
+              serviceName: record.service_name,
+              dueDate: record.due_date,
+              daysLeft: days,
+            });
+
+            await sendPushNotification({
+              userId: user.id,
+              title: notif.title,
+              body: notif.body,
+              data: {
+                serviceName: record.service_name,
+                clientName: record.client_name,
+                dueDate: record.due_date,
+              },
+            });
+          }
         }
       }
 
@@ -180,6 +210,8 @@ export async function GET(req) {
           const daysLeft = Math.ceil(
             (new Date(record.due_date) - new Date()) / (1000 * 60 * 60 * 24)
           );
+
+          // Email
           notifications.push({
             to: user.email,
             subject: `Reminder: Payment due in ${daysLeft} day(s)`,
@@ -190,6 +222,28 @@ export async function GET(req) {
               dueDate: record.due_date.toDateString(),
             }),
           });
+
+          // Push
+          if (prefs.dashboard_notifications && fcmToken) {
+            const notif = generateNotificationTemplate({
+              userFirstName: user.first_name,
+              clientName: record.client_name,
+              serviceName: record.service_name,
+              dueDate: record.due_date,
+              daysLeft,
+            });
+
+            await sendPushNotification({
+              userId: user.id,
+              title: notif.title,
+              body: notif.body,
+              data: {
+                serviceName: record.service_name,
+                clientName: record.client_name,
+                dueDate: record.due_date,
+              },
+            });
+          }
         }
       }
 
@@ -205,6 +259,7 @@ export async function GET(req) {
         );
 
         for (const record of records) {
+          // Email
           notifications.push({
             to: user.email,
             subject: `Reminder: Overdue Payment`,
@@ -216,6 +271,28 @@ export async function GET(req) {
               isOverdue: true,
             }),
           });
+
+          // Push
+          if (prefs.dashboard_notifications && fcmToken) {
+            const notif = generateNotificationTemplate({
+              userFirstName: user.first_name,
+              clientName: record.client_name,
+              serviceName: record.service_name,
+              dueDate: record.due_date,
+              isOverdue: true,
+            });
+
+            await sendPushNotification({
+              userId: user.id,
+              title: notif.title,
+              body: notif.body,
+              data: {
+                serviceName: record.service_name,
+                clientName: record.client_name,
+                dueDate: record.due_date,
+              },
+            });
+          }
         }
       }
 
@@ -238,7 +315,7 @@ export async function GET(req) {
 
     return NextResponse.json({
       status:
-        "✅ Cron tasks executed: statuses updated, renewals created, emails sent.",
+        "✅ Cron tasks executed: statuses updated, renewals created, emails sent, push sent.",
     });
   } catch (err) {
     console.error("❌ Cron error:", err);
