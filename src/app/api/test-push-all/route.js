@@ -1,53 +1,40 @@
-import { db } from '../../../db';
-import { NextResponse } from 'next/server';
-import { sendPushNotification } from '../../utils/notificationService';
+import { NextResponse } from "next/server";
+import admin from "firebase-admin";
+import { db } from "../../../db"; // adjust path if needed
+
+// Initialize Firebase Admin if not already initialized
+if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+
+  // 🔥 FIX: Replace escaped newlines with actual newlines
+  serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
 
 export async function GET(req) {
-  const { searchParams } = new URL(req.url);
-  const secret = searchParams.get('secret');
+  const token = "ebZYhtl-Q7-UugThSDWENh:APA91bGSTO0Y5sQaVk_O-Tv2O9GWC2p5n6y2kzpNgQuHn9xx5Kaka9DnGp0I8KoE97fROySWgy5HNg2ecDXAg7FDplPUPgkFz8rxd8ON_sZEffENkKvLYmk";
 
-  if (secret !== process.env.CRON_SECRET) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
+  const message = {
+    token,
+    notification: {
+      title: "🔔 Test Notification",
+      body: "This is a test FCM push to user 16",
+    },
+    data: {
+      customKey: "value",
+      testType: "manual",
+    },
+  };
 
   try {
-    const [users] = await db.query(`
-      SELECT np.user_id, u.first_name, fcm.fcm_token
-      FROM notification_preferences np
-      JOIN users u ON np.user_id = u.id
-      JOIN fcm_tokens fcm ON fcm.user_id = u.id
-      WHERE np.dashboard_notifications = 1
-    `);
-
-    const results = [];
-
-    for (const user of users) {
-      if (!user.fcm_token) continue;
-
-      const title = "📢 Test Notification from Requrr";
-      const body = `Hello ${user.first_name}, this is a test push notification.`;
-
-      const result = await sendPushNotification({
-        userId: user.user_id,
-        title,
-        body,
-        data: {
-          type: "test",
-        },
-      });
-
-      results.push({
-        userId: user.user_id,
-        status: result.success ? "sent" : "failed",
-      });
-    }
-
-    return NextResponse.json({
-      message: "Push notifications sent to all users with dashboard_notifications = 1",
-      results,
-    });
-  } catch (err) {
-    console.error("❌ Error sending push notifications:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const response = await admin.messaging().send(message);
+    console.log("✅ Push sent:", response);
+    return NextResponse.json({ success: true, response });
+  } catch (error) {
+    console.error("❌ Push failed:", error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

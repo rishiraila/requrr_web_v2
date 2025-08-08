@@ -195,6 +195,7 @@ export async function GET(req) {
                 clientName: record.client_name,
                 dueDate: record.due_date,
               },
+              fcmToken, // ✅ make sure this is always passed
             });
           }
         }
@@ -248,6 +249,7 @@ export async function GET(req) {
                 clientName: record.client_name,
                 dueDate: record.due_date,
               },
+              fcmToken, // ✅ make sure this is always passed
             });
           }
         }
@@ -297,7 +299,7 @@ export async function GET(req) {
                 clientName: record.client_name,
                 dueDate: record.due_date,
               },
-              fcmToken, // ✅ pass it here
+              fcmToken, // ✅ make sure this is always passed
             });
           }
         }
