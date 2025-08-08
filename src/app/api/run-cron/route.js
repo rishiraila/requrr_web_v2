@@ -8,8 +8,8 @@ import { db } from "../../../db";
 import { sendEmail } from "../../utils/mailer";
 import {
   sendPushNotification,
-  generateNotificationTemplate
-} from '../../utils/notificationService';
+  generateNotificationTemplate,
+} from "../../utils/notificationService";
 
 function generateEmailTemplate({
   userFirstName,
@@ -36,7 +36,9 @@ function generateEmailTemplate({
       <table width="100%" style="max-width: 600px; margin: auto; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); padding: 30px;">
         <tr>
           <td style="text-align: center;">
-            <h2 style="color: #DC3C22;">${isOverdue ? "⚠️ Overdue Payment" : "⏰ Upcoming Payment Reminder"}</h2>
+            <h2 style="color: #DC3C22;">${
+              isOverdue ? "⚠️ Overdue Payment" : "⏰ Upcoming Payment Reminder"
+            }</h2>
           </td>
         </tr>
         <tr>
@@ -47,7 +49,11 @@ function generateEmailTemplate({
             <p style="font-size: 16px; color: #444;">
               This is a friendly reminder that your payment for the service
               <strong>${serviceName}</strong> of  <strong>${clientName}</strong>
-              is ${isOverdue ? '<span style="color: red;">OVERDUE</span>. Please settle it as soon as possible.' : `due on <strong>${formattedDate}</strong>.`}
+              is ${
+                isOverdue
+                  ? '<span style="color: red;">OVERDUE</span>. Please settle it as soon as possible.'
+                  : `due on <strong>${formattedDate}</strong>.`
+              }
             </p>
             <p style="font-size: 16px; color: #444;">
               We appreciate your prompt attention to this matter.
@@ -291,6 +297,7 @@ export async function GET(req) {
                 clientName: record.client_name,
                 dueDate: record.due_date,
               },
+              fcmToken, // ✅ pass it here
             });
           }
         }

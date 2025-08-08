@@ -26,48 +26,34 @@ import { db } from "../../db"; // adjust path if needed
  */
 export const sendPushNotification = async ({
   userId,
-  fcmToken,
   title,
   body,
   data = {},
-  type = "push",
+  type = 'push',
+  fcmToken // ✅ this must be passed
 }) => {
   try {
+    if (!fcmToken) throw new Error("Missing FCM token");
+
     console.log(`📱 Sending ${type} notification to user ${userId}:`, { title, body, data });
 
-    // ✅ Send push via Firebase
     const message = {
       token: fcmToken,
-      notification: {
-        title,
-        body,
-      },
-      data: {
-        ...data,
-        type,
-      },
+      notification: { title, body },
+      data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])), // convert all to strings
     };
 
     await admin.messaging().send(message);
 
-    // ✅ Store in DB
     await db.execute(
       `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, title, body, JSON.stringify(data), type, "sent", new Date()]
+      [userId, title, body, JSON.stringify(data), type, 'sent', new Date()]
     );
 
     return { success: true };
   } catch (error) {
     console.error("❌ Error sending notification:", error);
-
-    // Optional: Store failed attempts
-    await db.execute(
-      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, title, body, JSON.stringify(data), type, "failed", new Date()]
-    );
-
     return { success: false, error: error.message };
   }
 };
