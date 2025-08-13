@@ -162,32 +162,73 @@ export default function SubscribeButton() {
 
 
 
-const handleOneTimePayment = async (amount, planName) => {
+const handleOneTimePayment = async (plan, finalAmount) => {
   try {
+    // Find the plan ID from the plans array
+    const planData = plans.find(p => p.name === plan.name);
+    if (!planData) {
+      throw new Error("Plan not found");
+    }
+
+    // Create order with plan details
     const res = await fetch("/api/payment/create-order", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount }), // amount in INR
+      headers: { 
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ 
+        planId: planData.id,
+        userCurrency: isIndia ? 'INR' : 'USD'
+      }),
     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Order creation failed");
+    const orderData = await res.json();
+    if (!res.ok) throw new Error(orderData.error || "Order creation failed");
 
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: data.amount,
-      currency: "INR",
-      name: "Your Company Name",
-      description: `Payment for ${planName}`,
-      order_id: data.id,
-      handler: function (response) {
-        alert("Payment successful!");
-        console.log(response);
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "Requrr",
+      description: `Payment for ${plan.name} Plan`,
+      order_id: orderData.id,
+      handler: async function (response) {
+        try {
+          // Verify payment and create subscription
+          const verifyRes = await fetch("/api/payment/verify", {
+            method: "POST",
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              plan_id: planData.id,
+              final_price: finalAmount,
+              currency: orderData.currency
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+          
+          if (verifyData.error) {
+            alert("Payment verification failed: " + verifyData.error);
+          } else {
+            alert("Payment successful! Subscription activated.");
+            // Refresh the page to show updated subscription
+            window.location.reload();
+          }
+        } catch (error) {
+          console.error("Verification error:", error);
+          alert("Error verifying payment");
+        }
       },
       prefill: {
-        name: "Customer Name",
-        email: "customer@example.com",
-        contact: "9876543210",
+        name: userData?.name || "Customer",
+        email: userData?.email || "customer@example.com",
       },
       theme: { color: "#3399cc" },
     };
@@ -196,6 +237,7 @@ const handleOneTimePayment = async (amount, planName) => {
     razorpay.open();
   } catch (error) {
     console.error("Payment Error:", error);
+    alert("Payment initiation failed: " + error.message);
   }
 };
 
