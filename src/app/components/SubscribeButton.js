@@ -162,64 +162,43 @@ export default function SubscribeButton() {
 
 
 
- const handleOneTimePayment = async (planId, planName) => {
-  if (!token) return alert("User not authenticated");
-
+const handleOneTimePayment = async (amount, planName) => {
   try {
     const res = await fetch("/api/payment/create-order", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        planId,
-        couponCode: couponInputs[planId] || null,
-        userCurrency: isIndia ? "INR" : "USD",
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount }), // amount in INR
     });
 
     const data = await res.json();
-    if (!data.success) {
-      return alert(data.error || "Payment order creation failed");
-    }
+    if (!res.ok) throw new Error(data.error || "Order creation failed");
 
     const options = {
-      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
       amount: data.amount,
-      currency: data.currency,
-      name: "YourApp",
-      description: `Purchase ${planName}`,
-      order_id: data.orderId,
-      handler: async function (response) {
-        // ✅ Save payment in DB
-        await fetch("/api/payment/verify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            planId,
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-            final_price: data.finalPrice,
-          }),
-        });
-
-        window.location.href = "/subscription/success";
+      currency: "INR",
+      name: "Your Company Name",
+      description: `Payment for ${planName}`,
+      order_id: data.id,
+      handler: function (response) {
+        alert("Payment successful!");
+        console.log(response);
+      },
+      prefill: {
+        name: "Customer Name",
+        email: "customer@example.com",
+        contact: "9876543210",
       },
       theme: { color: "#3399cc" },
     };
 
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  } catch (err) {
-    console.error("Payment error:", err);
-    alert("Payment failed.");
+    const razorpay = new window.Razorpay(options);
+    razorpay.open();
+  } catch (error) {
+    console.error("Payment Error:", error);
   }
 };
+
 
 
 
@@ -362,7 +341,8 @@ export default function SubscribeButton() {
                           <button
                             className="btn btn-primary d-grid w-100"
                             disabled={disableButton}
-                            onClick={() => handleOneTimePayment(plan.id, plan.name)}
+                            onClick={() => handleOneTimePayment(plan.price, plan.name)}
+
 
 
                           >
