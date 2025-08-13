@@ -92,42 +92,72 @@ const razorpay = new Razorpay({
 export async function POST(req) {
   try {
     const user = authenticate(req);
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const { planId } = await req.json();
+    const { planId, couponCode, userCurrency } = await req.json();
 
     if (!planId) {
       return Response.json({ error: 'Missing planId in request body' }, { status: 400 });
     }
 
-    // Get Razorpay Plan ID from DB
-    const [results] = await db.query('SELECT razorpay_plan_id FROM plans WHERE id = ?', [planId]);
+    // Get plan details from DB
+    const [results] = await db.query(
+      'SELECT price, currency FROM plans WHERE id = ?',
+      [planId]
+    );
 
     if (!results.length) {
       return Response.json({ error: 'Plan not found' }, { status: 404 });
     }
 
-    const razorpayPlanId = results[0].razorpay_plan_id;
+    let amount = results[0].price; // price in INR (or your base currency)
+    const currency = results[0].currency || 'INR';
 
-    if (!razorpayPlanId) {
-      return Response.json({ error: 'Razorpay plan ID not found in DB' }, { status: 500 });
+    // Apply coupon discount (if any)
+    let discount = 0;
+    if (couponCode) {
+      const [couponResults] = await db.query(
+        'SELECT discount_percent FROM coupons WHERE code = ? AND is_active = 1',
+        [couponCode]
+      );
+      if (couponResults.length) {
+        discount = (amount * couponResults[0].discount_percent) / 100;
+        amount -= discount;
+      }
     }
 
-    // Create Subscription in Razorpay
-    const subscription = await razorpay.subscriptions.create({
-      plan_id: razorpayPlanId,
-      customer_notify: 1,
-      total_count: 12, // Can be dynamic
-      quantity: 1,
+    // Create Razorpay order
+    const order = await razorpay.orders.create({
+      amount: Math.round(amount * 100), // convert to paise
+      currency,
+      receipt: `receipt_${planId}_${Date.now()}`,
+      payment_capture: 1,
     });
 
     return Response.json({
-      subscription_id: subscription.id,
-      status: subscription.status,
-      short_url: subscription.short_url,
+      ...order,
+      planId,
+      originalPrice: results[0].price,
+      discount,
+      finalPrice: amount,
+      couponCode: couponCode || null,
+      localPrice: userCurrency ? convertToLocal(amount, userCurrency) : null,
+      localCurrency: userCurrency || currency,
     });
   } catch (err) {
-    console.error('Subscription Error:', err);
-    return Response.json({ error: 'Subscription creation failed', details: err }, { status: 500 });
+    console.error('Order Creation Error:', err);
+    return Response.json(
+      { error: 'Order creation failed', details: err.message },
+      { status: 500 }
+    );
   }
 }
+
+// Dummy currency conversion function for example
+function convertToLocal(amount, currency) {
+  if (currency === 'USD') return (amount / 82).toFixed(2); // Example rate
+  return amount;
+}
+
