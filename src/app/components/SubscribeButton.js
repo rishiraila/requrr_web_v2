@@ -162,61 +162,65 @@ export default function SubscribeButton() {
 
 
 
-  const handleSubscription = async (planId, planName) => {
-  if (!token) return alert('User not authenticated');
+ const handleOneTimePayment = async (planId, planName) => {
+  if (!token) return alert("User not authenticated");
 
   try {
-    const res = await fetch('/api/subscription/create', {
-      method: 'POST',
+    const res = await fetch("/api/payment/create-order", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ planId }),
+      body: JSON.stringify({
+        planId,
+        couponCode: couponInputs[planId] || null,
+        userCurrency: isIndia ? "INR" : "USD",
+      }),
     });
 
     const data = await res.json();
-    const { subscription_id } = data;
+    if (!data.success) {
+      return alert(data.error || "Payment order creation failed");
+    }
 
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY,
-      subscription_id: subscription_id,
+      amount: data.amount,
+      currency: data.currency,
       name: "YourApp",
-      description: `Subscribe to ${planName}`,
+      description: `Purchase ${planName}`,
+      order_id: data.orderId,
       handler: async function (response) {
-        const razorpay_subscription_id = response.razorpay_subscription_id;
-        const razorpay_payment_id = response.razorpay_payment_id;
-
-        // ✅ Update plan in DB
-        await fetch('/api/subscription/update', {
-          method: 'POST',
+        // ✅ Save payment in DB
+        await fetch("/api/payment/verify", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             planId,
-            razorpay_subscription_id,
-            razorpay_payment_id,
-            final_price: (discountedPrices[planId] ?? (isIndia ? plans.find(p => p.id === planId)?.price_inr : plans.find(p => p.id === planId)?.price_usd)) || 0,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            final_price: data.finalPrice,
           }),
         });
 
-        // ✅ Redirect
         window.location.href = "/subscription/success";
       },
-      theme: {
-        color: "#3399cc",
-      },
+      theme: { color: "#3399cc" },
     };
 
-    const razorpay = new window.Razorpay(options);
-    razorpay.open();
+    const rzp = new window.Razorpay(options);
+    rzp.open();
   } catch (err) {
-    console.error('Subscription error:', err);
-    alert('Subscription failed.');
+    console.error("Payment error:", err);
+    alert("Payment failed.");
   }
 };
+
 
 
 
@@ -358,7 +362,8 @@ export default function SubscribeButton() {
                           <button
                             className="btn btn-primary d-grid w-100"
                             disabled={disableButton}
-                            onClick={() => handleSubscription(plan.id, plan.name)}
+                            onClick={() => handleOneTimePayment(plan.id, plan.name)}
+
 
                           >
                             {disableButton

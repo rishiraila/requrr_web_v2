@@ -1,5 +1,4 @@
 import Razorpay from 'razorpay';
-import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
 const razorpay = new Razorpay({
@@ -10,40 +9,35 @@ const razorpay = new Razorpay({
 export async function POST(req) {
   try {
     const user = authenticate(req);
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-
-    const { planId } = await req.json();
-
-    if (!planId) {
-      return Response.json({ error: 'Missing planId in request body' }, { status: 400 });
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [results] = await db.query('SELECT razorpay_plan_id FROM plans WHERE id = ?', [planId]);
+    const { amount, currency, receipt } = await req.json();
 
-    if (!results.length) {
-      return Response.json({ error: 'Plan not found' }, { status: 404 });
+    if (!amount) {
+      return Response.json({ error: 'Amount is required' }, { status: 400 });
     }
 
-    const razorpayPlanId = results[0].razorpay_plan_id;
-
-    if (!razorpayPlanId) {
-      return Response.json({ error: 'Razorpay plan ID not found in DB' }, { status: 500 });
-    }
-
-    const subscription = await razorpay.subscriptions.create({
-      plan_id: razorpayPlanId,
-      customer_notify: 1,
-      total_count: 12,
-      quantity: 1,
+    // Create a Razorpay order
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // Amount in paise
+      currency: currency || 'INR',
+      receipt: receipt || `rcpt_${Date.now()}`,
+      payment_capture: 1, // Auto-capture after payment
     });
 
     return Response.json({
-      subscription_id: subscription.id,
-      status: subscription.status,
-      short_url: subscription.short_url,
+      success: true,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
     });
   } catch (err) {
-    console.error('Subscription Error:', err);
-    return Response.json({ error: 'Subscription creation failed', details: err }, { status: 500 });
+    console.error('Payment Order Error:', err);
+    return Response.json({ 
+      error: 'Failed to create payment order', 
+      details: err.message || 'Internal server error' 
+    }, { status: 500 });
   }
 }
