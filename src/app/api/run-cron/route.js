@@ -6,6 +6,7 @@ export const config = {
 import { NextResponse } from "next/server";
 import { db } from "../../../db";
 import { sendEmail } from "../../utils/mailer";
+import { sendWhatsApp } from "../../utils/whatsapp";
 import {
   sendPushNotification,
   generateNotificationTemplate,
@@ -176,6 +177,33 @@ export async function GET(req) {
             }),
           });
 
+          // WhatsApp
+          if (prefs.whatsapp_notifications && user.phone) {
+            try {
+              await sendWhatsApp({
+                to: `${user.phone_code}${user.phone}`,
+                templateName: "payment_reminder",
+                variables: [
+                  user.first_name,
+                  record.service_name,
+                  record.client_name,
+                  new Date(record.due_date).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }),
+                ],
+              });
+
+              console.log(`✅ WhatsApp sent to ${user.phone_code}${user.phone}`);
+            } catch (whatsappErr) {
+              console.error(
+                `❌ WhatsApp error for ${user.phone_code}${user.phone}:`,
+                whatsappErr
+              );
+            }
+          }
+
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
@@ -230,6 +258,33 @@ export async function GET(req) {
             }),
           });
 
+          // WhatsApp
+          if (prefs.whatsapp_notifications && user.phone) {
+            try {
+              await sendWhatsApp({
+                to: `${user.phone_code}${user.phone}`,
+                templateName: "payment_reminder",
+                variables: [
+                  user.first_name,
+                  record.service_name,
+                  record.client_name,
+                  new Date(record.due_date).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }),
+                ],
+              });
+
+              console.log(`✅ WhatsApp sent to ${user.phone_code}${user.phone}`);
+            } catch (whatsappErr) {
+              console.error(
+                `❌ WhatsApp error for ${user.phone_code}${user.phone}:`,
+                whatsappErr
+              );
+            }
+          }
+
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
@@ -280,6 +335,33 @@ export async function GET(req) {
             }),
           });
 
+          // WhatsApp
+          if (prefs.whatsapp_notifications && user.phone) {
+            try {
+              await sendWhatsApp({
+                to: `${user.phone_code}${user.phone}`,
+                templateName: "payment_overdue",
+                variables: [
+                  user.first_name,
+                  record.service_name,
+                  record.client_name,
+                  new Date(record.due_date).toLocaleDateString("en-GB", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }),
+                ],
+              });
+
+              console.log(`✅ WhatsApp sent to ${user.phone_code}${user.phone}`);
+            } catch (whatsappErr) {
+              console.error(
+                `❌ WhatsApp error for ${user.phone_code}${user.phone}:`,
+                whatsappErr
+              );
+            }
+          }
+
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
@@ -324,7 +406,7 @@ export async function GET(req) {
 
     return NextResponse.json({
       status:
-        "✅ Cron tasks executed: statuses updated, renewals created, emails sent, push sent.",
+        "✅ Cron tasks executed: statuses updated, renewals created, emails sent, WhatsApp sent, push sent.",
     });
   } catch (err) {
     console.error("❌ Cron error:", err);

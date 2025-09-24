@@ -55,8 +55,8 @@ export default function CalendarPage() {
           id: `renewal-${r.id}`,
           title: r.client_name,
           start: r.due_date,
-          backgroundColor: "#007bff",
-          borderColor: "#007bff",
+          backgroundColor: "#7df445ff",
+          borderColor: "#7df445ff",
           extendedProps: { ...r },
         }));
 
@@ -64,8 +64,8 @@ export default function CalendarPage() {
           id: `recurring-${r.id}`,
           title: r.title,
           start: r.due_date,
-          backgroundColor: "#ff6f00",
-          borderColor: "#ff6f00",
+          backgroundColor: "#ff0000ff",
+          borderColor: "#ff0000ff",
           extendedProps: { ...r },
         }));
 
@@ -123,10 +123,10 @@ export default function CalendarPage() {
     borderRadius: "8px",
     background:
       type === "recurring"
-        ? "#fff4e5"
+        ? "#f9a9a9ff"
         : status === "paid"
-        ? "#e2fbe4"
-        : "#fdecea",
+        ? "#b5f7bbff"
+        : "#a5e1f3ff",
     border: "1px solid #ddd",
     marginBottom: "1rem",
   });

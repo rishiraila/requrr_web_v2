@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function UserInsightsPage() {
   const [data, setData] = useState([]);
   const [search, setSearch] = useState('');
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(25);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
 

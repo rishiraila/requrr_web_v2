@@ -24,6 +24,8 @@
  *                   type: boolean
  *                 email_notifications:
  *                   type: boolean
+ *                 whatsapp_notifications:
+ *                   type: boolean
  *                 dashboard_notifications:
  *                   type: boolean
  *                 payment_received_notifications:
@@ -54,6 +56,8 @@
  *               remind_overdue:
  *                 type: boolean
  *               email_notifications:
+ *                 type: boolean
+ *               whatsapp_notifications:
  *                 type: boolean
  *               dashboard_notifications:
  *                 type: boolean
@@ -106,14 +110,15 @@ export async function PUT(req) {
   try {
     await db.query(
       `INSERT INTO notification_preferences 
-        (user_id, remind_30_days_before, remind_15_days_before, remind_7_days_before, remind_overdue, email_notifications, dashboard_notifications, payment_received_notifications) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        (user_id, remind_30_days_before, remind_15_days_before, remind_7_days_before, remind_overdue, email_notifications, whatsapp_notifications, dashboard_notifications, payment_received_notifications) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON DUPLICATE KEY UPDATE
         remind_30_days_before = VALUES(remind_30_days_before),
         remind_15_days_before = VALUES(remind_15_days_before),
         remind_7_days_before = VALUES(remind_7_days_before),
         remind_overdue = VALUES(remind_overdue),
         email_notifications = VALUES(email_notifications),
+        whatsapp_notifications = VALUES(whatsapp_notifications),
         dashboard_notifications = VALUES(dashboard_notifications),
         payment_received_notifications = VALUES(payment_received_notifications)
       `,
@@ -124,6 +129,7 @@ export async function PUT(req) {
         prefs.remind_7_days_before,
         prefs.remind_overdue,
         prefs.email_notifications,
+        prefs.whatsapp_notifications,
         prefs.dashboard_notifications,
         prefs.payment_received_notifications,
       ]

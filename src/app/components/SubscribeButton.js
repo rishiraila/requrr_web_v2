@@ -237,9 +237,9 @@ export default function SubscribeButton() {
             )}
 
             <h4 className="text-center mb-2 mt-0 mt-md-4">Pricing Plans</h4>
-            <p className="text-center mb-2">
+            {/* <p className="text-center mb-2">
               All plans include 40+ advanced tools and features to boost your product. Choose the best plan to fit your needs.
-            </p>
+            </p> */}
 
             <div className="pricing-plans row mx-4 gy-3 px-lg-12">
               {plans.map(plan => {
@@ -309,8 +309,8 @@ export default function SubscribeButton() {
                           <li className="mb-4">
                             {plan.max_renewals === null ? 'Unlimited renewals' : `${plan.max_renewals} renewals per year`}
                           </li>
-                          <li className="mb-4">Unlimited forms and surveys</li>
-                          <li className="mb-4">Basic form creation tools</li>
+                          <li className="mb-4">Expense tracking</li>
+                          <li className="mb-4">Whatsapp notifications</li>
                           <li className="mb-0">Email support</li>
                         </ul>
 

@@ -402,7 +402,6 @@ export default function Home() {
         );
 
   // Prepare monthly expenses (grouped by month name and year)
-  const monthlyExpenseMap = {};
 
   const now = new Date();
   const months = [];
@@ -433,14 +432,40 @@ export default function Home() {
     (a, b) => new Date(a) - new Date(b)
   );
 
+  const monthlyExpenseMap = {};
+  months.forEach((m) => (monthlyExpenseMap[m] = 0));
+
+  recurringExpenses.forEach((exp) => {
+    const date = new Date(exp.end_date);
+    const label = `${date.toLocaleString("default", {
+      month: "short",
+    })} ${date.getFullYear()}`;
+    const amount = parseFloat(exp.amount);
+    if (!isNaN(amount)) {
+      monthlyExpenseMap[label] += amount;
+    }
+  });
+
   const monthlyIncomeChartData = {
     labels: months,
     datasets: [
       {
         label: "Income",
-        data: months.map((m) => monthlyIncomeMap[m]),
-        backgroundColor: "#666CFF",
-        borderRadius: 8,
+        data: months.map((m) => monthlyIncomeMap[m]), // positive values
+        backgroundColor: "rgba(75, 192, 192, 0.7)", // teal
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+        borderRadius: 6,
+        barThickness: 20,
+      },
+      {
+        label: "Expense",
+        data: months.map((m) => -monthlyExpenseMap[m]), // 👈 negative values
+        backgroundColor: "rgba(255, 99, 132, 0.7)", // red
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+        borderRadius: 6,
+        barThickness: 20,
       },
     ],
   };
@@ -701,18 +726,20 @@ export default function Home() {
         </div>
 
         <div className="card-body my-5">
-          {/* <div className='row'>
+          {/* <div className='row'> */}
 
-          </div> */}
-          <div className="card">
+          {/* </div> */}
+          <div className="card shadow-lg border border-2 rounded-4">
             <div className="col-12 p-4">
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-2">
-                <h5 className="mb-0">Upcoming Renewals</h5>
+              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
+                <h5 className="mb-0 d-flex align-items-center gap-2 fw-semibold text-primary">
+                  <i className="ri-refresh-line"></i> Upcoming Renewals
+                </h5>
                 <div className="d-flex gap-3 align-items-center">
-                  <div className="d-flex align-items-center">
-                    <label className="me-2 mb-0 fw-medium">Show</label>
+                  <div className="d-flex align-items-center gap-2">
+                    <label className="me-2 mb-0 fw-semibold">Show</label>
                     <select
-                      className="form-select form-select-sm"
+                      className="form-select form-select-sm shadow-sm border border-1 rounded-3"
                       value={pageSize}
                       onChange={(e) => {
                         const value =
@@ -733,7 +760,7 @@ export default function Home() {
                   <div style={{ maxWidth: "250px" }}>
                     <input
                       type="text"
-                      className="form-control"
+                      className="form-control shadow-sm border border-1 rounded-3"
                       placeholder="Search..."
                       value={searchTerm}
                       onChange={(e) => {
@@ -745,8 +772,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="table-responsive">
-                <table className="table table-striped table-hover">
+              <div className="table-responsive rounded-3 overflow-hidden shadow-sm border border-1">
+                <table className="table table-hover table-bordered mb-0">
                   <thead className="table-light">
                     <tr>
                       <th>Client</th>
@@ -762,7 +789,7 @@ export default function Home() {
                   <tbody>
                     {filteredRenewals.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="text-center">
+                        <td colSpan="8" className="text-center py-4">
                           No upcoming renewals found.
                         </td>
                       </tr>
@@ -781,7 +808,7 @@ export default function Home() {
                             : "bg-primary";
 
                         return (
-                          <tr key={sub.id}>
+                          <tr key={sub.id} className="align-middle">
                             <td>{sub.client_name}</td>
                             <td>
                               <small className="text-primary">
@@ -794,7 +821,10 @@ export default function Home() {
                             </td>
                             <td>₹{parseFloat(sub.amount).toFixed(2)}</td>
                             <td>
-                              <span className={`badge ${badgeClass}`}>
+                              <span
+                                className={`badge ${badgeClass} text-white`}
+                                style={{ fontSize: "0.8rem" }}
+                              >
                                 Due in {diffDays} days
                               </span>
                             </td>
@@ -803,12 +833,14 @@ export default function Home() {
                               <button
                                 className="btn btn-sm btn-outline-primary me-2"
                                 onClick={() => setEditingRecord(sub)}
+                                title="Edit Renewal"
                               >
                                 <i className="ri-edit-line"></i>
                               </button>
                               <button
                                 className="btn btn-sm btn-outline-danger"
                                 onClick={() => handleDelete(sub.id)}
+                                title="Delete Renewal"
                               >
                                 <i className="ri-delete-bin-line"></i>
                               </button>
@@ -863,44 +895,38 @@ export default function Home() {
                 </select>
               </div>
 
-              <Bar
-                // data={monthlyExpenseChartData}
-                data={monthlyIncomeChartData}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: { display: false },
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: {
-                        callback: (value) => "₹" + value.toLocaleString(),
-                      },
-                      grid: {
-                        color: "#d6d6d6",
-                        borderDash: [4, 4], // Dashed grid lines
-                      },
-                    },
-                    x: {
-                      grid: {
-                        display: false, // Hide vertical grid lines
-                      },
-                    },
-                  },
-                  elements: {
-                    bar: {
-                      borderRadius: 6,
-                      barThickness: 20,
-                      categoryPercentage: 0.6,
-                      barPercentage: 0.8,
-                    },
-                  },
-                  layout: {
-                    padding: 10,
-                  },
-                }}
-              />
+             <Bar
+  data={monthlyIncomeChartData}
+  options={{
+    responsive: true,
+    plugins: {
+      legend: { position: "top" },
+      title: {
+        display: true,
+        text: "Monthly Income vs Expense",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        suggestedMin: -Math.max(...Object.values(monthlyExpenseMap)) * 1.2, // show negative bars
+        suggestedMax: Math.max(...Object.values(monthlyIncomeMap)) * 1.2,   // show positive bars
+        title: {
+          display: true,
+          text: "Amount (₹)",
+        },
+        ticks: {
+          callback: (value) => "₹" + value.toLocaleString(),
+        },
+      },
+      x: {
+        grid: { display: false },
+        stacked: false, // 👈 make sure bars are side-by-side
+      },
+    },
+  }}
+/>
+
 
               <hr className="my-4" />
               <div className="d-flex justify-content-around text-center">
@@ -908,9 +934,9 @@ export default function Home() {
                   <div className="fw-medium text-muted">Total Expense</div>
                   <div className="fs-5 fw-bold">
                     ₹
-                    {Subscriptions.filter((sub) => sub.category === "expense")
+                    {recurringExpenses
                       .reduce(
-                        (sum, sub) => sum + parseFloat(sub.amount || 0),
+                        (sum, exp) => sum + parseFloat(exp.amount || 0),
                         0
                       )
                       .toLocaleString()}
@@ -920,15 +946,13 @@ export default function Home() {
                   <div className="fw-medium text-muted">Expense (YTD)</div>
                   <div className="fs-5 fw-bold">
                     ₹
-                    {Subscriptions.filter((sub) => {
-                      const date = new Date(sub.payment_date);
-                      return (
-                        sub.category === "expense" &&
-                        date.getFullYear() === new Date().getFullYear()
-                      );
-                    })
+                    {recurringExpenses
+                      .filter((exp) => {
+                        const date = new Date(exp.end_date);
+                        return date.getFullYear() === new Date().getFullYear();
+                      })
                       .reduce(
-                        (sum, sub) => sum + parseFloat(sub.amount || 0),
+                        (sum, exp) => sum + parseFloat(exp.amount || 0),
                         0
                       )
                       .toLocaleString()}
@@ -939,10 +963,8 @@ export default function Home() {
                   <div className="fs-5 fw-bold">
                     ₹
                     {(
-                      Subscriptions.filter(
-                        (sub) => sub.category === "expense"
-                      ).reduce(
-                        (sum, sub) => sum + parseFloat(sub.amount || 0),
+                      recurringExpenses.reduce(
+                        (sum, exp) => sum + parseFloat(exp.amount || 0),
                         0
                       ) *
                       (12 / (new Date().getMonth() + 1))
@@ -961,7 +983,8 @@ export default function Home() {
                 prev2Label={null} // removes "<<"
                 onClickDay={(value) => setSelectedDate(value)}
                 tileContent={({ date, view }) =>
-                  view === "month" && uniqueDueDates.includes(date.toDateString()) ? (
+                  view === "month" &&
+                  uniqueDueDates.includes(date.toDateString()) ? (
                     <div className="text-center mt-1">
                       <span
                         style={{
@@ -1020,14 +1043,17 @@ export default function Home() {
                               <span>
                                 <small>{sub.company_name}</small>
                               </span>
-              <div className="fw-medium">
-                {sub.service_name || "—"}
-                {sub.isRecurringExpense && (
-                  <span className="badge bg-info ms-2" title="Recurring Expense">
-                    Recurring
-                  </span>
-                )}
-              </div>
+                              <div className="fw-medium">
+                                {sub.service_name || "—"}
+                                {sub.isRecurringExpense && (
+                                  <span
+                                    className="badge bg-info ms-2"
+                                    title="Recurring Expense"
+                                  >
+                                    Recurring
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             <span className={`badge ${badgeClass}`}>
                               {daysLeft}d left

@@ -11,6 +11,7 @@ export default function NotificationPreferences() {
         remind_7_days_before: false,
         remind_overdue: false,
         email_notifications: false,
+        whatsapp_notifications: false,
         dashboard_notifications: false,
         payment_received_notifications: false,
     });
@@ -142,6 +143,17 @@ export default function NotificationPreferences() {
                                             id="email_notifications"
                                             checked={prefs.email_notifications}
                                             onChange={() => handleToggle("email_notifications")}
+                                        />
+                                    </div>
+
+                                    <div className="form-check form-switch d-flex justify-content-between align-items-center mb-2 p-3 border border-top-0 border-start-0 border-end-0">
+                                        <label className="form-check-label" htmlFor="whatsapp_notifications"><h5 style={{marginBottom:"5px"}}><b>WhatsApp Notifications</b></h5><p>Receive notifications via WhatsApp</p></label>
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id="whatsapp_notifications"
+                                            checked={prefs.whatsapp_notifications}
+                                            onChange={() => handleToggle("whatsapp_notifications")}
                                         />
                                     </div>
 

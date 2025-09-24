@@ -171,7 +171,7 @@ export default function Sidebar() {
             </Link>
           </li>
 
-          <li
+          {/* <li
             className={`menu-item ${
               pathname.startsWith("/Expense") ? "active" : ""
             }`}
@@ -180,7 +180,7 @@ export default function Sidebar() {
               <i className="menu-icon tf-icons ri-calculator-line"></i>
               <div>Expense</div>
             </Link>
-          </li>
+          </li> */}
 
           <li
             className={`menu-item ${pathname == "/Calendar" ? "active" : ""}`}
