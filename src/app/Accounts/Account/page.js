@@ -31,6 +31,7 @@ export default function AccountSettingsPage() {
   });
   const [subscription, setSubscription] = useState(null);
   const [confirmedDelete, setConfirmedDelete] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -69,10 +70,29 @@ export default function AccountSettingsPage() {
 
   const handleChange = e => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    // Clear error for the field being changed
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.username.trim()) newErrors.username = 'Username is required';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = 'Email is invalid';
+    if (!form.first_name.trim()) newErrors.first_name = 'First name is required';
+    if (!form.last_name.trim()) newErrors.last_name = 'Last name is required';
+    if (!form.country_code) newErrors.country_code = 'Country is required';
+    if (!form.phone.trim()) newErrors.phone = 'Phone is required';
+    else if (!/^\d+$/.test(form.phone)) newErrors.phone = 'Phone must contain only digits';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleUpdate = async e => {
     e.preventDefault();
+    if (!validateForm()) return;
     const token = localStorage.getItem('token');
     try {
       await axios.put('/api/users/update-profile', form, {
@@ -130,19 +150,23 @@ export default function AccountSettingsPage() {
                 <div className="row g-3">
                   <div className="col-md-6">
                     <label htmlFor="username" className="form-label">Username</label>
-                    <input type="text" name="username" value={form.username} onChange={handleChange} className="form-control" />
+                    <input type="text" name="username" value={form.username} onChange={handleChange} className={`form-control ${errors.username ? 'is-invalid' : ''}`} />
+                    {errors.username && <div className="invalid-feedback">{errors.username}</div>}
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="email" className="form-label">Email</label>
-                    <input type="email" name="email" value={form.email} onChange={handleChange} className="form-control" />
+                    <input type="email" name="email" value={form.email} onChange={handleChange} className={`form-control ${errors.email ? 'is-invalid' : ''}`} />
+                    {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="first_name" className="form-label">First Name</label>
-                    <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className="form-control" />
+                    <input type="text" name="first_name" value={form.first_name} onChange={handleChange} className={`form-control ${errors.first_name ? 'is-invalid' : ''}`} />
+                    {errors.first_name && <div className="invalid-feedback">{errors.first_name}</div>}
                   </div>
                   <div className="col-md-6">
                     <label htmlFor="last_name" className="form-label">Last Name</label>
-                    <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className="form-control" />
+                    <input type="text" name="last_name" value={form.last_name} onChange={handleChange} className={`form-control ${errors.last_name ? 'is-invalid' : ''}`} />
+                    {errors.last_name && <div className="invalid-feedback">{errors.last_name}</div>}
                   </div>
                   <div className="col-md-4">
                     <label className="form-label">Country</label>
@@ -156,8 +180,9 @@ export default function AccountSettingsPage() {
                           country_code: selected.cca2,
                           phone_code: selected.callingCode
                         }));
+                        if (errors.country_code) setErrors(prev => ({ ...prev, country_code: '' }));
                       }}
-                      className="form-select"
+                      className={`form-select ${errors.country_code ? 'is-invalid' : ''}`}
                     >
                       <option value="">Select a country</option>
                       {countryOptions.map(c => (
@@ -166,6 +191,7 @@ export default function AccountSettingsPage() {
                         </option>
                       ))}
                     </select>
+                    {errors.country_code && <div className="invalid-feedback">{errors.country_code}</div>}
                   </div>
 
                   <div className="col-md-4">
@@ -175,7 +201,8 @@ export default function AccountSettingsPage() {
 
                   <div className="col-md-4">
                     <label htmlFor="phone" className="form-label">Phone</label>
-                    <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" />
+                    <input type="text" name="phone" value={form.phone} onChange={handleChange} className={`form-control ${errors.phone ? 'is-invalid' : ''}`} />
+                    {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
                   </div>
 
 

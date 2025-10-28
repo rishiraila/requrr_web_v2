@@ -45,31 +45,35 @@ export default function UserInsightsPage() {
           <h4>User Insights</h4>
         </div>
 
-        <div className="d-flex justify-content-between mb-3">
-          <input
-            type="text"
-            className="form-control me-2"
-            placeholder="Search by email or username"
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <select
-            className="form-select w-auto"
-            value={pageSize}
-            onChange={(e) => {
-              const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
-              setPageSize(value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value="all">All</option>
-          </select>
+        <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-nowrap">
+          <div className="d-flex gap-3 align-items-center">
+            <label className="mb-0 fw-semibold">Show</label>
+            <select
+              className="form-select form-select-sm w-auto"
+              value={pageSize}
+              onChange={(e) => {
+                const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value="all">All</option>
+            </select>
+            <input
+              type="text"
+              className="form-control border mt-3 form-select-sm w-auto"
+              style={{ maxWidth: "200px" }}
+              placeholder="Search by email or username"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
         </div>
 
         <div className='table-responsive'>
@@ -112,7 +116,7 @@ export default function UserInsightsPage() {
         </div>
 
         {pageSize !== 'all' && totalPages > 1 && (
-          <div className="d-flex justify-content-end align-items-center gap-2">
+          <div className="d-flex justify-content-end align-items-center gap-2 mt-2">
             <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>Prev</button>
             <span>Page {currentPage} of {totalPages}</span>
             <button className="btn btn-sm btn-outline-secondary" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>Next</button>

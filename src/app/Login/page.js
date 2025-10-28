@@ -11,9 +11,35 @@ export default function page() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!email.trim()) {
+      errors.email = "Email or username is required.";
+    } else if (!emailRegex.test(email) && !email.includes('@')) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    if (!password.trim()) {
+      errors.password = "Password is required.";
+    } else if (password.length < 6) {
+      errors.password = "Password must be at least 6 characters long.";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent page reload
+
+    if (!validateForm()) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -90,6 +116,7 @@ export default function page() {
                     onChange={(e) => setEmail(e.target.value)}
                     autoFocus />
                   <label htmlFor="email">Email or Username</label>
+                  {fieldErrors.email && <div className="text-danger small">{fieldErrors.email}</div>}
                 </div>
                 <div className="mb-5">
                   <div className="form-password-toggle">
@@ -114,6 +141,7 @@ export default function page() {
                         <i className={`ri-${showPassword ? 'eye-line' : 'eye-off-line'}`}></i>
                       </span>
                     </div>
+                    {fieldErrors.password && <div className="text-danger small">{fieldErrors.password}</div>}
                   </div>
                 </div>
 

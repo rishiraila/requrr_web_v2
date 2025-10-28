@@ -53,19 +53,19 @@ export default function AddPlanModal({ show, onClose, token, onAdd }) {
           <div className="modal-body">
             <div className="mb-3">
               <label className="form-label">Name</label>
-              <input className="form-control" name="name" value={formData.name} onChange={handleChange} />
+              <input className="form-control" name="name" placeholder="Enter plan name" value={formData.name} onChange={handleChange} />
             </div>
             <div className="mb-3">
               <label className="form-label">Price</label>
-              <input className="form-control" name="price" type="number" value={formData.price} onChange={handleChange} />
+              <input className="form-control" name="price" type="number" placeholder="Enter price in USD" value={formData.price} onChange={handleChange} />
             </div>
             <div className="mb-3">
               <label className="form-label">Max Renewals</label>
-              <input className="form-control" name="max_renewals" type="number" value={formData.max_renewals} onChange={handleChange} />
+              <input className="form-control" name="max_renewals" type="number" placeholder="Enter max renewals (leave empty for unlimited)" value={formData.max_renewals} onChange={handleChange} />
             </div>
             <div className="mb-3">
               <label className="form-label">Description</label>
-              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} />
+              <textarea className="form-control" name="description" placeholder="Enter plan description" value={formData.description} onChange={handleChange} />
             </div>
           </div>
           <div className="modal-footer">

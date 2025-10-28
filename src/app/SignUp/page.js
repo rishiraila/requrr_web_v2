@@ -39,13 +39,64 @@ export default function page() {
 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  const validateForm = () => {
+    const errors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    const phoneRegex = /^\d+$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    if (!formData.full_name.trim()) {
+      errors.full_name = "Full name is required.";
+    } else if (!nameRegex.test(formData.full_name)) {
+      errors.full_name = "Full name can only contain letters and spaces.";
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required.";
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    if (!formData.country_code) {
+      errors.country_code = "Please select a country.";
+    }
+
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone number is required.";
+    } else if (!phoneRegex.test(formData.phone)) {
+      errors.phone = "Phone number must be numeric.";
+    }
+
+    if (!formData.password.trim()) {
+      errors.password = "Password is required.";
+    } else if (!passwordRegex.test(formData.password)) {
+      errors.password = "Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, and one number.";
+    }
+
+    if (!formData.confirmPassword.trim()) {
+      errors.confirmPassword = "Please confirm your password.";
+    } else if (formData.password !== formData.confirmPassword) {
+      errors.confirmPassword = "Passwords do not match.";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
 
     // Parse full name into first and last
     const nameParts = formData.full_name.trim().split(/\s+/);
@@ -59,13 +110,6 @@ export default function page() {
     } else if (nameParts.length > 2) {
       first_name = nameParts[0];
       last_name = nameParts[nameParts.length - 1];
-    }
-
-
-    e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
-      return;
     }
 
     setLoading(true);
@@ -98,6 +142,8 @@ export default function page() {
       }
     } catch (error) {
       alert('Something went wrong: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -152,6 +198,7 @@ export default function page() {
                     required
                   />
                   <label>Full Name</label>
+                  {fieldErrors.full_name && <div className="text-danger small">{fieldErrors.full_name}</div>}
                 </div>
 
 
@@ -167,6 +214,7 @@ export default function page() {
                     required
                   />
                   <label htmlFor="email">Email</label>
+                  {fieldErrors.email && <div className="text-danger small">{fieldErrors.email}</div>}
                 </div>
 
                 <div className="form-floating form-floating-outline mb-5">
@@ -185,6 +233,7 @@ export default function page() {
                     ))}
                   </select>
                   <label>Country</label>
+                  {fieldErrors.country_code && <div className="text-danger small">{fieldErrors.country_code}</div>}
                 </div>
 
                 <div className="form-floating form-floating-outline mb-5">
@@ -210,6 +259,7 @@ export default function page() {
                     required
                   />
                   <label>Phone</label>
+                  {fieldErrors.phone && <div className="text-danger small">{fieldErrors.phone}</div>}
                 </div>
 
                 <div className="mb-5 form-password-toggle">
@@ -228,6 +278,7 @@ export default function page() {
                       <label htmlFor="password">Password</label>
                     </div>
                   </div>
+                  {fieldErrors.password && <div className="text-danger small">{fieldErrors.password}</div>}
                 </div>
 
                 <div className="mb-5 form-password-toggle">
@@ -246,6 +297,7 @@ export default function page() {
                       <label htmlFor="confirmPassword">Confirm Password</label>
                     </div>
                   </div>
+                  {fieldErrors.confirmPassword && <div className="text-danger small">{fieldErrors.confirmPassword}</div>}
                 </div>
 
                 <button className="btn btn-primary d-grid w-100">Sign up</button>

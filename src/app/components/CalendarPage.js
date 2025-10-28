@@ -135,6 +135,19 @@ export default function CalendarPage() {
 
   return (
     <div className="container pt-5">
+      <style jsx>{`
+        .fc-prev-button,
+        .fc-next-button {
+          background-color: #007bff !important;
+          border-color: #007bff !important;
+          color: white !important;
+        }
+        .fc-prev-button:hover,
+        .fc-next-button:hover {
+          background-color: #0056b3 !important;
+          border-color: #0056b3 !important;
+        }
+      `}</style>
       <div className="card p-5">
         <h4 style={{ lineHeight: "5px" }} className="pt-3">
           Calendar

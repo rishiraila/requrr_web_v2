@@ -29,7 +29,8 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
     setForm({ ...form, [name]: type === 'checkbox' ? (checked ? 1 : 0) : value });
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const token = localStorage.getItem('token');
     try {
       setLoading(true); // Show preloader
@@ -45,93 +46,92 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        <div style={styles.header}>
-          <h5>Edit Renewal</h5>
-          <button onClick={onClose} style={styles.closeBtn}>×</button>
-        </div>
-
+    <div
+      style={{
+        position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+        backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+      }}
+    >
+      <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <h5>Edit Renewal</h5>
         {loading ? (
           <div style={{ padding: '50px' }}>
             <Preloader />
           </div>
         ) : (
-
-          <>
-
-            <div style={styles.body}>
-              <label htmlFor="client_id">Client</label>
-              <select name="client_id" value={form.client_id} onChange={handleChange} style={styles.input}>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-2">
+              <label className="form-label" htmlFor="client_id">Client</label>
+              <select name="client_id" value={form.client_id} onChange={handleChange} className="form-control">
                 <option value="">Select Client</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+            </div>
 
-              <label htmlFor="service_id">Service</label>
-              <select name="service_id" value={String(form.service_id)} onChange={handleChange} style={styles.input}>
+            <div className="mb-2">
+              <label className="form-label" htmlFor="service_id">Service</label>
+              <select name="service_id" value={String(form.service_id)} onChange={handleChange} className="form-control">
                 <option value="">Select Service</option>
                 {services.map(s => <option key={s.id} value={String(s.id)}>{s.name}</option>)}
               </select>
+            </div>
 
-              <label htmlFor="amount">Amount</label>
-              <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} style={styles.input} />
+            <div className="mb-2">
+              <label className="form-label" htmlFor="amount">Amount</label>
+              <input type="number" name="amount" placeholder="Amount" value={form.amount} onChange={handleChange} className="form-control" />
+            </div>
 
-              <label htmlFor="status">Status</label>
-              <select name="status" value={form.status} onChange={handleChange} style={styles.input}>
+            <div className="mb-2">
+              <label className="form-label" htmlFor="status">Status</label>
+              <select name="status" value={form.status} onChange={handleChange} className="form-control">
                 <option value="pending">Pending</option>
                 <option value="paid">Paid</option>
                 <option value="overdue">Overdue</option>
                 <option value="cancelled">Cancelled</option>
               </select>
+            </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <label htmlFor="payment_date">Payment Date</label>
-                  {/* <input type="date" name="payment_date" value={form.payment_date?.slice(0, 10)} onChange={handleChange} style={styles.input} /> */}
-                  <DatePicker
-                    selected={form.payment_date ? new Date(form.payment_date) : null}
-                    onChange={(date) => setForm({ ...form, payment_date: format(date, 'yyyy-MM-dd') })}
-                    dateFormat="dd-MM-yyyy"
-                    // className="custom-datepicker"
-                    className="form-control"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="due_date">Due Date</label>
-                  {/* <input type="date" name="due_date" value={form.due_date?.slice(0, 10)} onChange={handleChange} style={styles.input} /> */}
-                  <DatePicker
-                    selected={form.due_date ? new Date(form.due_date) : null}
-                    onChange={(date) => setForm({ ...form, due_date: format(date, 'yyyy-MM-dd') })}
-                    dateFormat="dd-MM-yyyy"
-                    // className="custom-datepicker"
-                    className="form-control"
-                  />
-                </div>
+            <div className="d-flex justify-content-between mb-2">
+              <div>
+                <label className="form-label" htmlFor="payment_date">Payment Date</label>
+                <DatePicker
+                  selected={form.payment_date ? new Date(form.payment_date) : null}
+                  onChange={(date) => setForm({ ...form, payment_date: format(date, 'yyyy-MM-dd') })}
+                  dateFormat="dd-MM-yyyy"
+                  className="form-control"
+                />
               </div>
 
-              <label><input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} /> Recurring</label>
-              <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} style={styles.input}></textarea>
+              <div>
+                <label className="form-label" htmlFor="due_date">Due Date</label>
+                <DatePicker
+                  selected={form.due_date ? new Date(form.due_date) : null}
+                  onChange={(date) => setForm({ ...form, due_date: format(date, 'yyyy-MM-dd') })}
+                  dateFormat="dd-MM-yyyy"
+                  className="form-control"
+                />
+              </div>
             </div>
-            <div style={styles.footer}>
-              <button onClick={onClose} style={styles.cancelBtn}>Cancel</button>
-              <button onClick={handleSubmit} style={styles.primaryBtn}>Update</button>
+
+            <div className="form-check mb-2">
+              <input type="checkbox" name="is_recurring" checked={!!form.is_recurring} onChange={handleChange} className="form-check-input" id="is_recurring" />
+              <label className="form-check-label" htmlFor="is_recurring">Recurring</label>
             </div>
-          </>
+
+            <div className="mb-2">
+              <label className="form-label" htmlFor="notes">Notes</label>
+              <textarea name="notes" placeholder="Notes" value={form.notes} onChange={handleChange} className="form-control"></textarea>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 mt-3">
+              <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button type="submit" className="btn btn-primary">Update</button>
+            </div>
+          </form>
         )}
       </div>
     </div>
   );
 }
 
-const styles = {
-  overlay: { position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 },
-  modal: { width: '100%', maxWidth: '600px', backgroundColor: '#fff', borderRadius: '8px', boxShadow: '0 0 20px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column', position: 'relative' },
-  header: { padding: '16px 24px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  closeBtn: { fontSize: '22px', background: 'none', border: 'none', cursor: 'pointer' },
-  body: { padding: '20px 24px' },
-  footer: { padding: '12px 24px', borderTop: '1px solid #eee', display: 'flex', justifyContent: 'flex-end', gap: '10px' },
-  input: { width: '100%', padding: '10px 12px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '12px' },
-  cancelBtn: { backgroundColor: '#f0f0f0', border: 'none', padding: '8px 14px', borderRadius: '4px', cursor: 'pointer' },
-  primaryBtn: { backgroundColor: '#007bff', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '4px', cursor: 'pointer' }
-};
+

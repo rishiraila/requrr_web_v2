@@ -17,17 +17,42 @@ export default function SecurityPage() {
     confirmPassword: ''
   });
   const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error for the field being changed
+    if (errors[e.target.name]) {
+      setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+    }
+  };
+
+  const validatePassword = (password) => {
+    const errors = [];
+    if (password.length < 8) errors.push('Minimum 8 characters long');
+    if (!/[a-z]/.test(password)) errors.push('At least one lowercase character');
+    if (!/[0-9\s\W]/.test(password)) errors.push('At least one number, symbol, or whitespace character');
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
+    setErrors({});
 
-    if (form.newPassword !== form.confirmPassword) {
-      return setMessage('❌ New and confirm passwords do not match');
+    const newErrors = {};
+    if (!form.currentPassword.trim()) newErrors.currentPassword = 'Current password is required';
+    if (!form.newPassword.trim()) newErrors.newPassword = 'New password is required';
+    else {
+      const pwdErrors = validatePassword(form.newPassword);
+      if (pwdErrors.length > 0) newErrors.newPassword = pwdErrors.join(', ');
+    }
+    if (!form.confirmPassword.trim()) newErrors.confirmPassword = 'Confirm password is required';
+    else if (form.newPassword !== form.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
     }
 
     try {
@@ -75,7 +100,7 @@ export default function SecurityPage() {
                     <div className="input-group input-group-merge">
                       <input
                         type={showPassword.current ? 'text' : 'password'}
-                        className="form-control"
+                        className={`form-control ${errors.currentPassword ? 'is-invalid' : ''}`}
                         name="currentPassword"
                         value={form.currentPassword}
                         onChange={handleChange}
@@ -89,6 +114,7 @@ export default function SecurityPage() {
                         <i className={`ri-${showPassword.current ? 'eye-line' : 'eye-off-line'}`}></i>
                       </span>
                     </div>
+                    {errors.currentPassword && <div className="invalid-feedback">{errors.currentPassword}</div>}
                   </div>
 
                 </div>
@@ -98,7 +124,7 @@ export default function SecurityPage() {
                     <div className="input-group input-group-merge">
                       <input
                         type={showPassword.new ? 'text' : 'password'}
-                        className="form-control"
+                        className={`form-control ${errors.newPassword ? 'is-invalid' : ''}`}
                         name="newPassword"
                         value={form.newPassword}
                         onChange={handleChange}
@@ -112,13 +138,14 @@ export default function SecurityPage() {
                         <i className={`ri-${showPassword.new ? 'eye-line' : 'eye-off-line'}`}></i>
                       </span>
                     </div>
+                    {errors.newPassword && <div className="invalid-feedback">{errors.newPassword}</div>}
                   </div>
 
                   <div className="col-md-6 form-password-toggle">
                     <div className="input-group input-group-merge">
                       <input
                         type={showPassword.confirm ? 'text' : 'password'}
-                        className="form-control"
+                        className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
                         name="confirmPassword"
                         value={form.confirmPassword}
                         onChange={handleChange}
@@ -132,6 +159,7 @@ export default function SecurityPage() {
                         <i className={`ri-${showPassword.confirm ? 'eye-line' : 'eye-off-line'}`}></i>
                       </span>
                     </div>
+                    {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
                   </div>
 
                 </div>

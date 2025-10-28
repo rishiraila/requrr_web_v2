@@ -38,7 +38,7 @@ export async function POST(req) {
   const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
   const user = users[0];
   if (!user || !(await bcrypt.compare(password, user.password_hash))) {
-    return Response.json({ error: 'Invalid credentials' }, { status: 401 });
+    return Response.json({ message: 'Email or password is wrong' }, { status: 401 });
   }
 
   const token = generateToken(user);

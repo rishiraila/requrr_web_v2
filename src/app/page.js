@@ -458,15 +458,6 @@ export default function Home() {
         borderRadius: 6,
         barThickness: 20,
       },
-      {
-        label: "Expense",
-        data: months.map((m) => -monthlyExpenseMap[m]), // 👈 negative values
-        backgroundColor: "rgba(255, 99, 132, 0.7)", // red
-        borderColor: "rgba(255, 99, 132, 1)",
-        borderWidth: 1,
-        borderRadius: 6,
-        barThickness: 20,
-      },
     ],
   };
 
@@ -731,48 +722,45 @@ export default function Home() {
           {/* </div> */}
           <div className="card shadow-lg border border-2 rounded-4">
             <div className="col-12 p-4">
-              <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
+              <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-nowrap">
                 <h5 className="mb-0 d-flex align-items-center gap-2 fw-semibold text-primary">
                   <i className="ri-refresh-line"></i> Upcoming Renewals
                 </h5>
                 <div className="d-flex gap-3 align-items-center">
-                  <div className="d-flex align-items-center gap-2">
-                    <label className="me-2 mb-0 fw-semibold">Show</label>
-                    <select
-                      className="form-select form-select-sm shadow-sm border border-1 rounded-3"
-                      value={pageSize}
-                      onChange={(e) => {
-                        const value =
-                          e.target.value === "all"
-                            ? "all"
-                            : parseInt(e.target.value);
-                        setPageSize(value);
-                        setCurrentPage(1); // Reset to first page
-                      }}
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={50}>50</option>
-                      <option value="all">All</option>
-                    </select>
-                  </div>
+                  <label className=" mb-0 fw-semibold">Show</label>
+                  <select
+                    className="form-select form-select-sm w-auto"
+                    value={pageSize}
+                    onChange={(e) => {
+                      const value =
+                        e.target.value === "all"
+                          ? "all"
+                          : parseInt(e.target.value);
+                      setPageSize(value);
+                      setCurrentPage(1); // Reset to first page
+                    }}
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={50}>50</option>
+                    <option value="all">All</option>
+                  </select>
 
-                  <div style={{ maxWidth: "250px" }}>
-                    <input
-                      type="text"
-                      className="form-control shadow-sm border border-1 rounded-3"
-                      placeholder="Search..."
-                      value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        setCurrentPage(1); // Reset to first page
-                      }}
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    className="form-control  border mt-3 form-select-sm w-auto"
+                    style={{ maxWidth: "200px" }}
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1); // Reset to first page
+                    }}
+                  />
                 </div>
               </div>
 
-              <div className="table-responsive rounded-3 overflow-hidden shadow-sm border border-1">
+              <div className="table-responsive rounded-3 overflow-hidden ">
                 <table className="table table-hover table-bordered mb-0">
                   <thead className="table-light">
                     <tr>
@@ -852,7 +840,7 @@ export default function Home() {
                   </tbody>
                 </table>
                 {pageSize !== "all" && totalPages > 1 && (
-                  <div className="d-flex justify-content-end align-items-center mt-3 gap-2">
+                  <div className="d-flex justify-content-end align-items-center mt-3 gap-2 me-2">
                     <button
                       className="btn btn-sm btn-outline-secondary"
                       disabled={currentPage === 1}
@@ -883,7 +871,7 @@ export default function Home() {
           <div className="col-md-8 mb-4">
             <div className="card p-4 shadow-sm h-100">
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="fw-bold mb-0">Monthly Expenses</h6>
+                <h6 className="fw-bold mb-0">Monthly Income</h6>
                 <select
                   className="form-select form-select-sm w-auto"
                   value={expenseFilter}
@@ -895,38 +883,36 @@ export default function Home() {
                 </select>
               </div>
 
-             <Bar
-  data={monthlyIncomeChartData}
-  options={{
-    responsive: true,
-    plugins: {
-      legend: { position: "top" },
-      title: {
-        display: true,
-        text: "Monthly Income vs Expense",
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        suggestedMin: -Math.max(...Object.values(monthlyExpenseMap)) * 1.2, // show negative bars
-        suggestedMax: Math.max(...Object.values(monthlyIncomeMap)) * 1.2,   // show positive bars
-        title: {
-          display: true,
-          text: "Amount (₹)",
-        },
-        ticks: {
-          callback: (value) => "₹" + value.toLocaleString(),
-        },
-      },
-      x: {
-        grid: { display: false },
-        stacked: false, // 👈 make sure bars are side-by-side
-      },
-    },
-  }}
-/>
-
+              <Bar
+                data={monthlyIncomeChartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: { position: "top" },
+                    title: {
+                      display: true,
+                      text: "Monthly Income",
+                    },
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      suggestedMax:
+                        Math.max(...Object.values(monthlyIncomeMap)) * 1.2,
+                      title: {
+                        display: true,
+                        text: "Amount (₹)",
+                      },
+                      ticks: {
+                        callback: (value) => "₹" + value.toLocaleString(),
+                      },
+                    },
+                    x: {
+                      grid: { display: false },
+                    },
+                  },
+                }}
+              />
 
               <hr className="my-4" />
               <div className="d-flex justify-content-around text-center">

@@ -81,31 +81,35 @@ export default function ClientsPage() {
           </button>
         </div>
 
-        <div className="d-flex justify-content-between mb-3">
-          <input
-            type="text"
-            className="form-control me-2"
-            placeholder="Search clients..."
-            value={searchTerm}
-            onChange={e => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-          />
-          <select
-            className="form-select w-auto"
-            value={pageSize}
-            onChange={e => {
-              const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
-              setPageSize(value);
-              setCurrentPage(1);
-            }}
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value="all">All</option>
-          </select>
+        <div className="d-flex justify-content-between align-items-center mb-3 gap-3 flex-nowrap">
+          <div className="d-flex gap-3 align-items-center">
+            <label className="mb-0 fw-semibold">Show</label>
+            <select
+              className="form-select form-select-sm w-auto"
+              value={pageSize}
+              onChange={e => {
+                const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value="all">All</option>
+            </select>
+            <input
+              type="text"
+              className="form-control border mt-3 form-select-sm w-auto"
+              style={{ maxWidth: "200px" }}
+              placeholder="Search clients..."
+              value={searchTerm}
+              onChange={e => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
         </div>
 
         <div className='table-responsive'>
@@ -155,19 +159,19 @@ export default function ClientsPage() {
         </div>
 
         {pageSize !== 'all' && totalPages > 1 && (
-          <div className="d-flex justify-content-end align-items-center gap-2">
+          <div className="d-flex justify-content-end align-items-center mt-3 gap-2 me-2">
             <button
               className="btn btn-sm btn-outline-secondary"
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => p - 1)}
+              onClick={() => setCurrentPage((prev) => prev - 1)}
             >
-              Prev
+              Previous
             </button>
-            <span>Page {currentPage} of {totalPages}</span>
+            <span className="fw-medium">Page {currentPage} of {totalPages}</span>
             <button
               className="btn btn-sm btn-outline-secondary"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => p + 1)}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
             >
               Next
             </button>
