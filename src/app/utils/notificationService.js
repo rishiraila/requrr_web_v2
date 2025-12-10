@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 import { db } from "../../db";
+import { sendWhatsApp } from "./whatsapp";
 
 if (!admin.apps.length) {
   const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
@@ -61,11 +62,76 @@ export const sendPushNotification = async ({
   } catch (error) {
     console.error("❌ Error sending notification:", error.message);
 
+    // If FCM token is invalid, remove it from DB
+    if (error.message.includes("Requested entity was not found") || error.message.includes("registration-token-not-registered")) {
+      console.log(`🗑️ Removing invalid FCM token for user ${userId}`);
+      await db.execute("DELETE FROM fcm_tokens WHERE user_id = ? AND fcm_token = ?", [userId, fcmToken]);
+    }
+
     // Optional: log to DB as failed if needed
     await db.execute(
       `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [userId, title, body, JSON.stringify(data), type, "failed", new Date()]
+    );
+
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * ✅ Send WhatsApp notification to a user
+ */
+export const sendWhatsAppNotification = async ({
+  userId,
+  templateName = "payment_reminder",
+  variables = [],
+  data = {},
+  type = "whatsapp",
+}) => {
+  try {
+    // ✅ Fetch phone number from DB
+    const [rows] = await db.execute(
+      "SELECT phone, phone_code FROM users WHERE id = ?",
+      [userId]
+    );
+
+    if (!rows.length || !rows[0].phone) {
+      throw new Error("Missing phone number");
+    }
+
+    const { phone, phone_code } = rows[0];
+    const to = `${phone_code}${phone}`;
+
+    console.log(`📱 Sending ${type} notification to user ${userId}:`, {
+      to,
+      templateName,
+      variables,
+      data,
+    });
+
+    await sendWhatsApp({
+      to,
+      templateName,
+      variables,
+    });
+
+    // ✅ Store in notifications table
+    await db.execute(
+      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, templateName, JSON.stringify(variables), JSON.stringify(data), type, "sent", new Date()]
+    );
+
+    return { success: true };
+  } catch (error) {
+    console.error("❌ Error sending WhatsApp notification:", error.message);
+
+    // Optional: log to DB as failed if needed
+    await db.execute(
+      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [userId, templateName, JSON.stringify(variables), JSON.stringify(data), type, "failed", new Date()]
     );
 
     return { success: false, error: error.message };
@@ -112,7 +178,12 @@ export const sendBatchNotifications = async (notifications = []) => {
   const results = [];
 
   for (const notification of notifications) {
-    const result = await sendPushNotification(notification);
+    let result;
+    if (notification.type === "whatsapp") {
+      result = await sendWhatsAppNotification(notification);
+    } else {
+      result = await sendPushNotification(notification);
+    }
     results.push(result);
   }
 

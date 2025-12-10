@@ -170,7 +170,7 @@ export async function GET(req) {
             to: user.email,
             subject: `Reminder: Payment due in ${days} days`,
             html: generateEmailTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date,
@@ -184,7 +184,7 @@ export async function GET(req) {
                 to: `${user.phone_code}${user.phone}`,
                 templateName: "payment_reminder",
                 variables: [
-                  user.first_name,
+                  user.first_name || "User",
                   record.service_name,
                   record.client_name,
                   new Date(record.due_date).toLocaleDateString("en-GB", {
@@ -207,7 +207,7 @@ export async function GET(req) {
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date,
@@ -251,7 +251,7 @@ export async function GET(req) {
             to: user.email,
             subject: `Reminder: Payment due in ${daysLeft} day(s)`,
             html: generateEmailTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date.toDateString(),
@@ -265,7 +265,7 @@ export async function GET(req) {
                 to: `${user.phone_code}${user.phone}`,
                 templateName: "payment_reminder",
                 variables: [
-                  user.first_name,
+                  user.first_name || "User",
                   record.service_name,
                   record.client_name,
                   new Date(record.due_date).toLocaleDateString("en-GB", {
@@ -288,7 +288,7 @@ export async function GET(req) {
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date,
@@ -327,7 +327,7 @@ export async function GET(req) {
             to: user.email,
             subject: `Reminder: Overdue Payment`,
             html: generateEmailTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date.toDateString(),
@@ -342,7 +342,7 @@ export async function GET(req) {
                 to: `${user.phone_code}${user.phone}`,
                 templateName: "payment_overdue",
                 variables: [
-                  user.first_name,
+                  user.first_name || "User",
                   record.service_name,
                   record.client_name,
                   new Date(record.due_date).toLocaleDateString("en-GB", {
@@ -365,7 +365,7 @@ export async function GET(req) {
           // Push
           if (prefs.dashboard_notifications && fcmToken) {
             const notif = generateNotificationTemplate({
-              userFirstName: user.first_name,
+              userFirstName: user.first_name || "User",
               clientName: record.client_name,
               serviceName: record.service_name,
               dueDate: record.due_date,

@@ -85,34 +85,44 @@ export async function GET(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // const [services] = await db.query('SELECT * FROM services WHERE user_id = ?', [user.id]);
-  const [services] = await db.query(`
-  SELECT 
-    s.*, 
-    CASE 
-      WHEN COUNT(ir.id) > 0 THEN 1 
-      ELSE 0 
-    END AS is_active
-  FROM services s
-  LEFT JOIN income_records ir ON ir.service_id = s.id
-  WHERE s.user_id = ?
-  GROUP BY s.id
-`, [user.id]);
+  try {
+    // const [services] = await db.query('SELECT * FROM services WHERE user_id = ?', [user.id]);
+    const [services] = await db.query(`
+    SELECT
+      s.*,
+      CASE
+        WHEN COUNT(ir.id) > 0 THEN 1
+        ELSE 0
+      END AS is_active
+    FROM services s
+    LEFT JOIN income_records ir ON ir.service_id = s.id
+    WHERE s.user_id = ?
+    GROUP BY s.id
+  `, [user.id]);
 
-  return Response.json(services);
+    return Response.json(services);
+  } catch (error) {
+    console.error('Database query error:', error);
+    return Response.json({ error: 'Database connection failed. Please try again later.' }, { status: 500 });
+  }
 }
 
 export async function POST(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { name, description, billing_type, billing_interval, base_price, is_active } = await req.json();
+  try {
+    const { name, description, billing_type, billing_interval, base_price, is_active } = await req.json();
 
-  await db.query(
-    `INSERT INTO services (user_id, name, description, billing_type, billing_interval, base_price, is_active) 
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [user.id, name, description, billing_type, billing_interval || null, base_price, is_active ?? 1]
-  );
+    await db.query(
+      `INSERT INTO services (user_id, name, description, billing_type, billing_interval, base_price, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [user.id, name, description, billing_type, billing_interval || null, base_price, is_active ?? 1]
+    );
 
-  return Response.json({ message: 'Service created successfully' });
+    return Response.json({ message: 'Service created successfully' });
+  } catch (error) {
+    console.error('Database insert error:', error);
+    return Response.json({ error: 'Failed to create service. Please try again later.' }, { status: 500 });
+  }
 }
