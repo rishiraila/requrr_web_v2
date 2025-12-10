@@ -46,7 +46,7 @@ export const sendPushNotification = async ({
     const message = {
       token: fcmToken,
       notification: { title, body },
-      data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])), // all values must be strings
+      data: Object.fromEntries(Object.entries(data).map(([k, v]) => [k, String(v)])), // ll values must be strings
     };
 
     await admin.messaging().send(message);
