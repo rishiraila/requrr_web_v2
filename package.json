@@ -30,7 +30,7 @@
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "mysql2": "^3.14.1",
-    "next": "15.1.4",
+    "next": "^16.0.8",
     "node-waves": "^0.7.6",
     "nodemailer": "^7.0.3",
     "razorpay": "^2.9.6",
