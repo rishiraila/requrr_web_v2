@@ -65,8 +65,8 @@ export const sendEmail = async ({
   const authKey = process.env.MSG91_AUTH_KEY;
   const fromEmail =
     process.env.MSG91_FROM_EMAIL ||
-    `noreply@${process.env.MSG91_DOMAIN || "mail.requrr.com"}`;
-  const fromName = process.env.MSG91_FROM_NAME || "Requrr Team";
+    `support@${process.env.MSG91_DOMAIN || "mail.requrr.com"}`;
+  const fromName = process.env.MSG91_FROM_NAME || "Requrr";
   const domain = process.env.MSG91_DOMAIN || "mail.requrr.com";
 
   const toList = normalizeToList(to);
