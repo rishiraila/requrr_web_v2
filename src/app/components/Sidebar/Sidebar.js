@@ -266,6 +266,16 @@ export default function Sidebar() {
                   <div>Transactions </div>
                 </Link>
               </li>
+              <li
+                className={`menu-item ${
+                  pathname == "/Admin/WhatsappAdmin" ? "active" : ""
+                }`}
+              >
+                <Link href="/Admin/WhatsappAdmin" className="menu-link ">
+                  <i className="menu-icon tf-icons ri-bank-card-line"></i>
+                  <div>WhatsApp Admin</div>
+                </Link>
+              </li>
             </>
           )}
         </ul>

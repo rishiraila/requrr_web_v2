@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 import { db } from "../../db";
+import { checkAndDeductWhatsAppCredit } from "./whatsappCredits";
 import { sendWhatsApp } from "./whatsapp";
 
 if (!admin.apps.length) {
@@ -82,6 +83,7 @@ export const sendPushNotification = async ({
 /**
  * ✅ Send WhatsApp notification to a user
  */
+
 export const sendWhatsAppNotification = async ({
   userId,
   templateName = "payment_reminder",
@@ -90,7 +92,10 @@ export const sendWhatsAppNotification = async ({
   type = "whatsapp",
 }) => {
   try {
-    // ✅ Fetch phone number from DB
+    // 1️⃣ Deduct credit FIRST
+    await checkAndDeductWhatsAppCredit(userId, 1);
+
+    // 2️⃣ Fetch phone
     const [rows] = await db.execute(
       "SELECT phone, phone_code FROM users WHERE id = ?",
       [userId]
@@ -100,44 +105,37 @@ export const sendWhatsAppNotification = async ({
       throw new Error("Missing phone number");
     }
 
-    const { phone, phone_code } = rows[0];
-    const to = `${phone_code}${phone}`;
+    const to = `${rows[0].phone_code}${rows[0].phone}`;
 
-    console.log(`📱 Sending ${type} notification to user ${userId}:`, {
-      to,
-      templateName,
-      variables,
-      data,
-    });
-
+    // 3️⃣ Send WhatsApp
     await sendWhatsApp({
       to,
       templateName,
       variables,
     });
 
-    // ✅ Store in notifications table
+    // 4️⃣ Log success
     await db.execute(
       `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, templateName, JSON.stringify(variables), JSON.stringify(data), type, "sent", new Date()]
+       VALUES (?, ?, ?, ?, ?, 'sent', ?)`,
+      [userId, templateName, JSON.stringify(variables), JSON.stringify(data), type, new Date()]
     );
 
     return { success: true };
-  } catch (error) {
-    console.error("❌ Error sending WhatsApp notification:", error.message);
 
-    // Optional: log to DB as failed if needed
-    await db.execute(
-      `INSERT INTO notifications (user_id, title, body, data, type, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [userId, templateName, JSON.stringify(variables), JSON.stringify(data), type, "failed", new Date()]
-    );
+  } catch (error) {
+
+    // ❌ Credit exhausted → SILENT FAIL (no WhatsApp)
+    if (error.message === "WHATSAPP_CREDITS_EXHAUSTED") {
+      console.warn(`⚠️ WhatsApp skipped for user ${userId}: credits exhausted`);
+      return { success: false, reason: "NO_CREDITS" };
+    }
+
+    console.error("❌ WhatsApp error:", error.message);
 
     return { success: false, error: error.message };
   }
 };
-
 /**
  * ✅ Generate title and body for reminders
  */

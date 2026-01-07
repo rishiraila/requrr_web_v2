@@ -424,7 +424,9 @@ export const config = {
 import { NextResponse } from "next/server";
 import { db } from "../../../db";
 import { sendEmail } from "../../utils/mailer";
-import { sendWhatsApp } from "../../utils/whatsapp";
+// import { sendWhatsApp } from "../../utils/whatsapp";
+import { sendWhatsAppNotification } from "../../utils/notificationService";
+
 import {
   sendPushNotification,
   generateNotificationTemplate,
@@ -626,8 +628,9 @@ export async function GET(req) {
           // WhatsApp (unchanged)
           if (prefs.whatsapp_notifications && user.phone) {
             try {
-              await sendWhatsApp({
-                to: `${user.phone_code}${user.phone}`,
+              await sendWhatsAppNotification({
+                // to: `${user.phone_code}${user.phone}`,
+                userId: user.id,
                 templateName: "payment_reminder",
                 variables: [
                   user.first_name || "User",
@@ -716,8 +719,9 @@ export async function GET(req) {
 
           if (prefs.whatsapp_notifications && user.phone) {
             try {
-              await sendWhatsApp({
-                to: `${user.phone_code}${user.phone}`,
+              await sendWhatsAppNotification({
+                // to: `${user.phone_code}${user.phone}`,
+                userId: user.id,
                 templateName: "payment_reminder",
                 variables: [
                   user.first_name || "User",
@@ -801,8 +805,9 @@ export async function GET(req) {
 
           if (prefs.whatsapp_notifications && user.phone) {
             try {
-              await sendWhatsApp({
-                to: `${user.phone_code}${user.phone}`,
+              await sendWhatsAppNotification({
+                // to: `${user.phone_code}${user.phone}`,
+                userId: user.id,
                 templateName: "payment_overdue",
                 variables: [
                   user.first_name || "User",

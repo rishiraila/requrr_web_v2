@@ -1,8 +1,5 @@
-# TODO for Admin User Page Update
+# TODO for Implementing WhatsApp API Routes
 
-- [x] Update the searchbar and pagination dropdown layout in src/app/Admin/Users/page.js to match the client page structure
-- [x] Add "Show" label before the dropdown
-- [x] Move the dropdown before the search input
-- [x] Change dropdown options to 5, 10, 50, All
-- [x] Update CSS classes for select and input to match client page
-- [x] Add maxWidth style to the search input
+- [x] Update `src/app/api/whatsapp/credits/route.js`: Replace GET handler with admin-only version for all users' credits
+- [x] Update `src/app/api/whatsapp/pricing/route.js`: Modify POST handler to include JWT authentication and set active=1
+- [x] Create `src/app/api/whatsapp/pricing/[id]/route.js`: Add PUT handler for updating pricing by ID with admin auth
