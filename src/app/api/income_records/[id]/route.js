@@ -96,25 +96,40 @@
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
-export async function GET(req, { params }) {
+export async function GET(req, context) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = await context.params;
+
   const [rows] = await db.query(
-    `SELECT ir.id, c.name as client_name, s.name as service_name, ir.amount, ir.payment_date, ir.due_date, ir.status, ir.is_recurring, ir.recurrence_id, ir.notes
+    `SELECT 
+      ir.id,
+      c.name AS client_name,
+      s.name AS service_name,
+      ir.amount,
+      ir.payment_date,
+      ir.due_date,
+      ir.status,
+      ir.is_recurring,
+      ir.recurrence_id,
+      ir.notes
      FROM income_records ir
      JOIN clients c ON ir.client_id = c.id
      JOIN services s ON ir.service_id = s.id
      WHERE ir.id = ? AND ir.user_id = ?`,
-    [params.id, user.id]
+    [id, user.id]
   );
 
   return Response.json(rows[0] || {});
 }
 
-export async function PUT(req, { params }) {
+
+export async function PUT(req, context) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await context.params;
 
   const {
     client_id,
@@ -131,7 +146,7 @@ export async function PUT(req, { params }) {
   await db.query(
     `UPDATE income_records SET 
       client_id = ?, service_id = ?, amount = ?, payment_date = ?, due_date = ?, 
-      status = ?, is_recurring = ?, recurrence_id = ?, notes = ? 
+      status = ?, is_recurring = ?, recurrence_id = ?, notes = ?
      WHERE id = ? AND user_id = ?`,
     [
       client_id,
@@ -143,7 +158,7 @@ export async function PUT(req, { params }) {
       is_recurring,
       recurrence_id,
       notes,
-      params.id,
+      id,
       user.id,
     ]
   );
@@ -152,18 +167,19 @@ export async function PUT(req, { params }) {
 }
 
 
-export async function DELETE(req, { params }) {
+
+export async function DELETE(req, context) {
   const user = authenticate(req);
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const recordId = params.id;
+  const { id } = await context.params;
 
-  // 1. Fetch the service_id for this income record before deleting
+  // 1️⃣ Fetch service_id
   const [[record]] = await db.query(
     `SELECT service_id FROM income_records WHERE id = ? AND user_id = ?`,
-    [recordId, user.id]
+    [id, user.id]
   );
 
   if (!record) {
@@ -172,19 +188,19 @@ export async function DELETE(req, { params }) {
 
   const serviceId = record.service_id;
 
-  // 2. Delete the income record
+  // 2️⃣ Delete record
   await db.query(
     `DELETE FROM income_records WHERE id = ? AND user_id = ?`,
-    [recordId, user.id]
+    [id, user.id]
   );
 
-  // 3. Check if the service is still used in other income records
+  // 3️⃣ Check service usage
   const [[{ count }]] = await db.query(
     `SELECT COUNT(*) AS count FROM income_records WHERE service_id = ? AND user_id = ?`,
     [serviceId, user.id]
   );
 
-  // 4. If count is 0, mark the service as inactive
+  // 4️⃣ Deactivate service if unused
   if (count === 0) {
     await db.query(
       `UPDATE services SET is_active = 0 WHERE id = ? AND user_id = ?`,
@@ -194,3 +210,4 @@ export async function DELETE(req, { params }) {
 
   return Response.json({ message: 'Income record deleted successfully' });
 }
+
