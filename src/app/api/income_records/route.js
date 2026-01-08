@@ -111,10 +111,32 @@ export async function GET(req) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [records] = await db.query(
-    'SELECT * FROM income_records WHERE user_id = ? ORDER BY payment_date DESC',
-    [user.id]
-  );
+ const [records] = await db.query(
+  `
+  SELECT 
+    ir.id,
+    ir.user_id,
+    ir.client_id,
+    c.name AS client_name,
+    ir.service_id,
+    s.name AS service_name,
+    ir.amount,
+    ir.payment_date,
+    ir.due_date,
+    ir.status,
+    ir.is_recurring,
+    ir.recurrence_id,
+    ir.notes,
+    ir.created_at
+  FROM income_records ir
+  JOIN clients c ON ir.client_id = c.id
+  JOIN services s ON ir.service_id = s.id
+  WHERE ir.user_id = ?
+  ORDER BY ir.payment_date DESC
+  `,
+  [user.id]
+);
+
 
   return Response.json(records);
 }
