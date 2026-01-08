@@ -87,150 +87,216 @@ export default function WhatsappAdminPage() {
     }
   };
 
-  if (loading) return <p className="p-5">Loading WhatsApp Admin...</p>;
+  if (loading) return (
+    <div className="d-flex justify-content-center align-items-center p-5">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <span className="ms-2">Loading WhatsApp Admin...</span>
+    </div>
+  );
 
   return (
-    <div className="container-xxl container-p-y">
+    <div className="container">
+      {/* -------------------- INFO SECTION -------------------- */}
+      <div className="alert alert-info mb-4" role="alert">
+        <h5 className="alert-heading"><i className="bi bi-info-circle me-2"></i>WhatsApp Admin Dashboard</h5>
+        <p className="mb-0">Manage WhatsApp credit pricing, view user credit balances, and monitor credit transactions. Use the tables below to oversee and update pricing plans, track user credits, and review transaction history.</p>
+      </div>
 
       {/* -------------------- PRICING -------------------- */}
-      <div className="card mb-4 p-4">
-        <div className="d-flex justify-content-between mb-3">
-          <h4>📲 WhatsApp Credit Pricing</h4>
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            + Add Pricing
+      <div className="card mb-4 p-4 shadow-sm">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="mb-0"><i className="bi bi-whatsapp me-2"></i>WhatsApp Credit Pricing</h4>
+          <button className="btn btn-primary btn-sm" onClick={() => setShowForm(true)}>
+            <i className="bi bi-plus-circle me-1"></i>Add Pricing
           </button>
         </div>
 
-        <table className="table table-bordered">
-          <thead className="table-light">
-            <tr>
-              <th>Credits</th><th>INR</th><th>USD</th><th>Status</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pricing.length === 0 ? (
+        <div className="table-responsive">
+          <table className="table table-hover table-striped">
+            <thead className="table-light">
               <tr>
-                <td colSpan="5" className="text-center">No pricing found</td>
+                <th>Credits</th><th>INR</th><th>USD</th><th>Status</th><th>Action</th>
               </tr>
-            ) : (
-              pricing.map((p) => (
-                <tr key={p.id}>
-                  <td>{p.credits}</td>
-                  <td>₹{p.price_inr}</td>
-                  <td>${p.price_usd}</td>
-                  <td>
-                    <span className={`badge ${p.active ? "bg-success" : "bg-danger"}`}>
-                      {p.active ? "Active" : "Disabled"}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-outline-primary"
-                      onClick={() => {
-                        setEditItem(p);
-                        setForm(p);
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </td>
+            </thead>
+            <tbody>
+              {pricing.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center text-muted">No pricing found</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                pricing.map((p) => (
+                  <tr key={p.id}>
+                    <td>{p.credits}</td>
+                    <td>₹{p.price_inr}</td>
+                    <td>${p.price_usd}</td>
+                    <td>
+                      <span className={`badge ${p.active ? "bg-success" : "bg-danger"}`}>
+                        {p.active ? "Active" : "Disabled"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-outline-primary me-1"
+                        onClick={() => {
+                          setEditItem(p);
+                          setForm(p);
+                          setShowForm(true);
+                        }}
+                      >
+                        <i className="bi bi-pencil"></i>
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={async () => {
+                          if (window.confirm("Are you sure you want to delete this pricing?")) {
+                            try {
+                              await axios.delete(`/api/whatsapp/pricing/${p.id}`, { headers });
+                              fetchAll();
+                            } catch (err) {
+                              console.error("Delete failed", err);
+                              alert("Delete failed");
+                            }
+                          }
+                        }}
+                      >
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* -------------------- USER CREDITS -------------------- */}
-      <div className="card mb-4 p-4">
-        <h4>👤 User Credit Balances</h4>
-        <table className="table table-striped mt-3">
-          <thead>
-            <tr>
-              <th>User</th><th>Total</th><th>Used</th><th>Remaining</th>
-            </tr>
-          </thead>
-          <tbody>
-            {credits.map((c) => (
-              <tr key={c.user_id}>
-                <td>{c.email}</td>
-                <td>{c.total_credits}</td>
-                <td>{c.used_credits}</td>
-                <td>{c.remaining_credits}</td>
+      <div className="card mb-4 p-4 shadow-sm">
+        <h4 className="mb-3"><i className="bi bi-people me-2"></i>User Credit Balances</h4>
+        <div className="table-responsive">
+          <table className="table table-hover table-striped">
+            <thead className="table-light">
+              <tr>
+                <th>User</th><th>Total</th><th>Used</th><th>Remaining</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {credits.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="text-center text-muted">No user credits found</td>
+                </tr>
+              ) : (
+                credits.map((c) => (
+                  <tr key={c.user_id}>
+                    <td>{c.email}</td>
+                    <td>{c.total_credits}</td>
+                    <td>{c.used_credits}</td>
+                    <td>{c.remaining_credits}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* -------------------- TRANSACTIONS -------------------- */}
-      <div className="card p-4">
-        <h4>💳 Credit Transactions</h4>
-        <table className="table table-hover mt-3">
-          <thead>
-            <tr>
-              <th>User</th><th>Credits</th><th>Amount</th><th>Status</th><th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.map((t) => (
-              <tr key={t.id}>
-                <td>{t.email}</td>
-                <td>{t.credits_added}</td>
-                <td>{t.currency} {t.amount}</td>
-                <td>
-                  <span className="badge bg-success">{t.status}</span>
-                </td>
-                <td>{new Date(t.created_at).toLocaleString()}</td>
+      <div className="card p-4 shadow-sm">
+        <h4 className="mb-3"><i className="bi bi-credit-card me-2"></i>Credit Transactions</h4>
+        <div className="table-responsive">
+          <table className="table table-hover table-striped">
+            <thead className="table-light">
+              <tr>
+                <th>User</th><th>Credits</th><th>Amount</th><th>Status</th><th>Date</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center text-muted">No transactions found</td>
+                </tr>
+              ) : (
+                transactions.map((t) => (
+                  <tr key={t.id}>
+                    <td>{t.email}</td>
+                    <td>{t.credits_added}</td>
+                    <td>{t.currency} {t.amount}</td>
+                    <td>
+                      <span className="badge bg-success">{t.status}</span>
+                    </td>
+                    <td>{new Date(t.created_at).toLocaleString()}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* -------------------- MODAL -------------------- */}
       {showForm && (
-        <div className="modal-backdrop show d-flex align-items-center justify-content-center">
-          <div className="bg-white p-4 rounded" style={{ width: 400 }}>
+        <div
+          style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          }}
+        >
+          <div style={{ backgroundColor: '#fff', padding: '20px', borderRadius: '8px', width: '100%', maxWidth: '500px' }}>
             <h5>{editItem ? "Edit Pricing" : "Add Pricing"}</h5>
 
             <form onSubmit={handleSubmit}>
-              <input
-                className="form-control mb-2"
-                placeholder="Credits"
-                value={form.credits}
-                onChange={(e) => setForm({ ...form, credits: e.target.value })}
-                required
-              />
-              <input
-                className="form-control mb-2"
-                placeholder="Price INR"
-                value={form.price_inr}
-                onChange={(e) => setForm({ ...form, price_inr: e.target.value })}
-                required
-              />
-              <input
-                className="form-control mb-2"
-                placeholder="Price USD"
-                value={form.price_usd}
-                onChange={(e) => setForm({ ...form, price_usd: e.target.value })}
-                required
-              />
-              <select
-                className="form-control mb-3"
-                value={form.active}
-                onChange={(e) => setForm({ ...form, active: e.target.value })}
-              >
-                <option value={1}>Active</option>
-                <option value={0}>Disabled</option>
-              </select>
+              <div className="mb-2">
+                <label className="form-label">Credits</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter number of credits (e.g., 100)"
+                  value={form.credits}
+                  onChange={(e) => setForm({ ...form, credits: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Price INR</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter price in INR (e.g., 500)"
+                  value={form.price_inr}
+                  onChange={(e) => setForm({ ...form, price_inr: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Price USD</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter price in USD (e.g., 6.50)"
+                  value={form.price_usd}
+                  onChange={(e) => setForm({ ...form, price_usd: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="mb-2">
+                <label className="form-label">Active Status</label>
+                <select
+                  className="form-control"
+                  value={form.active}
+                  onChange={(e) => setForm({ ...form, active: e.target.value })}
+                >
+                  <option value={1}>Active</option>
+                  <option value={0}>Disabled</option>
+                </select>
+              </div>
 
-              <div className="d-flex justify-content-end gap-2">
+              <div className="d-flex justify-content-end gap-2 mt-3">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowForm(false)}>
                   Cancel
                 </button>
-                <button className="btn btn-primary">Save</button>
+                <button type="submit" className="btn btn-primary">{editItem ? "Update" : "Create"}</button>
               </div>
             </form>
           </div>

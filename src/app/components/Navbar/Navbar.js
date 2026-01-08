@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import axios from 'axios';
 
 import Script from "next/script";
 
@@ -35,10 +36,13 @@ import "@fontsource/inter/600.css"; // Weight 600
 import "@fontsource/inter/700.css"; // Weight 700
 
 import Link from 'next/link';
+import WhatsAppCreditsOffcanvas from '../WhatsAppCreditsOffcanvas';
 
 
 
 export default function Navbar() {
+
+    const [credits, setCredits] = useState(null);
 
     function decodeJWT(token) {
         if (!token) return null;
@@ -56,6 +60,15 @@ export default function Navbar() {
 
     // For debugging
     console.log("Decoded token:", userData);
+
+    useEffect(() => {
+        if (token) {
+            const headers = { Authorization: `Bearer ${token}` };
+            axios.get("/api/whatsapp/credits", { headers })
+                .then(res => setCredits(res.data))
+                .catch(err => console.error("Failed to fetch credits:", err));
+        }
+    }, [token]);
 
     return (
         <>
@@ -105,6 +118,13 @@ export default function Navbar() {
                     </div>
 
                     <ul className="navbar-nav flex-row align-items-center ms-auto">
+
+                        <li className="nav-item me-5">
+                            <a className="nav-link position-relative" href="javascript:void(0);" data-bs-toggle="offcanvas" data-bs-target="#whatsappCreditsOffcanvas">
+                                <i className="ri-wallet-3-line ri-30px"></i>
+                                <span className="badge bg-primary position-absolute bottom-0 end-0 badge-sm" style={{ transform: 'translate(45%, 20%)' }}>{credits?.remaining_credits || 0}</span>
+                            </a>
+                        </li>
 
                         <li className="nav-item navbar-dropdown dropdown-user dropdown">
                             <a className="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
@@ -177,6 +197,17 @@ export default function Navbar() {
                     <i className="ri-close-fill search-toggler cursor-pointer"></i>
                 </div>
             </nav>
+
+            {/* WhatsApp Credits Offcanvas */}
+            <div className="offcanvas offcanvas-end" tabIndex="-1" id="whatsappCreditsOffcanvas" aria-labelledby="whatsappCreditsOffcanvasLabel">
+                <div className="offcanvas-header">
+                    <h5 id="whatsappCreditsOffcanvasLabel">WhatsApp Credits</h5>
+                    <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div className="offcanvas-body">
+                    <WhatsAppCreditsOffcanvas />
+                </div>
+            </div>
 
 
 

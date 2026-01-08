@@ -2,9 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Preloader from "../components/Preloader";
 
-export default function WhatsAppCreditsPage() {
+export default function WhatsAppCreditsOffcanvas() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
@@ -101,27 +100,38 @@ export default function WhatsAppCreditsPage() {
     }
   };
 
-  if (loading) return <Preloader />;
+  if (loading) return (
+    <div className="text-center py-5">
+      <div className="spinner-border text-primary" role="status">
+        <span className="visually-hidden">Loading...</span>
+      </div>
+      <p className="mt-2 text-muted">Loading WhatsApp Credits...</p>
+    </div>
+  );
 
   return (
-    <div className="container-xxl container-p-y">
-
-      <div className="card p-4 mb-4">
-        <h4>📲 WhatsApp Credits</h4>
-        <p className="text-muted">
-          1 WhatsApp notification = 1 credit
-        </p>
-
-        <div className="alert alert-info">
-          <b>Total Credits:</b>{" "}
-          {credits?.remaining_credits ?? 0}
-        </div>
+    <div>
+      {/* Header */}
+      <div className="text-center mb-3">
+        <i className="ri-whatsapp-line ri-2x text-success mb-1"></i>
+        <h6 className="fw-bold mb-1">WhatsApp Credits</h6>
+        <p className="text-muted small mb-0">1 notification = 1 credit</p>
       </div>
 
-      <div className="card p-4">
-        <h5>Select Number of Credits</h5>
+      {/* Total Credits */}
+      <div className="text-center mb-3">
+        <i className="ri-wallet-3-line ri-lg text-primary me-1"></i>
+        <span className="fw-bold text-primary">{credits?.remaining_credits ?? 0} Total Credits</span>
+      </div>
+
+      {/* Select Credits */}
+      <div className="mb-3">
+        <label htmlFor="credits-select" className="form-label fw-bold">
+          <i className="ri-coin-line me-1 text-warning"></i>Select Credits
+        </label>
         <select
-          className="form-select mb-3"
+          id="credits-select"
+          className="form-select form-select-sm"
           value={selectedCredits?.id || ""}
           onChange={(e) => {
             const selected = pricing.find(p => p.id === parseInt(e.target.value));
@@ -134,20 +144,40 @@ export default function WhatsAppCreditsPage() {
             </option>
           ))}
         </select>
-
-        {selectedCredits && (
-          <div className="text-center">
-            <h4 className="my-3">₹{selectedCredits.price_inr}</h4>
-            <button
-              className="btn btn-primary"
-              disabled={processing}
-              onClick={() => buyCredits(selectedCredits.credits)}
-            >
-              {processing ? "Processing..." : "Buy Credits"}
-            </button>
-          </div>
-        )}
       </div>
+
+      {/* Selected Plan */}
+      {selectedCredits && (
+        <div className="text-center mb-3">
+          <div className="d-flex align-items-center justify-content-center mb-2">
+            <i className="ri-coin-line ri-xl text-warning me-2"></i>
+            <div>
+              <h5 className="mb-0 fw-bold">{selectedCredits.credits} Credits</h5>
+              <h4 className="text-success fw-bold">₹{selectedCredits.price_inr}</h4>
+            </div>
+          </div>
+          <small className="text-muted">Instant • Secure • 24/7 Support</small>
+        </div>
+      )}
+
+      {/* Buy Button */}
+      {selectedCredits && (
+        <button
+          className="btn btn-primary w-100"
+          disabled={processing}
+          onClick={() => buyCredits(selectedCredits.credits)}
+        >
+          <i className="ri-shopping-cart-line me-1"></i>
+          {processing ? (
+            <>
+              <span className="spinner-border spinner-border-sm me-2" role="status"></span>
+              Processing...
+            </>
+          ) : (
+            `Buy Now`
+          )}
+        </button>
+      )}
     </div>
   );
 }

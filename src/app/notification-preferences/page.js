@@ -89,11 +89,11 @@ export default function NotificationPreferences() {
                 </Link>
               </li>
 
-              <li className="nav-item me-2">
+              {/* <li className="nav-item me-2">
                 <Link className="nav-link" href="/whatsapp-credits">
                   WhatsApp Credits
                 </Link>
-              </li>
+              </li> */}
 
               <li className="nav-item me-2">
                 <Link className="nav-link" href="/Accounts/Account">

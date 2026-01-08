@@ -32,3 +32,31 @@ export async function PUT(req, { params }) {
 
   return NextResponse.json({ success: true });
 }
+
+export async function DELETE(req, { params }) {
+  const token = req.headers.get("authorization")?.split(" ")[1];
+  let user;
+
+  try {
+    user = jwt.verify(token, "your_secret_key");
+  } catch {
+    return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  }
+
+  if (user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+
+  if (id === undefined) {
+    return NextResponse.json({ error: "ID is required" }, { status: 400 });
+  }
+
+  await db.execute(
+    `DELETE FROM whatsapp_credit_pricing WHERE id = ?`,
+    [id]
+  );
+
+  return NextResponse.json({ success: true });
+}

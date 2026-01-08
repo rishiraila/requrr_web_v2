@@ -1,5 +1,6 @@
-# TODO for Implementing WhatsApp API Routes
+# TODO: Modify Income Records API to Return Client Name and Service Name
 
-- [x] Update `src/app/api/whatsapp/credits/route.js`: Replace GET handler with admin-only version for all users' credits
-- [x] Update `src/app/api/whatsapp/pricing/route.js`: Modify POST handler to include JWT authentication and set active=1
-- [x] Create `src/app/api/whatsapp/pricing/[id]/route.js`: Add PUT handler for updating pricing by ID with admin auth
+## Tasks
+- [x] Update the GET function's SQL query to join with clients and services tables and select client_name and service_name
+- [x] Update the Swagger response schema to include client_name and service_name instead of client_id and service_id
+- [x] Verify the changes are implemented correctly

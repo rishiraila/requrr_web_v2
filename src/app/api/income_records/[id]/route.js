@@ -101,7 +101,11 @@ export async function GET(req, { params }) {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
   const [rows] = await db.query(
-    'SELECT * FROM income_records WHERE id = ? AND user_id = ?',
+    `SELECT ir.id, c.name as client_name, s.name as service_name, ir.amount, ir.payment_date, ir.due_date, ir.status, ir.is_recurring, ir.recurrence_id, ir.notes
+     FROM income_records ir
+     JOIN clients c ON ir.client_id = c.id
+     JOIN services s ON ir.service_id = s.id
+     WHERE ir.id = ? AND ir.user_id = ?`,
     [params.id, user.id]
   );
 
