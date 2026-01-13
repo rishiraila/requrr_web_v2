@@ -1,13 +1,15 @@
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
-export async function DELETE(req, { params }) {
+export async function DELETE(req, context) {
   const user = authenticate(req);
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const categoryId = params.id;
+  // ✅ FIX: await params
+  const { id } = await context.params;
+  const categoryId = id;
 
   // ✅ Verify ownership
   const [[category]] = await db.query(
