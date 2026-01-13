@@ -5,9 +5,11 @@ export async function GET(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = await params;
+
   const [rows] = await db.query(
     'SELECT * FROM recurring_expenses WHERE id = ? AND user_id = ?',
-    [params.id, user.id]
+    [id, user.id]
   );
 
   return Response.json(rows[0] || {});
@@ -16,6 +18,8 @@ export async function GET(req, { params }) {
 export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
 
   const {
     title,
@@ -61,7 +65,7 @@ export async function PUT(req, { params }) {
       recurrence_id,
       notes,
       category_id || null,
-      params.id,
+      id,
       user.id,
     ]
   );
@@ -74,12 +78,12 @@ export async function DELETE(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const recordId = params.id;
+  const { id } = await params;
 
   // Check existence before deleting
   const [[record]] = await db.query(
     `SELECT id FROM recurring_expenses WHERE id = ? AND user_id = ?`,
-    [recordId, user.id]
+    [id, user.id]
   );
 
   if (!record) {
@@ -88,7 +92,7 @@ export async function DELETE(req, { params }) {
 
   await db.query(
     `DELETE FROM recurring_expenses WHERE id = ? AND user_id = ?`,
-    [recordId, user.id]
+    [id, user.id]
   );
 
   return Response.json({ message: 'Recurring expense deleted successfully' });
