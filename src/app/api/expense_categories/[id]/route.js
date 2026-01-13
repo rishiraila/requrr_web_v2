@@ -9,31 +9,21 @@ export async function DELETE(req, { params }) {
 
   const categoryId = params.id;
 
-  // 🔍 Check if category exists and belongs to user
+  // ✅ Verify ownership
   const [[category]] = await db.query(
     'SELECT id FROM expense_categories WHERE id = ? AND user_id = ?',
     [categoryId, user.id]
   );
 
   if (!category) {
-    return Response.json(
-      { error: 'Category not found' },
-      { status: 404 }
-    );
+    return Response.json({ error: 'Category not found' }, { status: 404 });
   }
 
-  // 🚫 OPTIONAL: Prevent delete if category is used in expenses
-  const [[used]] = await db.query(
-    'SELECT id FROM recurring_expenses WHERE category_id = ? LIMIT 1',
-    [categoryId]
+  // 🔄 Remove category reference from expenses
+  await db.query(
+    'UPDATE recurring_expenses SET category_id = NULL WHERE category_id = ? AND user_id = ?',
+    [categoryId, user.id]
   );
-
-  if (used) {
-    return Response.json(
-      { error: 'Category is used in expenses and cannot be deleted' },
-      { status: 400 }
-    );
-  }
 
   // 🗑️ Delete category
   await db.query(
