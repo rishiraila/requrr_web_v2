@@ -10,10 +10,33 @@ export default function AddClient({ onClose, onSuccess }) {
     company_name: '', name: '', email: '', phone: '', address: '', notes: ''
   });
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const [errors, setErrors] = useState({});
+
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    // Clear error for this field when user starts typing
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = 'Name is required';
+    if (!form.email.trim()) newErrors.email = 'Email is required';
+    // Add email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (form.email && !emailRegex.test(form.email)) newErrors.email = 'Please enter a valid email address';
+    return newErrors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     try {
       setLoading(true);
       const token = localStorage.getItem("token");

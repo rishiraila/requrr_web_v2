@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Preloader from './Preloader'
+import Preloader from './Preloader';
+import Toast from './Toast';
 
 export default function EditClient({ client, onClose, onSuccess }) {
 
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({ ...client });
+
+  const [toast, setToast] = useState(null);
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -18,9 +21,13 @@ export default function EditClient({ client, onClose, onSuccess }) {
       await axios.put(`/api/clients/${client.id}`, form, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      onSuccess(); // Refresh list and close
+      setToast({ message: 'Client updated successfully!', type: 'success' });
+      setTimeout(() => {
+        onSuccess(); // Refresh list and close
+      }, 2000);
     } catch (err) {
       console.error("Update failed", err);
+      setToast({ message: 'Failed to update client. Please try again.', type: 'error' });
     } finally {
       setLoading(false); // Hide loader
     }
@@ -64,6 +71,13 @@ export default function EditClient({ client, onClose, onSuccess }) {
           </form>
         )}
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

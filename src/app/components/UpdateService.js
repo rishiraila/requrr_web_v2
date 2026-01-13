@@ -6,6 +6,8 @@ export default function UpdateService({ service, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({ ...service });
 
+  const [toast, setToast] = useState(null);
+
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -17,9 +19,13 @@ export default function UpdateService({ service, onClose, onSuccess }) {
       await axios.put(`/api/Services/${service.id}`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      onSuccess();
+      setToast({ message: 'Service updated successfully!', type: 'success' });
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
     } catch (err) {
       console.error('Update failed', err);
+      setToast({ message: 'Failed to update service. Please try again.', type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -143,6 +149,13 @@ export default function UpdateService({ service, onClose, onSuccess }) {
               </button>
             </div>
           </form>
+        )}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
         )}
       </div>
     </div>

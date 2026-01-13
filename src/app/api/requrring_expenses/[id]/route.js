@@ -27,12 +27,28 @@ export async function PUT(req, { params }) {
     is_recurring,
     recurrence_id,
     notes,
+    category_id, // ✅ FIXED
   } = await req.json();
 
+  // 🔐 SECURITY: validate category ownership
+  if (category_id) {
+    const [[cat]] = await db.query(
+      'SELECT id FROM expense_categories WHERE id = ? AND user_id = ?',
+      [category_id, user.id]
+    );
+
+    if (!cat) {
+      return Response.json(
+        { error: 'Invalid category selected' },
+        { status: 400 }
+      );
+    }
+  }
+
   await db.query(
-    `UPDATE recurring_expenses SET 
-      title = ?, amount = ?, payment_date = ?, frequency = ?, due_date = ?, 
-      status = ?, is_recurring = ?, recurrence_id = ?, notes = ?
+    `UPDATE recurring_expenses SET
+      title = ?, amount = ?, payment_date = ?, frequency = ?, due_date = ?,
+      status = ?, is_recurring = ?, recurrence_id = ?, notes = ?, category_id = ?
      WHERE id = ? AND user_id = ?`,
     [
       title,
@@ -44,6 +60,7 @@ export async function PUT(req, { params }) {
       is_recurring,
       recurrence_id,
       notes,
+      category_id || null,
       params.id,
       user.id,
     ]
@@ -51,6 +68,7 @@ export async function PUT(req, { params }) {
 
   return Response.json({ message: 'Recurring expense updated' });
 }
+
 
 export async function DELETE(req, { params }) {
   const user = authenticate(req);

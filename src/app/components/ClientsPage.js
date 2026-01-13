@@ -4,6 +4,7 @@ import axios from 'axios';
 import AddClient from './AddClient';
 import EditClient from './EditClient';
 import Preloader from '../components/Preloader'
+import Toast from './Toast';
 
 import { useAppContext } from '../context/AppContext';
 
@@ -19,6 +20,7 @@ export default function ClientsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editingClient, setEditingClient] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [toast, setToast] = useState(null);
 
   const fetchClients = async () => {
     try {
@@ -59,9 +61,15 @@ export default function ClientsPage() {
       await axios.delete(`/api/clients/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Optimistically remove the client from the list
+      setClients(clients.filter(client => client.id !== id));
+      setClientCount(prev => prev - 1);
+      setToast({ message: "Client deleted successfully", type: "success" });
+      // Fetch updated list to ensure consistency
       fetchClients();
     } catch (err) {
       console.error("Delete failed", err);
+      setToast({ message: "Failed to delete client", type: "error" });
     }
   };
 
@@ -190,6 +198,14 @@ export default function ClientsPage() {
             setEditingClient(null);
             fetchClients();
           }} />
+        )}
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
         )}
       </div>
 
