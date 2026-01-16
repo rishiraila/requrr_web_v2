@@ -48,6 +48,14 @@ export default function Home() {
 
   const [expenseFilter, setExpenseFilter] = useState("6m"); // '6m', '12m', 'all'
 
+  const [expenseAnalysis, setExpenseAnalysis] = useState({
+    totalExpenses: 0,
+    expensesByCategory: [],
+    monthlyExpenses: [],
+    topExpenses: [],
+    frequencyDistribution: [],
+  });
+
   const totalRenewalsCount = Subscriptions.length;
   const [recurringExpenses, setRecurringExpenses] = useState([]);
   const [clients, setClients] = useState([]);
@@ -258,6 +266,26 @@ export default function Home() {
     }
   };
 
+  const fetchExpenseAnalysis = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/Login";
+      return;
+    }
+    try {
+      const res = await axios.get("/api/expense-analysis", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setExpenseAnalysis(res.data);
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        window.location.href = "/Login";
+      } else {
+        console.error("Error fetching expense analysis:", err);
+      }
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       await Promise.all([
@@ -266,7 +294,7 @@ export default function Home() {
         fetchClientCount(),
         fetchServiceCount(),
         fetchPendingRevenue(),
-        fetchUserData(),
+        fetchExpenseAnalysis(),
       ]);
       setLoading(false); // Hide preloader after all API calls are done
     };
@@ -302,50 +330,7 @@ export default function Home() {
 
   const groupedSubscriptions = groupByEntity(updatedSubscriptions);
 
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    name: "",
-    phone: "",
-    startAmount: 0,
-  });
-
-  const fetchUserData = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      window.location.href = "/Login";
-      return;
-    }
-    try {
-      const response = await axios.get("/api/EditUser", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      console.log(response.data);
-      if (response.status === 200) {
-        setFormData(response.data);
-      } else {
-        console.error(
-          "Error fetching user data:",
-          response.status,
-          response.data
-        );
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        window.location.href = "/Login";
-      } else {
-        console.error(
-          "Error fetching user data:",
-          error.response ? error.response.data : error.message
-        );
-      }
-    }
-  };
   useEffect(() => {
-    fetchUserData();
     fetchRecurringExpenses();
   }, []);
 
@@ -716,6 +701,148 @@ export default function Home() {
           {/* new logic ends here */}
         </div>
 
+        {/* Expense Analysis Section */}
+        <div className="row mt-4">
+          <h5 className="ps-4">Expense Analysis</h5>
+
+          {/* Total Expenses Tile */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-warning h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-warning">
+                      <i className="ri-money-dollar-circle-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">₹{expenseAnalysis.totalExpenses.toLocaleString()}</h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Total Expenses</h6>
+              </div>
+            </div>
+          </div>
+
+          {/* Expenses by Category */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-primary h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-primary">
+                      <i className="ri-pie-chart-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">{expenseAnalysis.expensesByCategory.length}</h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Expense Categories</h6>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Expense */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-info h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-info">
+                      <i className="ri-star-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">
+                    {expenseAnalysis.topExpenses.length > 0
+                      ? `₹${expenseAnalysis.topExpenses[0].amount}`
+                      : "0"}
+                  </h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Top Expense Amount</h6>
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Expenses Count */}
+          <div className="col-sm-6 col-lg-3 mb-5">
+            <div className="card card-border-shadow-secondary h-100">
+              <div className="card-body">
+                <div className="d-flex align-items-center mb-2">
+                  <div className="avatar me-4">
+                    <span className="avatar-initial rounded-3 bg-label-secondary">
+                      <i className="ri-calendar-line ri-24px"></i>
+                    </span>
+                  </div>
+                  <h4 className="mb-0">{expenseAnalysis.monthlyExpenses.length}</h4>
+                </div>
+                <h6 className="mb-0 fw-normal">Monthly Records</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Detailed Expense Analysis */}
+        <div className="row mt-4">
+          <div className="col-md-6 mb-4">
+            <div className="card p-4 shadow-sm h-100">
+              <h6 className="fw-bold mb-3">Expenses by Category</h6>
+              <div className="table-responsive">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Category</th>
+                      <th>Total Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expenseAnalysis.expensesByCategory.length > 0 ? (
+                      expenseAnalysis.expensesByCategory.map((cat, index) => (
+                        <tr key={index}>
+                          <td>{cat.category || "Uncategorized"}</td>
+                          <td>₹{parseFloat(cat.total).toLocaleString()}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="2" className="text-center">No expense categories found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-6 mb-4">
+            <div className="card p-4 shadow-sm h-100">
+              <h6 className="fw-bold mb-3">Top 5 Expenses</h6>
+              <div className="table-responsive">
+                <table className="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Amount</th>
+                      <th>Next Due</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {expenseAnalysis.topExpenses.length > 0 ? (
+                      expenseAnalysis.topExpenses.map((exp, index) => (
+                        <tr key={index}>
+                          <td>{exp.title}</td>
+                          <td>₹{parseFloat(exp.amount).toLocaleString()}</td>
+                          <td>{new Date(exp.next_run_date).toLocaleDateString()}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="text-center">No expenses found</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="card-body my-5">
           {/* <div className='row'> */}
 
@@ -770,7 +897,7 @@ export default function Home() {
                       <th>Due Date</th>
                       <th>Amount</th>
                       <th>Status</th>
-                      <th>Description</th> {/* 👈 Add this */}
+                      <th>Description</th>
                       <th>Action</th>
                     </tr>
                   </thead>

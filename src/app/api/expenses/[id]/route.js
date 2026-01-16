@@ -1,55 +1,88 @@
+/**
+ * @swagger
+ * /api/expenses/{id}:
+ *   get:
+ *     summary: Get expense by ID
+ *   put:
+ *     summary: Update expense
+ *   delete:
+ *     summary: Delete expense
+ */
+
 import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
-export async function PUT(req, context) {
-  const { params } = context;
-  const { id } = params;
-
+export async function GET(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const {
-    description,
-    amount,
-    category,
-    account,
-    date,
-  } = await req.json();
+  const { id } = params;
 
-  if (!description || !amount || !category || !date || !account) {
-    return Response.json({ error: 'Missing required fields' }, { status: 400 });
-  }
-
-  // Perform the update
-  await db.query(
-    `UPDATE expenses SET description = ?, amount = ?, category = ?, account = ?, date = ? WHERE id = ? AND user_id = ?`,
-    [description, amount, category, account, date, id, user.id]
-  );
-
-  // Fetch and return the updated expense
-  const [rows] = await db.query(
-    `SELECT * FROM expenses WHERE id = ? AND user_id = ?`,
+  const [[expense]] = await db.query(
+    'SELECT * FROM expenses WHERE id = ? AND user_id = ?',
     [id, user.id]
   );
 
-  if (rows.length === 0) {
-    return Response.json({ error: 'Expense not found or not updated' }, { status: 404 });
-  }
-
-  return Response.json(rows[0]);
+  return Response.json(expense || {});
 }
 
-export async function DELETE(req, context) {
-  const { params } = context;
-  const { id } = params;
-
+export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const { id } = params;
+  const {
+    title,
+    amount,
+    expense_date,
+    due_date,
+    status,
+    category_id,
+    notes,
+  } = await req.json();
+
+  // 🔐 Validate category ownership
+  if (category_id) {
+    const [[cat]] = await db.query(
+      'SELECT id FROM expense_categories WHERE id = ? AND user_id = ?',
+      [category_id, user.id]
+    );
+    if (!cat) {
+      return Response.json({ error: 'Invalid category' }, { status: 400 });
+    }
+  }
+
   await db.query(
-    `DELETE FROM expenses WHERE id = ? AND user_id = ?`,
+    `UPDATE expenses SET
+      title = ?, amount = ?, expense_date = ?, due_date = ?,
+      status = ?, category_id = ?, notes = ?
+     WHERE id = ? AND user_id = ?`,
+    [
+      title,
+      amount,
+      expense_date,
+      due_date || null,
+      status,
+      category_id || null,
+      notes,
+      id,
+      user.id,
+    ]
+  );
+
+  return Response.json({ message: 'Expense updated' });
+}
+
+export async function DELETE(req, { params }) {
+  const user = authenticate(req);
+  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = params;
+
+  await db.query(
+    'DELETE FROM expenses WHERE id = ? AND user_id = ?',
     [id, user.id]
   );
 
-  return Response.json({ message: 'Expense record deleted successfully' });
+  return Response.json({ message: 'Expense deleted' });
 }

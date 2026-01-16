@@ -3,14 +3,19 @@ import { authenticate } from '../../../middleware/auth';
 
 export async function GET(req) {
   const user = authenticate(req);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  const [records] = await db.query(
-    'SELECT * FROM recurring_expenses WHERE user_id = ? ORDER BY payment_date DESC',
+  const [rows] = await db.query(
+    `SELECT re.*, ec.name AS category_name
+     FROM recurring_expenses re
+     LEFT JOIN expense_categories ec ON re.category_id = ec.id
+     WHERE re.user_id = ? ORDER BY re.next_run_date`,
     [user.id]
   );
 
-  return Response.json(records);
+  return Response.json(rows);
 }
 
 export async function POST(req) {
@@ -22,50 +27,49 @@ export async function POST(req) {
   const {
     title,
     amount,
-    payment_date,
     frequency,
-    due_date,
-    status,
-    is_recurring,
-    recurrence_id,
-    notes,
+    next_run_date,
     category_id,
+    notes,
+    is_one_time,
   } = await req.json();
 
-  // 🔐 SECURITY: validate category ownership
-  if (category_id) {
-    const [[cat]] = await db.query(
-      'SELECT id FROM expense_categories WHERE id = ? AND user_id = ?',
-      [category_id, user.id]
+  // ✅ Correct validation
+  if (!title || !amount) {
+    return Response.json(
+      { error: 'Missing required fields: title and amount are required' },
+      { status: 400 }
     );
+  }
 
-    if (!cat) {
-      return Response.json(
-        { error: 'Invalid category selected' },
-        { status: 400 }
-      );
-    }
+  if (!is_one_time && (!frequency || !next_run_date)) {
+    return Response.json(
+      { error: 'Missing required fields: frequency and next_run_date are required for recurring expenses' },
+      { status: 400 }
+    );
+  }
+
+  if (is_one_time && !next_run_date) {
+    return Response.json(
+      { error: 'Missing required fields: date is required for one-time expenses' },
+      { status: 400 }
+    );
   }
 
   await db.query(
     `INSERT INTO recurring_expenses
-     (user_id, title, amount, payment_date, frequency, due_date, status, is_recurring, recurrence_id, notes, category_id)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     (user_id, title, amount, frequency, next_run_date, category_id, status, notes)
+     VALUES (?, ?, ?, ?, ?, ?, 'active', ?)`,
     [
       user.id,
       title,
       amount,
-      payment_date,
       frequency,
-      due_date || null,
-      status,
-      is_recurring,
-      recurrence_id,
-      notes,
+      next_run_date,
       category_id || null,
+      notes || null,
     ]
   );
 
   return Response.json({ message: 'Recurring expense added successfully' });
 }
-

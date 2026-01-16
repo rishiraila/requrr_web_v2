@@ -1,8 +1,9 @@
-'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import AddExpenseModal from './AddExpenseModal';
-import AddIncomeModal from './AddIncomeModal';
-import * as XLSX from 'xlsx';
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import AddExpenseModal from "./AddExpenseModal";
+import AddIncomeModal from "./AddIncomeModal";
+import AddCategoryModal from "./AddCategoryModal";
+import * as XLSX from "xlsx";
 
 import {
   PieChart,
@@ -11,22 +12,23 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from "recharts";
 
 export default function ExpenseCalculator() {
   const [expenses, setExpenses] = useState([]);
   const [incomes, setIncomes] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [pageSize, setPageSize] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showIncomeModal, setShowIncomeModal] = useState(false);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showIncomeTable, setShowIncomeTable] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
   const [editingIncome, setEditingIncome] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [sortKey, setSortKey] = useState('date');
-  const [sortOrder, setSortOrder] = useState('desc');
+  const [sortKey, setSortKey] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
   const pollingInterval = useRef(null);
 
   useEffect(() => {
@@ -43,25 +45,25 @@ export default function ExpenseCalculator() {
 
   const fetchExpenses = async () => {
     try {
-      const res = await fetch('/api/expenses', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const res = await fetch("/api/expenses", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       setExpenses(data);
     } catch (error) {
-      console.error('Failed to fetch expenses:', error);
+      console.error("Failed to fetch expenses:", error);
     }
   };
 
   const fetchIncomes = async () => {
     try {
-      const res = await fetch('/api/expenses/income', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      const res = await fetch("/api/expenses/income", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       const data = await res.json();
       setIncomes(data);
     } catch (error) {
-      console.error('Failed to fetch incomes:', error);
+      console.error("Failed to fetch incomes:", error);
     }
   };
 
@@ -70,24 +72,24 @@ export default function ExpenseCalculator() {
       setIsSaving(true);
       const isEditing = !!data.id;
       const endpoint =
-        type === 'expense'
-          ? `/api/expenses${isEditing ? `/${data.id}` : ''}`
-          : `/api/expenses/income${isEditing ? `/${data.id}` : ''}`;
+        type === "expense"
+          ? `/api/expenses${isEditing ? `/${data.id}` : ""}`
+          : `/api/expenses/income${isEditing ? `/${data.id}` : ""}`;
       const res = await fetch(endpoint, {
-        method: isEditing ? 'PUT' : 'POST',
+        method: isEditing ? "PUT" : "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify(data),
       });
       if (!res.ok) {
         const err = await res.json();
-        alert(err.error || 'Failed to save');
+        alert(err.error || "Failed to save");
         return;
       }
       const saved = await res.json();
-      if (type === 'expense') {
+      if (type === "expense") {
         const updated = isEditing
           ? expenses.map((e) => (e.id === saved.id ? saved : e))
           : [...expenses, saved];
@@ -103,7 +105,32 @@ export default function ExpenseCalculator() {
         setEditingIncome(null);
       }
     } catch (err) {
-      console.error('Error saving data:', err);
+      console.error("Error saving data:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddCategory = async (data) => {
+    try {
+      setIsSaving(true);
+      const res = await fetch("/api/expense_categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Failed to add category");
+        return;
+      }
+      setShowCategoryModal(false);
+      // Optionally refetch categories if needed, but since AddExpenseModal fetches on show, it will update
+    } catch (err) {
+      console.error("Error adding category:", err);
     } finally {
       setIsSaving(false);
     }
@@ -112,36 +139,62 @@ export default function ExpenseCalculator() {
   const removeItem = async (id, type) => {
     try {
       const endpoint =
-        type === 'expense'
+        type === "expense"
           ? `/api/expenses/${id}`
           : `/api/expenses/income/${id}`;
       const res = await fetch(endpoint, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       if (res.ok) {
-        type === 'expense' ? fetchExpenses() : fetchIncomes();
+        type === "expense" ? fetchExpenses() : fetchIncomes();
       } else {
         const err = await res.json();
-        alert(err.error || 'Failed to delete');
+        alert(err.error || "Failed to delete");
       }
     } catch (err) {
-      console.error('Error deleting:', err);
+      console.error("Error deleting:", err);
     }
   };
 
   const handleSort = (key) => {
     if (key === sortKey) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortKey(key);
-      setSortOrder('asc');
+      setSortOrder("asc");
     }
   };
+  const markExpensePaid = async (id) => {
+  if (!confirm("Mark this expense as paid?")) return;
+
+  try {
+    const res = await fetch(`/api/expenses/${id}/mark-paid`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || "Failed to mark as paid");
+      return;
+    }
+
+    fetchExpenses();
+  } catch (err) {
+    console.error("Error marking paid:", err);
+  }
+};
+
+
   const exportToExcel = () => {
     const sheetData = showIncomeTable ? incomes : expenses;
     const data = sheetData.map((item, index) => ({
-      '#': index + 1,
+      "#": index + 1,
       Amount: item.amount,
       Category: item.category,
       Account: item.account,
@@ -149,77 +202,98 @@ export default function ExpenseCalculator() {
       Date: new Date(item.date).toLocaleDateString(),
     }));
 
-    data.push({},
-      { Label: 'Total Income', Value: totalIncome },
-      { Label: 'Total Expense', Value: totalExpense },
-      { Label: 'Profit', Value: profit },
-      { Label: 'Total Transactions', Value: totalTransactions },
+    data.push(
+      {},
+      { Label: "Total Income", Value: totalIncome },
+      { Label: "Total Expense", Value: totalExpense },
+      { Label: "Profit", Value: profit },
+      { Label: "Total Transactions", Value: totalTransactions }
     );
 
     const worksheet = XLSX.utils.json_to_sheet(data, { skipHeader: false });
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, showIncomeTable ? 'Incomes' : 'Expenses');
-    XLSX.writeFile(workbook, `${showIncomeTable ? 'Incomes' : 'Expenses'}_Report.xlsx`);
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      showIncomeTable ? "Incomes" : "Expenses"
+    );
+    XLSX.writeFile(
+      workbook,
+      `${showIncomeTable ? "Incomes" : "Expenses"}_Report.xlsx`
+    );
   };
-
 
   const sortData = (data) => {
     return [...data].sort((a, b) => {
       const valA = a[sortKey];
       const valB = b[sortKey];
-      if (sortKey === 'amount') {
-        return sortOrder === 'asc'
+      if (sortKey === "amount") {
+        return sortOrder === "asc"
           ? parseFloat(valA) - parseFloat(valB)
           : parseFloat(valB) - parseFloat(valA);
       }
-      if (sortKey === 'date') {
-        return sortOrder === 'asc'
+      if (sortKey === "expense_date") {
+        return sortOrder === "asc"
           ? new Date(valA) - new Date(valB)
           : new Date(valB) - new Date(valA);
       }
-      return sortOrder === 'asc'
+      return sortOrder === "asc"
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
   };
 
-  const totalExpense = expenses.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
-  const totalIncome = incomes.reduce((acc, curr) => acc + parseFloat(curr.amount || 0), 0);
+  const totalExpense = expenses.reduce(
+    (acc, curr) => acc + parseFloat(curr.amount || 0),
+    0
+  );
+  const totalIncome = incomes.reduce(
+    (acc, curr) => acc + parseFloat(curr.amount || 0),
+    0
+  );
   const profit = totalIncome - totalExpense;
   const totalTransactions = expenses.length + incomes.length;
 
   const filteredExpenses = sortData(
-    expenses.filter((e) =>
-      e.description?.toLowerCase().includes(search.toLowerCase())
+    expenses.filter(
+      (e) =>
+        e.title?.toLowerCase().includes(search.toLowerCase()) ||
+        e.category_name?.toLowerCase().includes(search.toLowerCase())
     )
   );
 
   const filteredIncomes = sortData(
-    incomes.filter((i) =>
-      i.description?.toLowerCase().includes(search.toLowerCase())
+    incomes.filter(
+      (i) =>
+        i.title?.toLowerCase().includes(search.toLowerCase()) ||
+        i.category_name?.toLowerCase().includes(search.toLowerCase())
     )
   );
 
-  const totalPages = pageSize === 'all' ? 1 : Math.ceil(filteredExpenses.length / pageSize);
+  const totalPages =
+    pageSize === "all" ? 1 : Math.ceil(filteredExpenses.length / pageSize);
   const paginatedExpenses =
-    pageSize === 'all'
+    pageSize === "all"
       ? filteredExpenses
-      : filteredExpenses.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+      : filteredExpenses.slice(
+          (currentPage - 1) * pageSize,
+          currentPage * pageSize
+        );
 
   const pieData = [
-    { name: 'Income', value: totalIncome },
-    { name: 'Expense', value: totalExpense },
-    { name: 'Profit', value: profit },
+    { name: "Income", value: totalIncome },
+    { name: "Expense", value: totalExpense },
+    { name: "Profit", value: profit },
   ];
-  const pieColors = ['#00C49F', '#FF8042', '#0088FE'];
+  const pieColors = ["#00C49F", "#FF8042", "#0088FE"];
 
   // Update profit color to red if negative
-  const profitColor = profit < 0 ? '#FF0000' : '#0088FE';
-  const pieColorsUpdated = ['#00C49F', '#FF8042', profitColor];
+  const profitColor = profit < 0 ? "#FF0000" : "#0088FE";
+  const pieColorsUpdated = ["#00C49F", "#FF8042", profitColor];
 
   const renderSortIcon = (key) => {
     if (key !== sortKey) return null;
-    return sortOrder === 'asc' ? ' ↑' : ' ↓';
+    return sortOrder === "asc" ? " ↑" : " ↓";
   };
 
   return (
@@ -228,113 +302,170 @@ export default function ExpenseCalculator() {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4>Expense & Income Tracker</h4>
           <div className="btn-group">
-            <button className="btn btn-outline-success" onClick={() => { setEditingIncome(null); setShowIncomeModal(true); }}>+ Add Income</button>
-            <button className="btn btn-outline-primary" onClick={() => { setEditingExpense(null); setShowExpenseModal(true); }}>+ Add Expense</button>
+            <button
+              className="btn btn-outline-success"
+              onClick={() => {
+                setEditingIncome(null);
+                setShowIncomeModal(true);
+              }}
+            >
+              + Add Income
+            </button>
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => {
+                setEditingExpense(null);
+                setShowExpenseModal(true);
+              }}
+            >
+              + Add Expense
+            </button>
           </div>
         </div>
 
         <div className="row g-3 mb-3">
-  <div className="col-md-6">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Search..."
-      value={search}
-      onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
-    />
-  </div>
-  <div className="col-md-2">
-    <select
-      className="form-select"
-      value={pageSize}
-      onChange={(e) => {
-        const value = e.target.value === 'all' ? 'all' : parseInt(e.target.value);
-        setPageSize(value);
-        setCurrentPage(1);
-      }}
-    >
-      <option value={5}>5</option>
-      <option value={10}>10</option>
-      <option value="all">All</option>
-    </select>
-  </div>
-  <div className="col-md-2">
-    <button className="btn btn-secondary w-100" style={{ height: '38px' }} onClick={() => setShowIncomeTable((prev) => !prev)}>
-      {showIncomeTable ? 'Show Expenses' : 'Show Incomes'}
-    </button>
-  </div>
-  <div className="col-md-2">
-    <button className="btn btn-success w-100" style={{ height: '38px' }} onClick={exportToExcel}>
-      Download Excel
-    </button>
-  </div>
-</div>
+          <div className="col-md-6">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+          <div className="col-md-2">
+            <select
+              className="form-select"
+              value={pageSize}
+              onChange={(e) => {
+                const value =
+                  e.target.value === "all" ? "all" : parseInt(e.target.value);
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+          <div className="col-md-2">
+            <button
+              className="btn btn-secondary w-100"
+              style={{ height: "38px" }}
+              onClick={() => setShowIncomeTable((prev) => !prev)}
+            >
+              {showIncomeTable ? "Show Expenses" : "Show Incomes"}
+            </button>
+          </div>
+          <div className="col-md-2">
+            <button
+              className="btn btn-success w-100"
+              style={{ height: "38px" }}
+              onClick={exportToExcel}
+            >
+              Download Excel
+            </button>
+          </div>
+        </div>
 
         <div className="table-responsive mb-3">
-          <h5>{showIncomeTable ? 'Incomes' : 'Expenses'}</h5>
+          <h5>{showIncomeTable ? "Incomes" : "Expenses"}</h5>
           <table className="table table-bordered table-hover">
             <thead className="table-light">
               <tr>
                 <th>#</th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('amount')}>
-                  Amount{renderSortIcon('amount')}
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("amount")}
+                >
+                  Amount{renderSortIcon("amount")}
                 </th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('category')}>
-                  Category{renderSortIcon('category')}
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("category_name")}
+                >
+                  Category{renderSortIcon("category_name")}
                 </th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('account')}>
-                  Account{renderSortIcon('account')}
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("title")}
+                >
+                  Title{renderSortIcon("title")}
                 </th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('description')}>
-                  Description{renderSortIcon('description')}
-                </th>
-                <th style={{ cursor: 'pointer' }} onClick={() => handleSort('date')}>
-                  Date{renderSortIcon('date')}
+                <th
+                  style={{ cursor: "pointer" }}
+                  onClick={() => handleSort("expense_date")}
+                >
+                  Date{renderSortIcon("expense_date")}
                 </th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {(showIncomeTable ? filteredIncomes : paginatedExpenses).map((item, index) => (
-                <tr key={item.id || index}>
-                  <td>{(pageSize === 'all' ? index + 1 : (currentPage - 1) * pageSize + index + 1)}</td>
-                  <td>₹{parseFloat(item.amount).toFixed(2)}</td>
-                  <td>{item.category}</td>
-                  <td>{item.account}</td>
-                  <td>{item.description}</td>
-                  <td>{new Date(item.date).toLocaleDateString()}</td>
-                  <td>
-                    <button
-                      className="btn btn-sm btn-primary me-2"
-                      onClick={() => {
-                        if (showIncomeTable) {
-                          setEditingIncome(item);
-                          setShowIncomeModal(true);
-                        } else {
-                          setEditingExpense(item);
-                          setShowExpenseModal(true);
-                        }
-                      }}
-                      title="Edit"
-                    >
-                      &#9998;
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => {
-                        if (showIncomeTable) {
-                          removeItem(item.id, 'income');
-                        } else {
-                          removeItem(item.id, 'expense');
-                        }
-                      }}
-                      title="Delete"
-                    >
-                      &#128465;
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {(showIncomeTable ? filteredIncomes : paginatedExpenses).map(
+                (item, index) => (
+                  <tr key={item.id || index}>
+                    <td>
+                      {pageSize === "all"
+                        ? index + 1
+                        : (currentPage - 1) * pageSize + index + 1}
+                    </td>
+                    <td>₹{parseFloat(item.amount).toFixed(2)}</td>
+                    <td>{item.category_name}</td>
+                    <td>{item.title}</td>
+                    <td>{new Date(item.expense_date).toLocaleDateString()}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-primary me-2"
+                        onClick={() => {
+                          if (showIncomeTable) {
+                            setEditingIncome(item);
+                            setShowIncomeModal(true);
+                          } else {
+                            setEditingExpense(item);
+                            setShowExpenseModal(true);
+                          }
+                        }}
+                        title="Edit"
+                      >
+                        &#9998;
+                      </button>
+
+                      <button
+                        className="btn btn-sm btn-danger me-2"
+                        onClick={() => {
+                          if (showIncomeTable) {
+                            removeItem(item.id, "income");
+                          } else {
+                            removeItem(item.id, "expense");
+                          }
+                        }}
+                        title="Delete"
+                      >
+                        &#128465;
+                      </button>
+
+                      {!showIncomeTable && item.status !== "paid" && (
+                        <button
+                          className="btn btn-sm btn-success"
+                          onClick={() => markExpensePaid(item.id)}
+                          title="Mark as Paid"
+                        >
+                          ✓
+                        </button>
+                      )}
+
+                      {!showIncomeTable && item.status === "paid" && (
+                        <span className="badge bg-success ms-2">Paid</span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </div>
@@ -344,9 +475,13 @@ export default function ExpenseCalculator() {
             <div className="border p-3 rounded bg-light mb-3">
               <h5>Total Income: ₹{totalIncome.toFixed(2)}</h5>
               <h5>Total Expense: ₹{totalExpense.toFixed(2)}</h5>
-               <h5>Total Transactions: {totalTransactions}</h5>
-              <h5 className={`fw-bold ${profit < 0 ? 'text-danger' : 'text-success'}`}>
-                {profit < 0 ? 'Loss' : 'Profit'}: ₹{Math.abs(profit).toFixed(2)}
+              <h5>Total Transactions: {totalTransactions}</h5>
+              <h5
+                className={`fw-bold ${
+                  profit < 0 ? "text-danger" : "text-success"
+                }`}
+              >
+                {profit < 0 ? "Loss" : "Profit"}: ₹{Math.abs(profit).toFixed(2)}
               </h5>
             </div>
             {/* <div className="border p-3 rounded bg-light">
@@ -369,11 +504,18 @@ export default function ExpenseCalculator() {
                     label
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={pieColorsUpdated[index % pieColorsUpdated.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={pieColorsUpdated[index % pieColorsUpdated.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip />
-                  <Legend layout="vertical" verticalAlign="middle" align="right" />
+                  <Legend
+                    layout="vertical"
+                    verticalAlign="middle"
+                    align="right"
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -381,8 +523,35 @@ export default function ExpenseCalculator() {
         </div>
       </div>
 
-      <AddExpenseModal show={showExpenseModal} onClose={() => { setShowExpenseModal(false); setEditingExpense(null); }} onSubmit={(data) => handleSave(data, 'expense')} expense={editingExpense} mode={editingExpense ? 'edit' : 'add'} isSaving={isSaving} />
-      <AddIncomeModal show={showIncomeModal} onClose={() => { setShowIncomeModal(false); setEditingIncome(null); }} onSubmit={(data) => handleSave(data, 'income')} income={editingIncome} mode={editingIncome ? 'edit' : 'add'} isSaving={isSaving} />
+      <AddExpenseModal
+        show={showExpenseModal}
+        onClose={() => {
+          setShowExpenseModal(false);
+          setEditingExpense(null);
+        }}
+        onSubmit={(data) => handleSave(data, "expense")}
+        expense={editingExpense}
+        mode={editingExpense ? "edit" : "add"}
+        isSaving={isSaving}
+        onAddCategory={() => setShowCategoryModal(true)}
+      />
+      <AddIncomeModal
+        show={showIncomeModal}
+        onClose={() => {
+          setShowIncomeModal(false);
+          setEditingIncome(null);
+        }}
+        onSubmit={(data) => handleSave(data, "income")}
+        income={editingIncome}
+        mode={editingIncome ? "edit" : "add"}
+        isSaving={isSaving}
+      />
+      <AddCategoryModal
+        show={showCategoryModal}
+        onClose={() => setShowCategoryModal(false)}
+        onSubmit={handleAddCategory}
+        isSaving={isSaving}
+      />
     </div>
   );
 }

@@ -1,37 +1,57 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 
-export default function AddExpenseModal({ show, onClose, onSubmit, expense, mode, isSaving }) {
+export default function AddExpenseModal({ show, onClose, onSubmit, expense, mode, isSaving, onAddCategory }) {
   const [form, setForm] = useState({
     id: null,
-    description: '',
+    title: '',
     amount: '',
-    category: '',
-    account: 'card',
-    date: '',
+    category_id: '',
+    expense_date: '',
+    notes: '',
   });
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   useEffect(() => {
+    if (show) {
+      fetchCategories();
+    }
     if (expense) {
       setForm({
         id: expense.id || null,
-        description: expense.description || '',
+        title: expense.title || '',
         amount: expense.amount || '',
-        category: expense.category || '',
-        account: expense.account || 'card',
-        date: expense.date ? expense.date.slice(0, 10) : '',
+        category_id: expense.category_id || '',
+        expense_date: expense.expense_date ? expense.expense_date.slice(0, 10) : '',
+        notes: expense.notes || '',
       });
     } else {
       setForm({
         id: null,
-        description: '',
+        title: '',
         amount: '',
-        category: '',
-        account: 'card',
-        date: '',
+        category_id: '',
+        expense_date: '',
+        notes: '',
       });
     }
-  }, [expense]);
+  }, [expense, show]);
+
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const res = await fetch('/api/expense_categories', {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      });
+      const data = await res.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   if (!show) return null;
 
@@ -59,12 +79,12 @@ export default function AddExpenseModal({ show, onClose, onSubmit, expense, mode
             </div>
             <div className="modal-body">
               <div className="mb-3">
-                <label className="form-label">Description</label>
+                <label className="form-label">Title</label>
                 <input
                   type="text"
-                  name="description"
+                  name="title"
                   className="form-control"
-                  value={form.description}
+                  value={form.title}
                   onChange={handleChange}
                   required
                   disabled={isSaving}
@@ -84,47 +104,51 @@ export default function AddExpenseModal({ show, onClose, onSubmit, expense, mode
               </div>
               <div className="mb-3">
                 <label className="form-label">Category</label>
-                <select
-                  name="category"
-                  className="form-select"
-                  value={form.category}
-                  onChange={handleChange}
-                  required
-                  disabled={isSaving}
-                >
-                  <option value="">Select category</option>
-                  <option value="food">Food</option>
-                  <option value="rent">Rent</option>
-                  <option value="travel">Travel</option>
-                  <option value="salary">Salary</option>
-                  <option value="accommodation">Accommodation</option>
-                  <option value="others">Others</option>
-                </select>
+                <div className="d-flex">
+                  <select
+                    name="category_id"
+                    className="form-select"
+                    value={form.category_id}
+                    onChange={handleChange}
+                    required
+                    disabled={isSaving || loadingCategories}
+                  >
+                    <option value="">Select category</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary ms-2"
+                    onClick={() => onAddCategory && onAddCategory()}
+                    disabled={isSaving}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
               <div className="mb-3">
-                <label className="form-label">Account</label>
-                <select
-                  name="account"
-                  className="form-select"
-                  value={form.account}
-                  onChange={handleChange}
-                  required
-                  disabled={isSaving}
-                >
-                  <option value="card">Card</option>
-                  <option value="online">Online</option>
-                  <option value="cash">Cash</option>
-                </select>
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Date</label>
+                <label className="form-label">Expense Date</label>
                 <input
                   type="date"
-                  name="date"
+                  name="expense_date"
                   className="form-control"
-                  value={form.date}
+                  value={form.expense_date}
                   onChange={handleChange}
                   required
+                  disabled={isSaving}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Notes</label>
+                <textarea
+                  name="notes"
+                  className="form-control"
+                  value={form.notes}
+                  onChange={handleChange}
                   disabled={isSaving}
                 />
               </div>

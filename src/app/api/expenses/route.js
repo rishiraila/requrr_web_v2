@@ -1,32 +1,41 @@
+/**
+ * @swagger
+ * /api/expenses:
+ *   get:
+ *     summary: Get all expenses for the authenticated user
+ *     tags: [Expenses]
+ *     security:
+ *       - bearerAuth: []
+ *   post:
+ *     summary: Create a new one-time expense
+ *     tags: [Expenses]
+ *     security:
+ *       - bearerAuth: []
+ */
+
 import { db } from '../../../db';
 import { authenticate } from '../../../middleware/auth';
 
-async function ensureAccountColumnExists() {
-  try {
-    const [rows] = await db.query(`SHOW COLUMNS FROM expenses LIKE 'account'`);
-    if (rows.length === 0) {
-      await db.query(`ALTER TABLE expenses ADD COLUMN account VARCHAR(100)`);
-      console.log("'account' column added to expenses table.");
-    }
-  } catch (error) {
-    console.error('Failed to ensure account column exists:', error);
-    throw error;
-  }
-}
-
 export async function GET(req) {
   const user = authenticate(req);
-  if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
-  await ensureAccountColumnExists();
-
-  const [records] = await db.query(
-    'SELECT * FROM expenses WHERE user_id = ? AND type = "expense" ORDER BY date DESC',
+  const [expenses] = await db.query(
+    `SELECT 
+       e.*,
+       ec.name AS category_name
+     FROM expenses e
+     LEFT JOIN expense_categories ec ON e.category_id = ec.id
+     WHERE e.user_id = ?
+     ORDER BY e.expense_date DESC`,
     [user.id]
   );
 
-  return Response.json(records);
+  return Response.json(expenses);
 }
+
 
 export async function POST(req) {
   const user = authenticate(req);
@@ -34,25 +43,39 @@ export async function POST(req) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  await ensureAccountColumnExists();
-
   const {
-    description,
+    title,
     amount,
-    category,
-    account,
-    date,
+    expense_date,
+    due_date,
+    status = 'pending',
+    category_id,
+    notes,
   } = await req.json();
 
-  if (!description || !amount || !category || !date || !account) {
-    return Response.json({ error: 'Missing required fields' }, { status: 400 });
+  if (!title || !amount || !expense_date) {
+    return Response.json(
+      { error: 'title, amount and expense_date are required' },
+      { status: 400 }
+    );
   }
 
   await db.query(
-    `INSERT INTO expenses (user_id, description, amount, category, account, date, type)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [user.id, description, amount, category, account, date, 'expense']
+    `INSERT INTO expenses
+     (user_id, title, amount, expense_date, due_date, status, is_recurring, category_id, notes)
+     VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+    [
+      user.id,
+      title,
+      amount,
+      expense_date,
+      due_date || null,
+      status,
+      category_id || null,
+      notes,
+    ]
   );
 
-  return Response.json({ message: 'Expense record created successfully' });
+  return Response.json({ message: 'Expense created successfully' });
 }
+
