@@ -1,3 +1,4 @@
-- [ ] Add necessary imports to src/app/api/corn/expenses/route.js
-- [ ] Wrap the code in export async function GET(req) { ... } and add return statement
-- [ ] Run build to verify the fix
+- [x] Add status priority function in RenewalPage.js
+- [x] Update sort logic to prioritize non-cancelled statuses first, then by date
+- [x] Test the sorting to ensure new renewals appear first
+- [x] Fix search functionality to include description (notes) field

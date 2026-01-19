@@ -37,7 +37,7 @@ export default function UpdateRenewals({ record, onClose, onSuccess }) {
       await axios.put(`/api/income_records/${record.id}`, form, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      onSuccess();
+      onSuccess(form); // Pass the updated form data
     } catch (err) {
       console.error('Failed to update renewal', err);
     } finally {

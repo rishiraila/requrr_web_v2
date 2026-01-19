@@ -14,6 +14,25 @@ export async function GET(req) {
   `);
 
   // =======================
+  // RENEWAL STATUS UPDATE
+  // =======================
+  // Set to 'pending' for renewals within 20 days
+  await db.execute(`
+    UPDATE income_records
+    SET status = 'pending'
+    WHERE status != 'paid'
+    AND due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 20 DAY)
+  `);
+
+  // Set to 'paid' for renewals within 30 days (but not within 20 days)
+  await db.execute(`
+    UPDATE income_records
+    SET status = 'paid'
+    WHERE status != 'paid'
+    AND due_date BETWEEN DATE_ADD(CURDATE(), INTERVAL 21 DAY) AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+  `);
+
+  // =======================
   // RECURRING EXPENSE RUNNER
   // =======================
   const [recurrings] = await db.query(`

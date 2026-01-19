@@ -15,6 +15,17 @@ export default function RenewalPage() {
 
   const [loading, setLoading] = useState(true);
 
+  // Function to get status priority (lower number = higher priority)
+  const getStatusPriority = (status) => {
+    switch (status) {
+      case 'paid': return 1;
+      case 'pending': return 2;
+      case 'overdue': return 3;
+      case 'cancelled': return 4;
+      default: return 5;
+    }
+  };
+
   const [records, setRecords] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(5);
@@ -47,9 +58,15 @@ export default function RenewalPage() {
           duration: service?.billing_interval || 'N/A'
         };
       }).sort((a, b) => {
+        const priorityA = getStatusPriority(a.status);
+        const priorityB = getStatusPriority(b.status);
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB; // Lower priority number first
+        }
+        // If same priority, sort by date ascending
         const dateA = new Date(a.due_date || a.payment_date);
         const dateB = new Date(b.due_date || b.payment_date);
-        return dateA - dateB; // Ascending: soonest date first
+        return dateA - dateB;
       });
 
 
@@ -68,7 +85,8 @@ export default function RenewalPage() {
   const filtered = records.filter((r) => {
     const matchesSearch =
       (r.client_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (r.service_name?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+      (r.service_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      (r.notes?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
     const endDate = r.due_date ? new Date(r.due_date) : null;
 
@@ -293,9 +311,14 @@ export default function RenewalPage() {
           <UpdateRenewals
             record={editingRecord}
             onClose={() => setEditingRecord(null)}
-            onSuccess={() => {
+            onSuccess={(updatedRecord) => {
               setEditingRecord(null);
-              fetchAll();
+              // Update the record in state without refetching
+              setRecords(prevRecords =>
+                prevRecords.map(r =>
+                  r.id === updatedRecord.id ? { ...r, ...updatedRecord } : r
+                )
+              );
             }}
           />
         )}
