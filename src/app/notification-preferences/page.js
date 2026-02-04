@@ -13,7 +13,8 @@ export default function NotificationPreferences() {
     email_notifications: false,
     whatsapp_notifications: false,
     dashboard_notifications: false,
-    payment_received_notifications: false,
+    client_email_notifications: false,
+    client_whatsapp_notifications: false,
   });
 
   const token =
@@ -261,26 +262,39 @@ export default function NotificationPreferences() {
                 {/* Other Notifications Section */}
                 <div className="section mb-4">
                   <h2 className="section-title border border-top-0 border-start-0 border-end-0">
-                    Other Notifications
+                    Client Notifications
                   </h2>
 
                   <div className="form-check form-switch d-flex justify-content-between align-items-center mb-2 p-3 border border-top-0 border-start-0 border-end-0">
-                    <label
-                      className="form-check-label"
-                      htmlFor="payment_received_notifications"
-                    >
-                      <h5 style={{ marginBottom: "5px" }}>
-                        <b>Payment Received</b>
+                    <label className="form-check-label">
+                      <h5>
+                        <b>Client Email</b>
                       </h5>
-                      <p>Notify when a payment is recorded</p>
+                      <p>Send renewal reminders to clients via email</p>
                     </label>
                     <input
                       type="checkbox"
                       className="form-check-input"
-                      id="payment_received_notifications"
-                      checked={prefs.payment_received_notifications}
+                      checked={prefs.client_email_notifications}
                       onChange={() =>
-                        handleToggle("payment_received_notifications")
+                        handleToggle("client_email_notifications")
+                      }
+                    />
+                  </div>
+
+                  <div className="form-check form-switch d-flex justify-content-between align-items-center mb-2 p-3 border border-top-0 border-start-0 border-end-0">
+                    <label className="form-check-label">
+                      <h5>
+                        <b>Client WhatsApp</b>
+                      </h5>
+                      <p>Send renewal reminders to clients via WhatsApp</p>
+                    </label>
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={prefs.client_whatsapp_notifications}
+                      onChange={() =>
+                        handleToggle("client_whatsapp_notifications")
                       }
                     />
                   </div>

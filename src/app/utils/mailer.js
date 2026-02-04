@@ -105,6 +105,7 @@ export const sendEmail = async ({
   }
 
   try {
+    console.log("MSG91 Payload:", JSON.stringify(payload, null, 2));
     const res = await axios.post(MSG91_URL, payload, {
       headers: {
         "Content-Type": "application/json",
@@ -112,6 +113,7 @@ export const sendEmail = async ({
       },
     });
 
+    console.log("MSG91 Response:", res.data);
     return res.data;
   } catch (err) {
     console.error("MSG91 ERROR:", err.response?.data || err.message);

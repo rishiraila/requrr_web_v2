@@ -127,7 +127,7 @@ import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
 export async function GET(req, { params }) {
-  const planId = params.id;
+  const { id: planId } = await params;
 
   const [[plan]] = await db.query('SELECT * FROM plans WHERE id = ?', [planId]);
   if (!plan) return Response.json({ error: 'Plan not found' }, { status: 404 });
@@ -139,7 +139,7 @@ export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const planId = params.id;
+  const { id: planId } = await params;
   const { name, price_inr, price_usd, max_renewals, description } = await req.json();
 
   if (!name || price_inr === undefined || price_usd === undefined) {
@@ -162,7 +162,7 @@ export async function DELETE(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const planId = params.id;
+  const { id: planId } = await params;
 
   try {
     await db.query(`DELETE FROM plans WHERE id = ?`, [planId]);
