@@ -120,15 +120,19 @@
  */
 
 // import { db } from '@/lib/db';
-import {db} from '../../../../db'
+import { db } from '../../../../db';
 import { authenticate } from '../../../../middleware/auth';
 
 export async function GET(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  const [rows] = await db.query('SELECT * FROM clients WHERE id = ? AND user_id = ?', [id, user.id]);
+  const { id } = params;
+  const [rows] = await db.query(
+    'SELECT * FROM clients WHERE id = ? AND user_id = ?',
+    [id, user.id]
+  );
+
   return Response.json(rows[0] || {});
 }
 
@@ -136,12 +140,22 @@ export async function PUT(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  const { name, email, phone, address, notes, company_name } = await req.json();
+  const { id } = params;
+  const {
+    name,
+    email = null,
+    phone = null,
+    notes = null,
+    company_name = null
+  } = await req.json();
+
   await db.query(
-    'UPDATE clients SET name = ?, email = ?, phone = ?, address = ?, notes = ?, company_name = ? WHERE id = ? AND user_id = ?',
-    [name, email, phone, address, notes, company_name, id, user.id]
+    `UPDATE clients
+     SET name = ?, email = ?, phone = ?, notes = ?, company_name = ?
+     WHERE id = ? AND user_id = ?`,
+    [name, email, phone, notes, company_name, id, user.id]
   );
+
   return Response.json({ message: 'Client updated' });
 }
 
@@ -149,27 +163,29 @@ export async function DELETE(req, { params }) {
   const user = authenticate(req);
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id } = await params;
-  console.log('Deleting client with ID:', id, 'for user:', user.id);
+  const { id } = params;
 
-  // Check if client exists first
-  const [clientRows] = await db.query('SELECT * FROM clients WHERE id = ? AND user_id = ?', [id, user.id]);
+  // Check if client exists
+  const [clientRows] = await db.query(
+    'SELECT id FROM clients WHERE id = ? AND user_id = ?',
+    [id, user.id]
+  );
+
   if (clientRows.length === 0) {
-    console.log('Client not found');
     return Response.json({ error: 'Client not found' }, { status: 404 });
   }
 
-  // Delete all income records associated with this client
-  const [incomeResult] = await db.query('DELETE FROM income_records WHERE client_id = ? AND user_id = ?', [id, user.id]);
-  console.log('Deleted income records:', incomeResult.affectedRows);
+  // Delete related income records
+  await db.query(
+    'DELETE FROM income_records WHERE client_id = ? AND user_id = ?',
+    [id, user.id]
+  );
 
-  // Delete the client
-  const [result] = await db.query('DELETE FROM clients WHERE id = ? AND user_id = ?', [id, user.id]);
-  console.log('Deleted client:', result.affectedRows);
-
-  if (result.affectedRows === 0) {
-    return Response.json({ error: 'Failed to delete client' }, { status: 500 });
-  }
+  // Delete client
+  await db.query(
+    'DELETE FROM clients WHERE id = ? AND user_id = ?',
+    [id, user.id]
+  );
 
   return Response.json({ message: 'Client deleted successfully' });
 }
